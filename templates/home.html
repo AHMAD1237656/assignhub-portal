@@ -1,0 +1,82 @@
+{% extends "base.html" %} {% block title %}Dashboard - AssignHub{% endblock %}
+{% block content %}
+
+<div class="py-4">
+  {% if user.is_authenticated %}
+
+  <div class="mb-4">
+    <h1 class="fw-bold">Welcome to AssignHub</h1>
+
+    <p class="text-muted">
+      Hello, {{ user.first_name|default:user.username }}.
+    </p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Assignments</h5>
+
+          <p class="card-text text-muted">View and manage assignments.</p>
+
+          <a href="{% url 'assignments:list' %}" class="btn btn-dark">
+            View Assignments
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% if user.is_staff %}
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Create Assignment</h5>
+
+          <p class="card-text text-muted">
+            Create a new assignment for students.
+          </p>
+
+          <a href="{% url 'assignments:create' %}" class="btn btn-dark">
+            Create Assignment
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Create User</h5>
+
+          <p class="card-text text-muted">
+            Create Teacher or Student accounts.
+          </p>
+
+          <a href="{% url 'accounts:user_create' %}" class="btn btn-dark">
+            Create User
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% endif %}
+  </div>
+
+  {% else %}
+
+  <div class="text-center py-5">
+    <h1 class="display-5 fw-bold">Welcome to AssignHub</h1>
+
+    <p class="lead text-muted mt-3">University Assignment Management System</p>
+
+    <a href="{% url 'accounts:login' %}" class="btn btn-dark btn-lg mt-3">
+      Login
+    </a>
+  </div>
+
+  {% endif %}
+</div>
+
+{% endblock %}

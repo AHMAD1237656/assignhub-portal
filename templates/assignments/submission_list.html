@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Submissions - AssignHub{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Submissions</h2>
+
+{% if submissions %}
+
+<div class="table-responsive">
+
+    <table class="table table-bordered table-hover align-middle">
+
+        <thead>
+            <tr>
+                <th>Assignment</th>
+
+                {% if user.is_staff %}
+                    <th>Student</th>
+                {% endif %}
+
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Marks</th>
+
+                {% if user.is_staff %}
+                    <th>Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for submission in submissions %}
+
+            <tr>
+
+                <td>
+                    {{ submission.assignment.title }}
+                </td>
+
+                {% if user.is_staff %}
+                    <td>
+                        {{ submission.student.username }}
+                    </td>
+                {% endif %}
+
+                <td>
+                    {{ submission.get_status_display }}
+                </td>
+
+                <td>
+                    {% if submission.submitted_at %}
+                        {{ submission.submitted_at|date:"d M Y, h:i A" }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if submission.marks is not None %}
+                        {{ submission.marks }}
+                        /
+                        {{ submission.assignment.total_marks }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+
+                {% if user.is_staff %}
+
+                    <td>
+                        <a
+                            href="{% url 'assignments:submission_review' submission.pk %}"
+                            class="btn btn-sm btn-dark"
+                        >
+                            Review
+                        </a>
+                    </td>
+
+                {% endif %}
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% else %}
+
+<div class="alert alert-info">
+    No submissions found.
+</div>
+
+{% endif %}
+
+{% endblock %}

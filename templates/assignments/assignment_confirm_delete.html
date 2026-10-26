@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Assignment - AssignHub{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-6">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body p-4">
+
+                <h3 class="mb-3">
+                    Delete Assignment
+                </h3>
+
+                <p>
+                    Are you sure you want to delete
+                    <strong>{{ assignment.title }}</strong>?
+                </p>
+
+                <p class="text-danger">
+                    This will also remove its submissions.
+                </p>
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                    >
+                        Yes, Delete
+                    </button>
+
+                    <a
+                        href="{% url 'assignments:detail' assignment.pk %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Cancel
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

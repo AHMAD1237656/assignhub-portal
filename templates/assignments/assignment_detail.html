@@ -1,0 +1,110 @@
+{% extends "base.html" %} {% block title %}{{ assignment.title }} - AssignHub{%
+endblock %} {% block content %}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h2>{{ assignment.title }}</h2>
+
+    <p class="text-muted">Created by {{ assignment.created_by.username }}</p>
+  </div>
+
+  {% if user == assignment.created_by %}
+  <div>
+    <a
+      href="{% url 'assignments:edit' assignment.pk %}"
+      class="btn btn-outline-dark"
+    >
+      Edit
+    </a>
+
+    <a
+      href="{% url 'assignments:delete' assignment.pk %}"
+      class="btn btn-outline-danger"
+    >
+      Delete
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h5>Instructions</h5>
+
+    <div class="mb-4">{{ assignment.instructions|linebreaks }}</div>
+
+    <hr />
+
+    <div class="row">
+      <div class="col-md-4">
+        <strong>Deadline</strong>
+        <p>{{ assignment.deadline|date:"d M Y, h:i A" }}</p>
+      </div>
+
+      <div class="col-md-4">
+        <strong>Total Marks</strong>
+        <p>{{ assignment.total_marks }}</p>
+      </div>
+
+      <div class="col-md-4">
+        <strong>Status</strong>
+        <p>{{ assignment.get_status_display }}</p>
+      </div>
+    </div>
+
+    {% if assignment.rubric %}
+
+    <hr />
+
+    <h5>Grading Rubric</h5>
+
+    <div>{{ assignment.rubric|linebreaks }}</div>
+
+    {% endif %} {% if assignment.attachment %}
+
+    <hr />
+
+    <h5>Attachment</h5>
+
+    <a
+      href="{{ assignment.attachment.url }}"
+      class="btn btn-outline-primary"
+      target="_blank"
+    >
+      View / Download Attachment
+    </a>
+
+    {% endif %}
+  </div>
+</div>
+
+{% if not user.is_staff and assignment.is_open %} {% if submission %}
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5>Your Submission</h5>
+
+    <p>
+      Status:
+      <strong> {{ submission.get_status_display }} </strong>
+    </p>
+
+    {% if submission.submitted_at %}
+    <p>Submitted: {{ submission.submitted_at|date:"d M Y, h:i A" }}</p>
+    {% endif %} {% if submission.status == "DRAFT" %}
+
+    <a href="{% url 'assignments:submit' assignment.pk %}" class="btn btn-dark">
+      Continue Submission
+    </a>
+
+    {% endif %}
+  </div>
+</div>
+
+{% else %}
+
+<a href="{% url 'assignments:submit' assignment.pk %}" class="btn btn-dark">
+  Submit Assignment
+</a>
+
+{% endif %} {% endif %} {% endblock %}
