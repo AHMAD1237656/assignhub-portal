@@ -15,11 +15,18 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import UserProfile
+from departments.models import Department, Program
+from semesters.models import Semester, Section
 
 from .forms import (
     AssignmentForm,
     GradeSubmissionForm,
     SubmissionForm,
+)
+from courses.models import (
+    Course,
+    CourseOffering,
+    CourseEnrollment,
 )
 from .models import Assignment, Submission
 from .permissions import is_admin, is_student, is_teacher
@@ -152,6 +159,71 @@ class AssignmentTestBase(TestCase):
             password="StrongAdminPassword123!",
         )
 
+        # Real academic hierarchy. Every published assignment must
+        # belong to an offering taught by its creator.
+        self.department = Department.objects.create(
+            code="CS-TEST",
+            name="Computer Science Test Department",
+        )
+        self.program = Program.objects.create(
+            department=self.department,
+            code="BSCS-TEST",
+            name="BS Computer Science Test",
+            duration_semesters=8,
+        )
+        self.semester = Semester.objects.create(
+            program=self.program,
+            number=1,
+        )
+        self.section = Section.objects.create(
+            semester=self.semester,
+            code="A",
+        )
+        self.other_section = Section.objects.create(
+            semester=self.semester,
+            code="B",
+        )
+        self.course = Course.objects.create(
+            program=self.program,
+            semester=self.semester,
+            code="CS101",
+            title="Python Fundamentals",
+            credit_hours=3,
+        )
+        self.other_course = Course.objects.create(
+            program=self.program,
+            semester=self.semester,
+            code="CS102",
+            title="Database Systems",
+            credit_hours=3,
+        )
+        self.offering = CourseOffering.objects.create(
+            course=self.course,
+            section=self.section,
+            teacher=self.teacher,
+            academic_year="2026-2027",
+            term=CourseOffering.Term.FALL,
+        )
+        self.other_offering = CourseOffering.objects.create(
+            course=self.other_course,
+            section=self.other_section,
+            teacher=self.teacher2,
+            academic_year="2026-2027",
+            term=CourseOffering.Term.FALL,
+        )
+        # Both authorized students can submit to the primary offering;
+        # the other teacher's offering remains separate.
+        self.enrollment = CourseEnrollment.objects.create(
+            offering=self.offering,
+            student=self.student,
+            status=CourseEnrollment.Status.ACTIVE,
+        )
+        self.enrollment2 = CourseEnrollment.objects.create(
+            offering=self.offering,
+            student=self.student2,
+            status=CourseEnrollment.Status.ACTIVE,
+        )
+
         self.assignment = Assignment.objects.create(
             title="Python Assignment",
             instructions="Explain Python decorators.",
@@ -160,6 +232,7 @@ class AssignmentTestBase(TestCase):
             rubric="Correctness",
             status=Assignment.Status.PUBLISHED,
             created_by=self.teacher,
+            course_offering=self.offering,
         )
 
         self.other_assignment = Assignment.objects.create(
@@ -169,7 +242,14 @@ class AssignmentTestBase(TestCase):
             total_marks=50,
             status=Assignment.Status.PUBLISHED,
             created_by=self.teacher2,
+            course_offering=self.other_offering,
         )
+
+    def assignment_data(self, **overrides):
+        """A valid teacher-owned offering is required for publication."""
+        data = assignment_data(course_offering=self.offering.pk)
+        data.update(overrides)
+        return data
 
     def login_as(self, user):
         self.client.force_login(user)
@@ -188,6 +268,11 @@ class AssignmentTestBase(TestCase):
             total_marks=total_marks,
             status=status,
             created_by=owner or self.teacher,
+            course_offering=(
+                self.other_offering
+                if owner and owner.pk == self.teacher2.pk
+                else self.offering
+            ),
         )
 
     def make_submission(
@@ -550,7 +635,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 302)
@@ -567,7 +652,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -577,7 +662,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -585,7 +670,7 @@ class AssignmentCreationTests(AssignmentTestBase):
     def test_anonymous_cannot_create_assignment(self):
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 302)
@@ -595,7 +680,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(title=""),
+            self.assignment_data(title=""),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -609,7 +694,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(instructions=""),
+            self.assignment_data(instructions=""),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -624,7 +709,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(total_marks=0),
+            self.assignment_data(total_marks=0),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -639,7 +724,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(total_marks=-10),
+            self.assignment_data(total_marks=-10),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -654,7 +739,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(status="HACKED"),
+            self.assignment_data(status="HACKED"),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -669,7 +754,7 @@ class AssignmentCreationTests(AssignmentTestBase):
 
         response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(deadline=""),
+            self.assignment_data(deadline=""),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -682,7 +767,7 @@ class AssignmentCreationTests(AssignmentTestBase):
     def test_created_by_cannot_be_forged(self):
         self.login_as(self.teacher)
 
-        data = assignment_data(
+        data = self.assignment_data(
             created_by=self.teacher2.pk
         )
 
@@ -742,7 +827,7 @@ class AssignmentEditTests(AssignmentTestBase):
 
         response = self.client.post(
             self.edit_url(),
-            assignment_data(
+            self.assignment_data(
                 title="Updated Assignment Title"
             ),
         )
@@ -761,7 +846,7 @@ class AssignmentEditTests(AssignmentTestBase):
 
         response = self.client.post(
             self.edit_url(),
-            assignment_data(title="Unauthorized Change"),
+            self.assignment_data(title="Unauthorized Change"),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -771,7 +856,7 @@ class AssignmentEditTests(AssignmentTestBase):
 
         response = self.client.post(
             self.edit_url(),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -781,7 +866,7 @@ class AssignmentEditTests(AssignmentTestBase):
 
         response = self.client.post(
             self.edit_url(),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -793,7 +878,7 @@ class AssignmentEditTests(AssignmentTestBase):
 
         response = self.client.post(
             self.edit_url(),
-            assignment_data(
+            self.assignment_data(
                 title="Changed After Submission"
             ),
         )
@@ -810,7 +895,7 @@ class AssignmentEditTests(AssignmentTestBase):
 
         response = self.client.post(
             self.edit_url(),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -820,7 +905,7 @@ class AssignmentEditTests(AssignmentTestBase):
 
         response = self.client.post(
             self.edit_url(),
-            assignment_data(title=""),
+            self.assignment_data(title=""),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1771,7 +1856,7 @@ class PDFValidationTests(AssignmentTestBase):
         response = self.client.post(
             reverse("assignments:create"),
             {
-                **assignment_data(),
+                **self.assignment_data(),
                 "attachment": invalid_pdf(),
             },
         )
@@ -1789,7 +1874,7 @@ class PDFValidationTests(AssignmentTestBase):
         response = self.client.post(
             reverse("assignments:create"),
             {
-                **assignment_data(),
+                **self.assignment_data(),
                 "attachment": valid_pdf(),
             },
         )
@@ -2108,7 +2193,7 @@ class CSRFSecurityTests(AssignmentTestBase):
 
         response = self.secure_client.post(
             reverse("assignments:create"),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -2121,7 +2206,7 @@ class CSRFSecurityTests(AssignmentTestBase):
                 "assignments:edit",
                 args=[self.assignment.pk],
             ),
-            assignment_data(),
+            self.assignment_data(),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -2280,7 +2365,7 @@ class EndToEndWorkflowTests(AssignmentTestBase):
 
         create_response = self.client.post(
             reverse("assignments:create"),
-            assignment_data(
+            self.assignment_data(
                 title="Complete E2E Assignment"
             ),
         )
@@ -2530,3 +2615,65 @@ class EndToEndWorkflowTests(AssignmentTestBase):
             response,
             self.student2.username,
         )
+
+# ============================================================
+# 16. COURSE OFFERING / ENROLLMENT SECURITY REGRESSION
+# ============================================================
+
+class CourseAccessRegressionTests(AssignmentTestBase):
+
+    def test_unenrolled_student_cannot_view_assignment(self):
+        stranger = create_user(
+            "student_stranger", UserProfile.Role.STUDENT
+        )
+        self.login_as(stranger)
+        response = self.client.get(self.detail_url())
+        self.assertEqual(response.status_code, 403)
+
+    def test_unenrolled_student_cannot_submit(self):
+        stranger = create_user(
+            "student_stranger", UserProfile.Role.STUDENT
+        )
+        self.login_as(stranger)
+        response = self.client.post(
+            self.submit_url(), {"text_content": "Not enrolled"}
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_dropped_student_cannot_access_published_assignment(self):
+        self.enrollment.status = CourseEnrollment.Status.DROPPED
+        self.enrollment.save(update_fields=["status"])
+        self.login_as(self.student)
+        self.assertEqual(self.client.get(self.detail_url()).status_code, 403)
+
+    def test_cross_offering_student_cannot_view(self):
+        # A student enrolled in CS101 Section A cannot automatically
+        # see CS102 Section B's published assignment.
+        self.login_as(self.student)
+        response = self.client.get(self.detail_url(self.other_assignment))
+        self.assertEqual(response.status_code, 403)
+
+    def test_forged_offering_rejected_on_assignment_creation(self):
+        self.login_as(self.teacher)
+
+        response = self.client.post(
+            reverse("assignments:create"),
+            self.assignment_data(
+                course_offering=self.other_offering.pk,
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(
+            "course_offering",
+            response.context["form"].errors,
+        )
+    def test_published_assignment_requires_offering(self):
+        self.login_as(self.teacher)
+        response = self.client.post(
+            reverse("assignments:create"),
+            self.assignment_data(course_offering=""),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("course_offering", response.context["form"].errors)

@@ -14,12 +14,12 @@
         </p>
     </div>
 
-    {% if can_create %}
-        <a href="{% url 'assignments:create' %}"
-           class="btn btn-dark">
-            Create Assignment
-        </a>
-    {% endif %}
+{% if can_create %}
+<a href="{% url 'assignments:create' %}"
+   class="btn btn-primary">
+    Create Assignment
+</a>
+{% endif %}
 
 </div>
 

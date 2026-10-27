@@ -1,3 +1,4 @@
+
 from accounts.models import UserProfile
 
 
@@ -27,11 +28,19 @@ def is_student(user):
 
 
 def is_admin(user):
+    if not user.is_authenticated:
+        return False
+
+    if not user.is_active:
+        return False
+
+    if user.is_superuser:
+        return True
+
     return (
-        user.is_authenticated
-        and user.is_active
-        and (
-            user.is_superuser
-            or has_role(user, UserProfile.Role.ADMIN)
+        user.is_staff
+        and has_role(
+            user,
+            UserProfile.Role.ADMIN,
         )
     )

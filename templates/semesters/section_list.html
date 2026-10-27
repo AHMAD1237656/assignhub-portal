@@ -1,0 +1,172 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sections | AssignHub{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">Sections</h2>
+
+            <p class="text-muted mb-0">
+                Select a program and semester to
+                display its sections.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'semesters:semester_list' %}"
+               class="btn btn-outline-dark">
+                Semesters
+            </a>
+
+            <a href="{% url 'semesters:section_create' %}"
+               class="btn btn-dark">
+                + Add Section
+            </a>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form method="get"
+                  action="{% url 'semesters:section_list' %}"
+                  data-live-search
+                  data-results-target="section-results"
+                  data-debounce="200"
+                  data-semesters-api="{% url 'semesters:semester_options_api' %}"
+                  class="row g-3">
+
+                <div class="col-md-4">
+                    <label for="section-search"
+                           class="form-label">
+                        Live Search
+                    </label>
+
+                    <input id="section-search"
+                           type="search"
+                           name="q"
+                           value="{{ search }}"
+                           class="form-control"
+                           autocomplete="off"
+                           placeholder="Search section code">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="section-program"
+                           class="form-label">
+                        Program
+                    </label>
+
+                    <select id="section-program"
+                            name="program"
+                            class="form-select">
+
+                        <option value="">
+                            All Programs
+                        </option>
+
+                        {% for program in programs %}
+                        <option value="{{ program.pk }}"
+                            {% if selected_program == program.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ program.code }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="section-semester"
+                           class="form-label">
+                        Semester
+                    </label>
+
+                    <select id="section-semester"
+                            name="semester"
+                            class="form-select"
+                            {% if not selected_program %}disabled{% endif %}>
+
+                        <option value="">
+                            All Semesters
+                        </option>
+
+                        {% for semester in semester_options %}
+                        <option value="{{ semester.pk }}"
+                            {% if selected_semester == semester.pk|stringformat:"s" %}selected{% endif %}>
+                            Semester {{ semester.number }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <div class="form-text">
+                        Select program first.
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="section-status"
+                           class="form-label">
+                        Status
+                    </label>
+
+                    <select id="section-status"
+                            name="status"
+                            class="form-select">
+
+                        <option value="all"
+                            {% if status == "all" %}selected{% endif %}>
+                            All
+                        </option>
+
+                        <option value="active"
+                            {% if status == "active" %}selected{% endif %}>
+                            Active
+                        </option>
+
+                        <option value="inactive"
+                            {% if status == "inactive" %}selected{% endif %}>
+                            Archived
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit"
+                            class="btn btn-outline-dark btn-sm">
+                        Apply Filters
+                    </button>
+                </div>
+
+            </form>
+
+            <div class="small text-muted mt-2"
+                 data-search-notice
+                 role="status"
+                 aria-live="polite"></div>
+
+        </div>
+    </div>
+
+    <div id="section-results" aria-live="polite">
+        {% include "semesters/partials/section_results.html" %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script defer
+        src="{% static 'js/academic-live-search.js' %}">
+</script>
+{% endblock %}

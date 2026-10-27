@@ -5,33 +5,15 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 
+from courses.models import CourseOffering
+
 from .models import Assignment, Submission
 
 
-# =====================================================
-# FILE UPLOAD CONFIGURATION
-# =====================================================
+MAX_PDF_BYTES = 10 * 1024 * 1024
 
-MAX_PDF_BYTES = 10 * 1024 * 1024  # 10 MB
-
-
-# =====================================================
-# PDF VALIDATION
-# =====================================================
 
 def validate_pdf(file):
-    """
-    Validate an uploaded PDF.
-
-    Checks:
-    - PDF extension
-    - Non-empty file
-    - Maximum file size: 10 MB
-    - PDF file signature
-
-    Existing stored files are not re-read during editing.
-    """
-
     if not file:
         return file
 
@@ -44,46 +26,40 @@ def validate_pdf(file):
 
     if file.size == 0:
         raise ValidationError(
-            "The PDF file cannot be empty."
+            "PDF file cannot be empty."
         )
 
     if file.size > MAX_PDF_BYTES:
         raise ValidationError(
-            "PDF size must not exceed 10 MB."
+            "PDF must not exceed 10 MB."
         )
 
-    # Only inspect newly uploaded files.
     if not isinstance(file, UploadedFile):
         return file
 
-    original_position = file.tell()
+    position = file.tell()
 
     try:
         file.seek(0)
 
-        header = file.read(5)
-
-        if header != b"%PDF-":
+        if file.read(5) != b"%PDF-":
             raise ValidationError(
                 "Invalid PDF file signature."
             )
 
     finally:
-        file.seek(original_position)
+        file.seek(position)
 
     return file
 
-
-# =====================================================
-# ASSIGNMENT CREATE / EDIT FORM
-# =====================================================
 
 class AssignmentForm(forms.ModelForm):
 
     class Meta:
         model = Assignment
 
-        fields = (
+        fields = [
+            "course_offering",
             "title",
             "instructions",
             "attachment",
@@ -91,102 +67,109 @@ class AssignmentForm(forms.ModelForm):
             "total_marks",
             "rubric",
             "status",
-        )
+        ]
 
         widgets = {
-            "title": forms.TextInput(
-                attrs={
-                    "placeholder": "Enter assignment title",
-                }
-            ),
-
             "instructions": forms.Textarea(
-                attrs={
-                    "rows": 6,
-                    "placeholder": "Enter assignment instructions",
-                }
+                attrs={"rows": 6}
             ),
-
-            "deadline": forms.DateTimeInput(
-                attrs={
-                    "type": "datetime-local",
-                },
-                format="%Y-%m-%dT%H:%M",
-            ),
-
-            "total_marks": forms.NumberInput(
-                attrs={
-                    "min": "1",
-                    "step": "1",
-                }
-            ),
-
             "rubric": forms.Textarea(
-                attrs={
-                    "rows": 5,
-                    "placeholder": "Optional grading rubric",
-                }
+                attrs={"rows": 5}
             ),
-
-            "attachment": forms.ClearableFileInput(
-                attrs={
-                    "accept": ".pdf,application/pdf",
-                }
+            "deadline": forms.DateTimeInput(
+                attrs={"type": "datetime-local"},
+                format="%Y-%m-%dT%H:%M",
             ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields["deadline"].input_formats = [
             "%Y-%m-%dT%H:%M",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%d %H:%M",
             "%Y-%m-%d %H:%M:%S",
         ]
 
+        offerings = CourseOffering.objects.none()
+
+        if user is not None and user.is_authenticated:
+            offerings = CourseOffering.objects.filter(
+                teacher=user,
+                is_active=True,
+                course__is_active=True,
+                section__is_active=True,
+            )
+
+            if self.instance.pk:
+                offerings = CourseOffering.objects.filter(
+                    models_Q_for_existing(
+                        offerings,
+                        self.instance.course_offering_id,
+                    )
+                )
+
+        self.fields[
+            "course_offering"
+        ].queryset = offerings.select_related(
+            "course",
+            "section",
+        )
+
+        self.fields[
+            "course_offering"
+        ].required = False
+
         for field in self.fields.values():
-            field.widget.attrs["class"] = "form-control"
+            if isinstance(
+                field.widget,
+                forms.Select,
+            ):
+                field.widget.attrs["class"] = "form-select"
+            else:
+                field.widget.attrs["class"] = "form-control"
 
     def clean_attachment(self):
-        attachment = self.cleaned_data.get("attachment")
-
-        return validate_pdf(attachment)
+        return validate_pdf(
+            self.cleaned_data.get("attachment")
+        )
 
     def clean_total_marks(self):
-        total_marks = self.cleaned_data.get("total_marks")
+        marks = self.cleaned_data["total_marks"]
 
-        if total_marks is None or total_marks < 1:
+        if marks < 1:
             raise ValidationError(
                 "Total marks must be at least 1."
             )
 
-        return total_marks
+        return marks
 
 
-# =====================================================
-# STUDENT SUBMISSION FORM
-# =====================================================
+def models_Q_for_existing(queryset, existing_id):
+    from django.db.models import Q
+
+    return (
+        Q(pk__in=queryset.values("pk"))
+        | Q(pk=existing_id)
+    )
+
 
 class SubmissionForm(forms.ModelForm):
 
     class Meta:
         model = Submission
 
-        fields = (
+        fields = [
             "text_content",
             "submission_file",
-        )
+        ]
 
         widgets = {
             "text_content": forms.Textarea(
                 attrs={
                     "rows": 12,
-                    "placeholder": "Write your assignment answer here...",
-                }
-            ),
-
-            "submission_file": forms.ClearableFileInput(
-                attrs={
-                    "accept": ".pdf,application/pdf",
+                    "class": "form-control",
                 }
             ),
         }
@@ -194,80 +177,69 @@ class SubmissionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        for field in self.fields.values():
-            field.widget.attrs["class"] = "form-control"
+        self.fields[
+            "submission_file"
+        ].widget.attrs["class"] = "form-control"
 
     def clean_submission_file(self):
-        submission_file = self.cleaned_data.get(
-            "submission_file"
+        return validate_pdf(
+            self.cleaned_data.get("submission_file")
         )
-
-        return validate_pdf(submission_file)
 
     def clean(self):
-        cleaned_data = super().clean()
+        data = super().clean()
 
-        text_content = (
-            cleaned_data.get("text_content") or ""
+        text = (
+            data.get("text_content") or ""
         ).strip()
 
-        submission_file = cleaned_data.get(
-            "submission_file"
-        )
+        uploaded_file = data.get("submission_file")
 
-        if not text_content and not submission_file:
+        if not text and not uploaded_file:
             raise ValidationError(
-                "Write an answer or upload a PDF file."
+                "Provide text or upload a PDF."
             )
 
-        return cleaned_data
+        return data
 
-
-# =====================================================
-# TEACHER GRADING FORM
-# =====================================================
 
 class GradeSubmissionForm(forms.ModelForm):
 
     class Meta:
         model = Submission
 
-        fields = (
-            "marks",
-            "feedback",
-        )
+        fields = ["marks", "feedback"]
 
         widgets = {
             "marks": forms.NumberInput(
                 attrs={
-                    "min": "0",
+                    "min": 0,
                     "step": "0.01",
-                    "placeholder": "Enter obtained marks",
                 }
             ),
-
             "feedback": forms.Textarea(
-                attrs={
-                    "rows": 6,
-                    "placeholder": "Enter feedback for student",
-                }
+                attrs={"rows": 6}
             ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields["marks"].required = True
+
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
 
-        # Marks must be explicitly provided on every grading POST.
-        self.fields["marks"].required = True
-
-        # Do not reuse an existing grade if the POST omits marks.
-        if self.is_bound:
-            self.fields["marks"].initial = None
-
     def clean_marks(self):
+        key = self.add_prefix("marks")
+
+        if self.is_bound and not str(
+            self.data.get(key, "")
+        ).strip():
+            raise ValidationError(
+                "Marks are required."
+            )
+
         marks = self.cleaned_data.get("marks")
 
         if marks is None:
@@ -275,11 +247,14 @@ class GradeSubmissionForm(forms.ModelForm):
                 "Marks are required."
             )
 
-        total_marks = self.instance.assignment.total_marks
-
-        if marks < 0 or marks > total_marks:
+        if marks < 0:
             raise ValidationError(
-                f"Marks must be between 0 and {total_marks}."
+                "Marks cannot be negative."
+            )
+
+        if marks > self.instance.assignment.total_marks:
+            raise ValidationError(
+                "Marks cannot exceed total marks."
             )
 
         return marks

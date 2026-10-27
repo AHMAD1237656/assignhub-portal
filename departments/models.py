@@ -26,16 +26,20 @@ class Department(models.Model):
 
     name = models.CharField(max_length=150)
 
-    description = models.TextField(blank=True)
+    description = models.TextField(
+        blank=True,
+    )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+    )
 
     created_at = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
     )
 
     updated_at = models.DateTimeField(
-        auto_now=True
+        auto_now=True,
     )
 
     class Meta:
@@ -92,7 +96,9 @@ class Program(models.Model):
         validators=[code_validator],
     )
 
-    name = models.CharField(max_length=150)
+    name = models.CharField(
+        max_length=150,
+    )
 
     duration_semesters = models.PositiveSmallIntegerField(
         default=8,
@@ -102,16 +108,20 @@ class Program(models.Model):
         ],
     )
 
-    description = models.TextField(blank=True)
+    description = models.TextField(
+        blank=True,
+    )
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+    )
 
     created_at = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
     )
 
     updated_at = models.DateTimeField(
-        auto_now=True
+        auto_now=True,
     )
 
     class Meta:
@@ -128,7 +138,6 @@ class Program(models.Model):
                 name="unique_program_code_per_dept_ci",
             ),
 
-            # Database-level validation.
             models.CheckConstraint(
                 condition=(
                     models.Q(duration_semesters__gte=1)
@@ -147,15 +156,76 @@ class Program(models.Model):
     def clean(self):
         super().clean()
 
-        if (
-            self.department_id
-            and self.is_active
-            and not self.department.is_active
-        ):
+        if not self.department_id:
+            return
+
+        try:
+            department = self.department
+        except Department.DoesNotExist:
+            return
+
+        if self.is_active and not department.is_active:
             raise ValidationError({
                 "department": (
                     "An active program requires "
                     "an active department."
+                )
+            })
+
+        if not self.pk:
+            return
+
+        existing = (
+            Program.objects.filter(pk=self.pk)
+            .values("department_id")
+            .first()
+        )
+
+        if existing is None:
+            return
+
+        has_semesters = self.semesters.exists()
+
+        # Existing semester records must never
+        # silently move to another department.
+        if (
+            has_semesters
+            and self.department_id
+            != existing["department_id"]
+        ):
+            raise ValidationError({
+                "department": (
+                    "Cannot change the department "
+                    "while this program has semesters."
+                )
+            })
+
+        # Existing semester numbers must fit
+        # within the program's duration.
+        if (
+            self.duration_semesters is not None
+            and self.semesters.filter(
+                number__gt=self.duration_semesters
+            ).exists()
+        ):
+            raise ValidationError({
+                "duration_semesters": (
+                    "Cannot reduce program duration "
+                    "below an existing semester number."
+                )
+            })
+
+        # Archive children first.
+        if (
+            not self.is_active
+            and self.semesters.filter(
+                is_active=True
+            ).exists()
+        ):
+            raise ValidationError({
+                "is_active": (
+                    "Archive all active semesters "
+                    "before archiving this program."
                 )
             })
 

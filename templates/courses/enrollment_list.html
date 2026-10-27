@@ -1,0 +1,77 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Enrollments | AssignHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between
+                align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold">Student Enrollments</h2>
+            <p class="text-muted mb-0">
+                Assign students to active course offerings.
+            </p>
+        </div>
+
+        <a href="{% url 'courses:enrollment_create' %}"
+           class="btn btn-dark">
+            + Enroll Student
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <form method="get"
+                  action="{% url 'courses:enrollment_list' %}"
+                  data-live-search
+                  data-results-target="enrollment-results"
+                  data-debounce="200"
+                  class="row g-3">
+
+                <div class="col-md-8">
+                    <label class="form-label">Search</label>
+                    <input name="q"
+                           value="{{ search }}"
+                           type="search"
+                           autocomplete="off"
+                           class="form-control"
+                           placeholder="Student username or course code">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="all"
+                          {% if status == "all" %}selected{% endif %}>All</option>
+                        <option value="active"
+                          {% if status == "active" %}selected{% endif %}>Active</option>
+                        <option value="dropped"
+                          {% if status == "dropped" %}selected{% endif %}>Dropped</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-outline-dark btn-sm">
+                        Apply Filters
+                    </button>
+                </div>
+            </form>
+
+            <div data-search-notice
+                 class="small text-muted mt-2"
+                 aria-live="polite"></div>
+        </div>
+    </div>
+
+    <div id="enrollment-results" aria-live="polite">
+        {% include "courses/partials/enrollment_results.html" %}
+    </div>
+
+</div>
+
+<script defer src="{% static 'js/academic-live-search.js' %}"></script>
+{% endblock %}

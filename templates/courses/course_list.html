@@ -1,0 +1,122 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Courses | AssignHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Course Catalog</h2>
+            <p class="text-muted mb-0">
+                Manage program and semester-wise courses.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'courses:offering_list' %}"
+               class="btn btn-outline-dark">
+                Offerings
+            </a>
+
+            <a href="{% url 'courses:course_create' %}"
+               class="btn btn-dark">
+                + Add Course
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get"
+                  action="{% url 'courses:course_list' %}"
+                  data-live-search
+                  data-results-target="course-results"
+                  data-debounce="200"
+                  data-semesters-api="{% url 'semesters:semester_options_api' %}"
+                  class="row g-3">
+
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="search"
+                           name="q"
+                           value="{{ search }}"
+                           autocomplete="off"
+                           class="form-control"
+                           placeholder="Code or course name">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Program</label>
+                    <select name="program" class="form-select">
+                        <option value="">All Programs</option>
+
+                        {% for program in programs %}
+                        <option value="{{ program.pk }}"
+                          {% if selected_program == program.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ program.code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Semester</label>
+                    <select name="semester"
+                            class="form-select"
+                            {% if not selected_program %}disabled{% endif %}>
+                        <option value="">All Semesters</option>
+
+                        {% for semester in semesters %}
+                        <option value="{{ semester.pk }}"
+                          {% if selected_semester == semester.pk|stringformat:"s" %}selected{% endif %}>
+                            Semester {{ semester.number }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="all"
+                          {% if status == "all" %}selected{% endif %}>
+                            All
+                        </option>
+                        <option value="active"
+                          {% if status == "active" %}selected{% endif %}>
+                            Active
+                        </option>
+                        <option value="inactive"
+                          {% if status == "inactive" %}selected{% endif %}>
+                            Archived
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-outline-dark btn-sm"
+                            type="submit">
+                        Apply Filters
+                    </button>
+                </div>
+            </form>
+
+            <div data-search-notice
+                 role="status"
+                 aria-live="polite"
+                 class="small text-muted mt-2"></div>
+        </div>
+    </div>
+
+    <div id="course-results" aria-live="polite">
+        {% include "courses/partials/course_results.html" %}
+    </div>
+
+</div>
+
+<script defer src="{% static 'js/academic-live-search.js' %}"></script>
+{% endblock %}

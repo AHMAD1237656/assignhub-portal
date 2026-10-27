@@ -1,0 +1,62 @@
+
+{% extends "base.html" %}
+
+{% block title %}Confirm Action | AssignHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <h3 class="text-danger">
+                        {% if is_drop %}
+                            Drop Enrollment
+                        {% else %}
+                            Delete Record
+                        {% endif %}
+                    </h3>
+
+                    <p>
+                        Are you sure you want to
+                        {% if is_drop %}drop{% else %}delete{% endif %}
+                        <strong>{{ record }}</strong>?
+                    </p>
+
+                    {% if not is_drop %}
+                    <div class="alert alert-warning">
+                        Related records may prevent deletion.
+                        Archive instead when appropriate.
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Confirm
+                        </button>
+
+                        {% if is_drop %}
+                        <a href="{% url cancel_route %}"
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        {% else %}
+                        <a href="{% url cancel_route record.pk %}"
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        {% endif %}
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

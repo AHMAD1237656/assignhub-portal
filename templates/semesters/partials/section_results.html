@@ -1,0 +1,87 @@
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-white">
+        <strong>Section Records</strong>
+
+        <span class="text-muted small ms-2">
+            {{ page_obj.paginator.count }} result(s)
+        </span>
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Section</th>
+                    <th>Program</th>
+                    <th>Semester</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for section in page_obj %}
+
+                <tr>
+                    <td class="ps-3 fw-semibold">
+                        Section {{ section.code }}
+                    </td>
+
+                    <td>
+                        {{ section.semester.program.code }}
+                    </td>
+
+                    <td>
+                        Semester {{ section.semester.number }}
+                    </td>
+
+                    <td>
+                        {{ section.capacity }}
+                    </td>
+
+                    <td>
+                        {% if section.is_active %}
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            Archived
+                        </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-end pe-3">
+                        <a href="{% url 'semesters:section_detail' section.pk %}"
+                           class="btn btn-sm btn-outline-dark">
+                            View
+                        </a>
+
+                        <a href="{% url 'semesters:section_edit' section.pk %}"
+                           class="btn btn-sm btn-outline-primary">
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6"
+                        class="text-center text-muted py-5">
+                        No sections found for these filters.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+    {% include "semesters/partials/pagination.html" %}
+
+</div>

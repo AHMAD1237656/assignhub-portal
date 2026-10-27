@@ -1,0 +1,170 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+{{ semester.display_name }} | AssignHub
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+    <a href="{% url 'semesters:semester_list' %}"
+       class="btn btn-outline-secondary btn-sm mb-4">
+        Back to Semesters
+    </a>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between
+                        align-items-start flex-wrap gap-3">
+
+                <div>
+                    <h2 class="fw-bold">
+                        {{ semester.display_name }}
+                    </h2>
+
+                    <p class="text-muted">
+                        {{ semester.program.code }}
+                        -
+                        {{ semester.program.name }}
+                    </p>
+
+                    {% if semester.is_active %}
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            Archived
+                        </span>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'semesters:semester_edit' semester.pk %}"
+                   class="btn btn-outline-primary">
+                    Edit Semester
+                </a>
+            </div>
+
+            <hr>
+
+            <p>
+                <strong>Department:</strong>
+                {{ semester.program.department.name }}
+            </p>
+
+            <p>
+                <strong>Description:</strong>
+                {{ semester.description|default:"No description."|linebreaksbr }}
+            </p>
+
+            <div class="d-flex gap-2 flex-wrap">
+
+                <form method="post"
+                      action="{% url 'semesters:semester_toggle' semester.pk %}">
+                    {% csrf_token %}
+
+                    {% if semester.is_active %}
+                        <input type="hidden"
+                               name="action"
+                               value="archive">
+
+                        <button type="submit"
+                                class="btn btn-outline-warning">
+                            Archive Semester
+                        </button>
+                    {% else %}
+                        <input type="hidden"
+                               name="action"
+                               value="restore">
+
+                        <button type="submit"
+                                class="btn btn-outline-success">
+                            Restore Semester
+                        </button>
+                    {% endif %}
+                </form>
+
+                <a href="{% url 'semesters:semester_delete' semester.pk %}"
+                   class="btn btn-outline-danger">
+                    Delete Semester
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white
+                    d-flex justify-content-between
+                    align-items-center">
+
+            <h5 class="mb-0">
+                Sections in Semester {{ semester.number }}
+            </h5>
+
+            {% if semester.is_active %}
+            <a href="{% url 'semesters:section_create' %}?semester={{ semester.pk }}"
+               class="btn btn-dark btn-sm">
+                + Add Section
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Section</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for section in sections %}
+                    <tr>
+                        <td class="ps-3">
+                            Section {{ section.code }}
+                        </td>
+
+                        <td>{{ section.capacity }}</td>
+
+                        <td>
+                            {% if section.is_active %}
+                            <span class="badge bg-success">
+                                Active
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">
+                                Archived
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a href="{% url 'semesters:section_detail' section.pk %}"
+                               class="btn btn-outline-dark btn-sm">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="4"
+                            class="text-center text-muted py-4">
+                            No sections created yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -66,4 +66,9 @@ urlpatterns = [
         views.assignment_attachment,
         name="attachment",
     ),
+    path(
+    "<int:pk>/close/",
+    views.assignment_close,
+    name="close",
+),
 ]

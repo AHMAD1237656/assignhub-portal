@@ -1,0 +1,126 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ kind }} Detail | AssignHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <a href="{% url list_route %}"
+       class="btn btn-outline-secondary btn-sm mb-4">
+        Back
+    </a>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+
+            <h2 class="fw-bold">
+                {{ record }}
+            </h2>
+
+            {% if record.is_active %}
+            <span class="badge bg-success">Active</span>
+            {% else %}
+            <span class="badge bg-secondary">Archived</span>
+            {% endif %}
+
+            <hr>
+
+            {% if kind == "Course" %}
+            <p><strong>Code:</strong> {{ record.code }}</p>
+            <p><strong>Title:</strong> {{ record.title }}</p>
+            <p><strong>Program:</strong> {{ record.program }}</p>
+            <p><strong>Semester:</strong> {{ record.semester.display_name }}</p>
+            <p><strong>Credits:</strong> {{ record.credit_hours }}</p>
+            <p><strong>Description:</strong> {{ record.description|default:"None" }}</p>
+
+            {% else %}
+            <p><strong>Course:</strong> {{ record.course }}</p>
+            <p><strong>Section:</strong> {{ record.section }}</p>
+            <p><strong>Teacher:</strong> {{ record.teacher.username }}</p>
+            <p><strong>Term:</strong> {{ record.get_term_display }}</p>
+            <p><strong>Academic Year:</strong> {{ record.academic_year }}</p>
+            {% endif %}
+
+            {% if kind == "Course" or can_manage %}
+            <div class="d-flex gap-2 flex-wrap">
+
+                <a href="{% url edit_route record.pk %}"
+                   class="btn btn-outline-primary">
+                    Edit
+                </a>
+
+                <form method="post"
+                      action="{% url toggle_route record.pk %}">
+                    {% csrf_token %}
+
+                    {% if record.is_active %}
+                        <input type="hidden"
+                               name="action"
+                               value="archive">
+                        <button class="btn btn-outline-warning">
+                            Archive
+                        </button>
+                    {% else %}
+                        <input type="hidden"
+                               name="action"
+                               value="restore">
+                        <button class="btn btn-outline-success">
+                            Restore
+                        </button>
+                    {% endif %}
+                </form>
+
+                <a href="{% url delete_route record.pk %}"
+                   class="btn btn-outline-danger">
+                    Delete
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white
+                    d-flex justify-content-between align-items-center">
+            <strong>
+                {% if related_kind == "offerings" %}
+                    Course Offerings
+                {% else %}
+                    Student Enrollments
+                {% endif %}
+            </strong>
+
+            {% if kind == "Course" or can_manage %}
+            <a href="{% url create_related_route %}?{% if kind == 'Course' %}course={{ record.pk }}{% else %}offering={{ record.pk }}{% endif %}"
+               class="btn btn-dark btn-sm">
+                + Add
+            </a>
+            {% endif %}
+        </div>
+
+        <ul class="list-group list-group-flush">
+            {% for item in related %}
+            <li class="list-group-item">
+
+                {% if related_kind == "offerings" %}
+                    <a href="{% url 'courses:offering_detail' item.pk %}">
+                        {{ item }}
+                    </a>
+                {% else %}
+                    {{ item.student.username }}
+                    — {{ item.get_status_display }}
+                {% endif %}
+
+            </li>
+            {% empty %}
+            <li class="list-group-item text-muted">
+                No related records.
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</div>
+{% endblock %}

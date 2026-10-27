@@ -1,0 +1,132 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Course Offerings | AssignHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold">Course Offerings</h2>
+            <p class="text-muted">
+                Teacher, Section and academic session assignments.
+            </p>
+        </div>
+
+        {% if is_academic_admin %}
+        <div class="d-flex gap-2">
+            <a href="{% url 'courses:course_list' %}"
+               class="btn btn-outline-dark">
+                Courses
+            </a>
+
+            <a href="{% url 'courses:enrollment_list' %}"
+               class="btn btn-outline-dark">
+                Enrollments
+            </a>
+
+            <a href="{% url 'courses:offering_create' %}"
+               class="btn btn-dark">
+                + Add Offering
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get"
+                  action="{% url 'courses:offering_list' %}"
+                  data-live-search
+                  data-results-target="offering-results"
+                  data-debounce="200"
+                  class="row g-3">
+
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input name="q"
+                           type="search"
+                           value="{{ search }}"
+                           autocomplete="off"
+                           class="form-control"
+                           placeholder="Course, section, teacher">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Program</label>
+                    <select name="program" class="form-select">
+                        <option value="">All</option>
+                        {% for program in programs %}
+                        <option value="{{ program.pk }}"
+                          {% if selected_program == program.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ program.code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Academic Year</label>
+                    <input name="year"
+                           value="{{ year }}"
+                           maxlength="9"
+                           class="form-control"
+                           placeholder="2026-2027">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Term</label>
+                    <select name="term" class="form-select">
+                        <option value="">All Terms</option>
+                        {% for value, label in terms %}
+                        <option value="{{ value }}"
+                          {% if term == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="all"
+                          {% if status == "all" %}selected{% endif %}>
+                            All
+                        </option>
+                        <option value="active"
+                          {% if status == "active" %}selected{% endif %}>
+                            Active
+                        </option>
+                        <option value="inactive"
+                          {% if status == "inactive" %}selected{% endif %}>
+                            Archived
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit"
+                            class="btn btn-outline-dark btn-sm">
+                        Apply Filters
+                    </button>
+                </div>
+            </form>
+
+            <div data-search-notice
+                 class="small text-muted mt-2"
+                 aria-live="polite"></div>
+        </div>
+    </div>
+
+    <div id="offering-results" aria-live="polite">
+        {% include "courses/partials/offering_results.html" %}
+    </div>
+
+</div>
+
+<script defer src="{% static 'js/academic-live-search.js' %}"></script>
+{% endblock %}

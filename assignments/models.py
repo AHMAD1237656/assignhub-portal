@@ -1,3 +1,4 @@
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -11,10 +12,15 @@ class Assignment(models.Model):
         PUBLISHED = "PUBLISHED", "Published"
         CLOSED = "CLOSED", "Closed"
 
-    title = models.CharField(
-        max_length=255
+    course_offering = models.ForeignKey(
+        "courses.CourseOffering",
+        on_delete=models.PROTECT,
+        related_name="assignments",
+        null=True,
+        blank=True,
     )
 
+    title = models.CharField(max_length=255)
     instructions = models.TextField()
 
     attachment = models.FileField(
@@ -25,13 +31,9 @@ class Assignment(models.Model):
 
     deadline = models.DateTimeField()
 
-    total_marks = models.PositiveIntegerField(
-        default=100
-    )
+    total_marks = models.PositiveIntegerField(default=100)
 
-    rubric = models.TextField(
-        blank=True
-    )
+    rubric = models.TextField(blank=True)
 
     status = models.CharField(
         max_length=20,
@@ -45,50 +47,100 @@ class Assignment(models.Model):
         related_name="created_assignments",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-created_at", "-pk"]
 
     def __str__(self):
         return self.title
 
     def clean(self):
+        super().clean()
         errors = {}
 
-        if self.total_marks is not None:
-            if self.total_marks < 1:
-                errors["total_marks"] = (
-                    "Total marks must be at least 1."
-                )
+        if (
+            self.total_marks is not None
+            and self.total_marks < 1
+        ):
+            errors["total_marks"] = (
+                "Total marks must be at least 1."
+            )
 
         if self.deadline is None:
-            errors["deadline"] = (
-                "Deadline is required."
+            errors["deadline"] = "Deadline is required."
+
+        if (
+            self.status == self.Status.PUBLISHED
+            and not self.course_offering_id
+        ):
+            errors["course_offering"] = (
+                "Select a Course Offering before publishing."
             )
+
+        if self.course_offering_id:
+            offering = self.course_offering
+
+            if (
+                self.created_by_id
+                and offering.teacher_id != self.created_by_id
+            ):
+                errors["course_offering"] = (
+                    "Assignment teacher must match "
+                    "the Course Offering teacher."
+                )
+
+            if (
+                self.status == self.Status.PUBLISHED
+                and not all([
+                    offering.is_active,
+                    offering.course.is_active,
+                    offering.section.is_active,
+                    offering.course.semester.is_active,
+                    offering.course.program.is_active,
+                    offering.course.program.department.is_active,
+                ])
+            ):
+                errors["course_offering"] = (
+                    "Cannot publish under an "
+                    "inactive Course Offering."
+                )
+
+        if self.pk:
+            previous = (
+                Assignment.objects.filter(pk=self.pk)
+                .values("course_offering_id")
+                .first()
+            )
+
+            if (
+                previous
+                and self.submissions.exists()
+                and self.course_offering_id
+                != previous["course_offering_id"]
+            ):
+                errors["course_offering"] = (
+                    "Cannot change Course Offering "
+                    "after submissions exist."
+                )
 
         if errors:
             raise ValidationError(errors)
 
     @property
     def is_overdue(self):
-        if self.deadline is None:
-            return False
-
-        return timezone.now() > self.deadline
+        return bool(
+            self.deadline
+            and timezone.now() > self.deadline
+        )
 
     @property
     def is_open(self):
         return (
             self.status == self.Status.PUBLISHED
+            and not self.is_overdue
             and self.deadline is not None
-            and timezone.now() <= self.deadline
         )
 
 
@@ -111,16 +163,13 @@ class Submission(models.Model):
         related_name="assignment_submissions",
     )
 
-    text_content = models.TextField(
-        blank=True
-    )
+    text_content = models.TextField(blank=True)
 
     submission_file = models.FileField(
         upload_to="assignments/submissions/",
         blank=True,
         null=True,
     )
-
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
@@ -139,37 +188,29 @@ class Submission(models.Model):
         null=True,
     )
 
-    feedback = models.TextField(
-        blank=True
-    )
+    feedback = models.TextField(blank=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-created_at", "-pk"]
 
         constraints = [
             models.UniqueConstraint(
                 fields=["assignment", "student"],
-                name=(
-                    "unique_assignment_student_submission"
-                ),
+                name="unique_assignment_student_submission",
             )
         ]
 
     def __str__(self):
         return (
-            f"{self.student.username} - "
-            f"{self.assignment.title}"
+            f"{self.student.username} "
+            f"- {self.assignment.title}"
         )
 
     def clean(self):
+        super().clean()
         errors = {}
 
         if self.marks is not None:
@@ -188,16 +229,16 @@ class Submission(models.Model):
         ):
             if not self.submitted_at:
                 errors["submitted_at"] = (
-                    "Finalized submissions require "
+                    "Finalized submissions need "
                     "a submission timestamp."
                 )
 
-            if (
-                not self.text_content.strip()
-                and not self.submission_file
+            if not (
+                (self.text_content or "").strip()
+                or self.submission_file
             ):
                 errors["text_content"] = (
-                    "Provide text or a PDF submission."
+                    "Provide text or a PDF."
                 )
 
         if errors:

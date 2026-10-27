@@ -1,9 +1,11 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
 .env
-*.sqlite3
+.env.*
+!.env.example
+db.sqlite3
 media/
 staticfiles/
 .pytest_cache/
-.coverage

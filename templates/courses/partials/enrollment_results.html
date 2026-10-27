@@ -1,0 +1,71 @@
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <strong>Student Enrollments</strong>
+        <span class="text-muted small ms-2">
+            {{ page_obj.paginator.count }} result(s)
+        </span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Student</th>
+                    <th>Course</th>
+                    <th>Section</th>
+                    <th>Term</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for enrollment in page_obj %}
+                <tr>
+                    <td class="ps-3">
+                        {{ enrollment.student.username }}
+                    </td>
+                    <td>
+                        {{ enrollment.offering.course.code }}
+                    </td>
+                    <td>
+                        {{ enrollment.offering.section.code }}
+                    </td>
+                    <td>
+                        {{ enrollment.offering.get_term_display }}
+                        {{ enrollment.offering.academic_year }}
+                    </td>
+                    <td>
+                        {% if enrollment.status == "ACTIVE" %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Dropped</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'courses:enrollment_edit' enrollment.pk %}"
+                           class="btn btn-outline-primary btn-sm">
+                            Edit
+                        </a>
+
+                        <a href="{% url 'courses:enrollment_delete' enrollment.pk %}"
+                           class="btn btn-outline-danger btn-sm">
+                            Drop
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6"
+                        class="text-center text-muted py-5">
+                        No enrollments found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include "courses/partials/pagination.html" %}
+</div>

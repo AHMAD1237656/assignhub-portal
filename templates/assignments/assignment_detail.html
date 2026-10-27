@@ -1,171 +1,768 @@
+
 {% extends "base.html" %}
 
 {% block title %}
-    {{ assignment.title }} - AssignHub
+{{ assignment.title }} | AssignHub
 {% endblock %}
 
 {% block content %}
 
-<div class="d-flex justify-content-between
-            align-items-start mb-4">
+<div class="container-fluid px-0">
 
-    <div>
-        <h2 class="fw-bold">
-            {{ assignment.title }}
-        </h2>
+    <!-- BACK NAVIGATION -->
+    <div class="mb-4">
 
-        <p class="text-muted">
-            Created by {{ assignment.created_by.username }}
-        </p>
-    </div>
+        <a href="{% url 'assignments:list' %}"
+           class="btn btn-outline-secondary btn-sm">
 
-    {% if can_manage %}
+            <i class="bi bi-arrow-left me-1"
+               aria-hidden="true"></i>
 
-    <div class="d-flex gap-2">
+            Back to Assignments
 
-        <a href="{% url 'assignments:edit' assignment.pk %}"
-           class="btn btn-outline-primary">
-            Edit
-        </a>
-
-        <a href="{% url 'assignments:delete' assignment.pk %}"
-           class="btn btn-outline-danger">
-            Delete
         </a>
 
     </div>
 
-    {% endif %}
+    <!-- ==========================================
+         PAGE HEADING
+    =========================================== -->
 
-</div>
-
-
-<div class="card shadow-sm mb-4">
-
-    <div class="card-body p-4">
-
-        <h5>Instructions</h5>
-
-        <div class="mb-4">
-            {{ assignment.instructions|linebreaks }}
-        </div>
-
-        <hr>
-
-        <div class="row">
-
-            <div class="col-md-4">
-                <strong>Deadline</strong>
-                <p>
-                    {{ assignment.deadline|date:"d M Y, h:i A" }}
-                </p>
-            </div>
-
-            <div class="col-md-4">
-                <strong>Total Marks</strong>
-                <p>{{ assignment.total_marks }}</p>
-            </div>
-
-            <div class="col-md-4">
-                <strong>Status</strong>
-                <p>{{ assignment.get_status_display }}</p>
-            </div>
-
-        </div>
-
-        {% if assignment.rubric %}
-
-        <hr>
-
-        <h5>Grading Rubric</h5>
+    <div class="ah-assignment-heading">
 
         <div>
-            {{ assignment.rubric|linebreaks }}
+
+            <div class="ah-page-eyebrow">
+
+                <i class="bi bi-journal-check"
+                   aria-hidden="true"></i>
+
+                Assignment Details
+
+            </div>
+
+            <h1 class="ah-assignment-title">
+                {{ assignment.title }}
+            </h1>
+
+            <div class="ah-assignment-meta">
+
+                <span>
+                    <i class="bi bi-person-circle me-1"
+                       aria-hidden="true"></i>
+
+                    {{ assignment.created_by.get_full_name|default:assignment.created_by.username }}
+                </span>
+
+                {% if assignment.course_offering %}
+
+                <span>
+                    <i class="bi bi-book me-1"
+                       aria-hidden="true"></i>
+
+                    {{ assignment.course_offering.course.code }}
+                </span>
+
+                <span>
+                    <i class="bi bi-people me-1"
+                       aria-hidden="true"></i>
+
+                    Section
+                    {{ assignment.course_offering.section.code }}
+                </span>
+
+                {% endif %}
+
+                <span>
+                    <i class="bi bi-calendar3 me-1"
+                       aria-hidden="true"></i>
+
+                    {{ assignment.created_at|date:"d M Y" }}
+                </span>
+
+            </div>
         </div>
 
-        {% endif %}
+        <!-- TEACHER ACTIONS -->
+        {% if can_manage %}
 
-        {% if assignment.attachment %}
+        <div class="ah-assignment-actions">
 
-        <hr>
+            {% if not has_final_submissions %}
 
-        <h5>Assignment Attachment</h5>
+            <a href="{% url 'assignments:edit' assignment.pk %}"
+               class="btn btn-outline-primary">
 
-        <a href="{% url 'assignments:attachment' assignment.pk %}"
-           class="btn btn-outline-primary">
-            Download Assignment PDF
-        </a>
+                <i class="bi bi-pencil-square me-1"
+                   aria-hidden="true"></i>
+
+                Edit
+            </a>
+
+            {% endif %}
+
+            {% if assignment.status == "PUBLISHED" %}
+
+            <form method="post"
+                  action="{% url 'assignments:close' assignment.pk %}">
+
+                {% csrf_token %}
+
+                <button type="submit"
+                        class="btn btn-outline-warning">
+
+                    <i class="bi bi-lock me-1"
+                       aria-hidden="true"></i>
+
+                    Close Assignment
+                </button>
+
+            </form>
+
+            {% endif %}
+
+            {% if not has_any_submissions %}
+
+            <a href="{% url 'assignments:delete' assignment.pk %}"
+               class="btn btn-outline-danger">
+
+                <i class="bi bi-trash3 me-1"
+                   aria-hidden="true"></i>
+
+                Delete
+
+            </a>
+
+            {% endif %}
+
+        </div>
 
         {% endif %}
 
     </div>
 
-</div>
+    <!-- ==========================================
+         COURSE OFFERING INFO
+    =========================================== -->
 
-
-{% if is_student_user %}
-
-    {% if submission %}
+    {% if assignment.course_offering %}
 
     <div class="card shadow-sm mb-4">
 
-        <div class="card-body">
+        <div class="card-body py-3 px-4">
 
-            <h5>Your Submission</h5>
+            <div class="d-flex flex-wrap
+                        justify-content-between
+                        align-items-center gap-3">
 
-            <p>
-                Status:
-                <strong>
-                    {{ submission.get_status_display }}
-                </strong>
-            </p>
+                <div class="d-flex align-items-center gap-3">
 
-            {% if submission.submitted_at %}
+                    <div class="ah-file-icon">
+                        <i class="bi bi-book-half"
+                           aria-hidden="true"></i>
+                    </div>
 
-            <p>
-                Submitted:
-                {{ submission.submitted_at|date:"d M Y, h:i A" }}
-            </p>
+                    <div>
 
-            {% endif %}
+                        <div class="small text-muted mb-1">
+                            COURSE OFFERING
+                        </div>
 
-            {% if submission.submission_file %}
+                        <div class="fw-bold">
 
-            <a href="{% url 'assignments:submission_file' submission.pk %}"
-               class="btn btn-outline-primary mb-3">
-                Download My Submission
-            </a>
+                            {{ assignment.course_offering.course.code }}
 
-            {% endif %}
+                            —
 
-            {% if submission.status == "DRAFT" and assignment.is_open %}
+                            {{ assignment.course_offering.course.title }}
 
-            <a href="{% url 'assignments:submit' assignment.pk %}"
-               class="btn btn-dark">
-                Continue Submission
-            </a>
+                        </div>
 
-            {% endif %}
+                        <div class="small text-muted mt-1">
+
+                            {{ assignment.course_offering.course.program.code }}
+
+                            · Semester
+                            {{ assignment.course_offering.section.semester.number }}
+
+                            · Section
+                            {{ assignment.course_offering.section.code }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <span class="badge rounded-pill
+                             text-bg-light border px-3 py-2">
+
+                    {{ assignment.course_offering.get_term_display }}
+
+                    {{ assignment.course_offering.academic_year }}
+
+                </span>
+
+            </div>
 
         </div>
-
-    </div>
-
-    {% elif assignment.is_open %}
-
-    <a href="{% url 'assignments:submit' assignment.pk %}"
-       class="btn btn-dark">
-        Submit Assignment
-    </a>
-
-    {% else %}
-
-    <div class="alert alert-warning">
-        This assignment is no longer accepting submissions.
     </div>
 
     {% endif %}
 
-{% endif %}
+    <!-- ==========================================
+         CONTENT LAYOUT
+    =========================================== -->
+
+    <div class="row g-4">
+
+        <!-- LEFT COLUMN -->
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm ah-assignment-card mb-4">
+
+                <!-- INSTRUCTIONS -->
+                <div class="ah-card-section">
+
+                    <h2 class="ah-section-heading">
+
+                        <i class="bi bi-card-text"
+                           aria-hidden="true"></i>
+
+                        Instructions
+
+                    </h2>
+
+                    <div class="ah-readable-text">
+                        {{ assignment.instructions|linebreaks }}
+                    </div>
+
+                </div>
+
+                <hr class="ah-detail-divider">
+
+                <!-- KEY DETAILS -->
+                <div class="ah-card-section">
+
+                    <h2 class="ah-section-heading">
+
+                        <i class="bi bi-info-circle"
+                           aria-hidden="true"></i>
+
+                        Assignment Information
+
+                    </h2>
+
+                    <div class="row g-3">
+
+                        <!-- DEADLINE -->
+                        <div class="col-sm-6 col-xl-4">
+
+                            <div class="ah-stat-card">
+
+                                <div class="ah-stat-label">
+                                    Deadline
+                                </div>
+
+                                <div class="ah-stat-value">
+
+                                    <i class="bi bi-calendar-event
+                                              me-1 text-primary"
+                                       aria-hidden="true"></i>
+
+                                    {{ assignment.deadline|date:"d M Y" }}
+
+                                </div>
+
+                                <div class="small text-muted mt-2">
+
+                                    <i class="bi bi-clock me-1"
+                                       aria-hidden="true"></i>
+
+                                    {{ assignment.deadline|date:"h:i A" }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- TOTAL MARKS -->
+                        <div class="col-sm-6 col-xl-4">
+
+                            <div class="ah-stat-card">
+
+                                <div class="ah-stat-label">
+                                    Total Marks
+                                </div>
+
+                                <div class="ah-stat-value">
+
+                                    <i class="bi bi-award
+                                              me-1 text-primary"
+                                       aria-hidden="true"></i>
+
+                                    {{ assignment.total_marks }}
+
+                                </div>
+
+                                <div class="small text-muted mt-2">
+                                    Maximum score
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- STATUS -->
+                        <div class="col-sm-6 col-xl-4">
+
+                            <div class="ah-stat-card">
+
+                                <div class="ah-stat-label">
+                                    Assignment Status
+                                </div>
+
+                                <div>
+
+                                    {% if assignment.status == "PUBLISHED" %}
+
+                                    <span class="ah-status-pill
+                                                 ah-status-published">
+
+                                        <i class="bi bi-check-circle-fill"
+                                           aria-hidden="true"></i>
+
+                                        Published
+
+                                    </span>
+
+                                    {% elif assignment.status == "DRAFT" %}
+
+                                    <span class="ah-status-pill
+                                                 ah-status-draft">
+
+                                        <i class="bi bi-pencil"
+                                           aria-hidden="true"></i>
+
+                                        Draft
+
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="ah-status-pill
+                                                 ah-status-closed">
+
+                                        <i class="bi bi-lock-fill"
+                                           aria-hidden="true"></i>
+
+                                        Closed
+
+                                    </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                                <div class="small text-muted mt-2">
+                                    Current assignment state
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- GRADING RUBRIC -->
+                {% if assignment.rubric %}
+
+                <hr class="ah-detail-divider">
+
+                <div class="ah-card-section">
+
+                    <h2 class="ah-section-heading">
+
+                        <i class="bi bi-list-check"
+                           aria-hidden="true"></i>
+
+                        Grading Rubric
+
+                    </h2>
+
+                    <div class="ah-readable-text">
+                        {{ assignment.rubric|linebreaks }}
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+                <!-- ASSIGNMENT FILE -->
+                {% if assignment.attachment %}
+
+                <hr class="ah-detail-divider">
+
+                <div class="ah-card-section">
+
+                    <h2 class="ah-section-heading">
+
+                        <i class="bi bi-paperclip"
+                           aria-hidden="true"></i>
+
+                        Assignment Attachment
+
+                    </h2>
+
+                    <div class="ah-download-box">
+
+                        <div class="ah-file-identity">
+
+                            <div class="ah-file-icon">
+
+                                <i class="bi bi-file-earmark-pdf"
+                                   aria-hidden="true"></i>
+
+                            </div>
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Assignment PDF
+                                </div>
+
+                                <div class="small text-muted">
+                                    Provided by instructor
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <a
+                            href="{% url 'assignments:attachment' assignment.pk %}"
+                            class="btn btn-primary">
+
+                            <i class="bi bi-download me-1"
+                               aria-hidden="true"></i>
+
+                            Download PDF
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- ======================================
+             RIGHT COLUMN
+        ======================================= -->
+        <div class="col-lg-4">
+
+            <!-- STUDENT SUBMISSION PANEL -->
+            {% if is_student_user %}
+
+            <div class="card shadow-sm ah-side-panel mb-4">
+
+                <div class="card-body">
+
+                    <h2 class="ah-side-panel-title">
+
+                        <i class="bi bi-send-check me-2
+                                  text-primary"
+                           aria-hidden="true"></i>
+
+                        Your Submission
+
+                    </h2>
+
+                    {% if submission %}
+
+                    <div class="ah-submission-detail-row">
+
+                        <span>Status</span>
+
+                        <strong>
+
+                            {% if submission.status == "GRADED" %}
+
+                            <span class="ah-status-pill
+                                         ah-status-graded">
+                                Graded
+                            </span>
+
+                            {% elif submission.status == "SUBMITTED" %}
+
+                            <span class="ah-status-pill
+                                         ah-status-submitted">
+                                Submitted
+                            </span>
+
+                            {% else %}
+
+                            <span class="ah-status-pill
+                                         ah-status-draft">
+                                Draft
+                            </span>
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                    {% if submission.submitted_at %}
+
+                    <div class="ah-submission-detail-row">
+
+                        <span>Submitted At</span>
+
+                        <strong>
+                            {{ submission.submitted_at|date:"d M Y, h:i A" }}
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% if submission.status == "GRADED" %}
+
+                    <div class="ah-submission-detail-row">
+
+                        <span>Obtained Marks</span>
+
+                        <strong class="text-success">
+
+                            {{ submission.marks|default_if_none:"—" }}
+
+                            /
+
+                            {{ assignment.total_marks }}
+
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% if submission.feedback %}
+
+                    <div class="mt-3">
+
+                        <div class="small text-muted mb-2">
+                            TEACHER FEEDBACK
+                        </div>
+
+                        <div class="ah-readable-text">
+                            {{ submission.feedback|linebreaks }}
+                        </div>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% if submission.submission_file %}
+
+                    <a
+                        href="{% url 'assignments:submission_file' submission.pk %}"
+                        class="btn btn-outline-primary w-100 mt-3">
+
+                        <i class="bi bi-file-earmark-arrow-down me-1"
+                           aria-hidden="true"></i>
+
+                        Download My Submission
+
+                    </a>
+
+                    {% endif %}
+
+                    {% if submission.status == "DRAFT" and assignment.is_open %}
+
+                    <a
+                        href="{% url 'assignments:submit' assignment.pk %}"
+                        class="btn btn-primary w-100 mt-3">
+
+                        <i class="bi bi-pencil-square me-1"
+                           aria-hidden="true"></i>
+
+                        Continue Submission
+
+                    </a>
+
+                    {% endif %}
+
+                    {% if submission.status == "SUBMITTED" %}
+
+                    <div class="alert alert-success mt-3 mb-0">
+
+                        <i class="bi bi-check-circle me-1"
+                           aria-hidden="true"></i>
+
+                        Your submission has been received.
+
+                    </div>
+
+                    {% endif %}
+
+                    {% else %}
+
+                    <!-- STUDENT HAS NOT SUBMITTED -->
+
+                    <div class="text-center py-3">
+
+                        <div class="ah-file-icon mx-auto mb-3">
+
+                            <i class="bi bi-cloud-arrow-up"
+                               aria-hidden="true"></i>
+
+                        </div>
+
+                        <h3 class="fs-6 fw-bold">
+                            No Submission Yet
+                        </h3>
+
+                        <p class="ah-muted-note mb-0">
+
+                            Submit your assignment before
+                            the deadline.
+
+                        </p>
+
+                    </div>
+
+                    {% if assignment.is_open %}
+
+                    <a
+                        href="{% url 'assignments:submit' assignment.pk %}"
+                        class="btn btn-primary w-100 mt-3">
+
+                        <i class="bi bi-upload me-1"
+                           aria-hidden="true"></i>
+
+                        Submit Assignment
+
+                    </a>
+
+                    {% else %}
+
+                    <div class="alert alert-warning mt-3 mb-0">
+
+                        <i class="bi bi-exclamation-circle me-1"
+                           aria-hidden="true"></i>
+
+                        This assignment is no longer
+                        accepting submissions.
+
+                    </div>
+
+                    {% endif %}
+
+                    {% endif %}
+
+                </div>
+            </div>
+
+            {% endif %}
+
+            <!-- COMMON SIDEBAR -->
+            <div class="card shadow-sm ah-side-panel">
+
+                <div class="card-body">
+
+                    <h2 class="ah-side-panel-title">
+
+                        <i class="bi bi-info-square me-2
+                                  text-primary"
+                           aria-hidden="true"></i>
+
+                        Quick Information
+
+                    </h2>
+
+                    <div class="ah-submission-detail-row">
+
+                        <span>Instructor</span>
+
+                        <strong>
+                            {{ assignment.created_by.username }}
+                        </strong>
+
+                    </div>
+
+                    <div class="ah-submission-detail-row">
+
+                        <span>Maximum Marks</span>
+
+                        <strong>
+                            {{ assignment.total_marks }}
+                        </strong>
+
+                    </div>
+
+                    <div class="ah-submission-detail-row">
+
+                        <span>Submission Deadline</span>
+
+                        <strong>
+                            {{ assignment.deadline|date:"d M Y" }}
+                        </strong>
+
+                    </div>
+
+                    {% if assignment.course_offering %}
+
+                    <div class="ah-submission-detail-row">
+
+                        <span>Section</span>
+
+                        <strong>
+                            {{ assignment.course_offering.section.code }}
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% if assignment.is_open %}
+
+                    <div class="alert alert-info mt-3 mb-0">
+
+                        <i class="bi bi-clock me-1"
+                           aria-hidden="true"></i>
+
+                        Submission window is open.
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="alert alert-secondary mt-3 mb-0">
+
+                        <i class="bi bi-lock me-1"
+                           aria-hidden="true"></i>
+
+                        Submission window is closed.
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
 
 {% endblock %}
