@@ -1,0 +1,139 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+{{ program.name }} | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-3">
+
+    <a href="{% url 'departments:program_list' %}"
+       class="btn btn-sm btn-outline-secondary mb-4">
+        Back to Programs
+    </a>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between
+                        align-items-start flex-wrap gap-3">
+
+                <div>
+                    <h2 class="fw-bold">
+                        {{ program.name }}
+                    </h2>
+
+                    <p class="text-muted">
+                        Program Code: {{ program.code }}
+                    </p>
+
+                    {% if program.is_active %}
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            Archived
+                        </span>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'departments:program_edit' program.pk %}"
+                   class="btn btn-outline-primary">
+                    Edit Program
+                </a>
+            </div>
+
+            <hr>
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <strong>Department</strong>
+
+                    <p>
+                        <a href="{% url 'departments:department_detail' program.department.pk %}">
+                            {{ program.department.name }}
+                        </a>
+                    </p>
+                </div>
+
+                <div class="col-md-6">
+                    <strong>Duration</strong>
+
+                    <p>
+                        {{ program.duration_semesters }}
+                        Semesters
+                    </p>
+                </div>
+
+            </div>
+
+            <h5>Description</h5>
+
+            <p>
+                {{ program.description|default:"No description provided."|linebreaksbr }}
+            </p>
+
+            <p class="text-muted small">
+                Created:
+                {{ program.created_at|date:"d M Y" }}
+            </p>
+
+            <div class="d-flex gap-2 flex-wrap mt-4">
+
+                <form method="post"
+                      action="{% url 'departments:program_toggle' program.pk %}">
+
+                    {% csrf_token %}
+
+                    {% if program.is_active %}
+
+                        <input type="hidden"
+                               name="action"
+                               value="archive">
+
+                        <button type="submit"
+                                class="btn btn-outline-warning">
+                            Archive Program
+                        </button>
+
+                    {% else %}
+
+                        <input type="hidden"
+                               name="action"
+                               value="restore">
+
+                        <button type="submit"
+                                class="btn btn-outline-success">
+                            Restore Program
+                        </button>
+
+                    {% endif %}
+
+                </form>
+
+                <a href="{% url 'departments:program_delete' program.pk %}"
+                   class="btn btn-outline-danger">
+                    Delete Program
+                </a>
+
+            </div>
+
+            {% if not program.department.is_active %}
+                <div class="alert alert-warning mt-4 mb-0">
+                    Parent department is archived.
+                    Restore the department before
+                    activating this program.
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

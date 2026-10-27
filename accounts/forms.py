@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-
+from django.contrib.auth.password_validation import validate_password
 from .models import UserProfile
 
 
@@ -26,7 +26,19 @@ class UserCreateForm(forms.ModelForm):
             "password",
             "is_active",
         )
+    def clean_password(self):
+        password = self.cleaned_data["password"]
 
+        user = User(
+            username=self.cleaned_data.get("username", ""),
+            first_name=self.cleaned_data.get("first_name", ""),
+            last_name=self.cleaned_data.get("last_name", ""),
+            email=self.cleaned_data.get("email", ""),
+        )
+
+        validate_password(password, user=user)
+
+        return password
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

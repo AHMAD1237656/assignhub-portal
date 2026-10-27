@@ -1,33 +1,40 @@
 {% extends "base.html" %}
 
-{% block title %}Submissions - AssignHub{% endblock %}
+{% block title %}
+    Submissions - AssignHub
+{% endblock %}
 
 {% block content %}
 
-<h2 class="mb-4">Submissions</h2>
+<h2 class="fw-bold mb-4">
+    Submissions
+</h2>
 
 {% if submissions %}
 
 <div class="table-responsive">
 
-    <table class="table table-bordered table-hover align-middle">
+    <table class="table table-bordered
+                  table-hover align-middle">
 
-        <thead>
+        <thead class="table-light">
+
             <tr>
                 <th>Assignment</th>
 
-                {% if user.is_staff %}
+                {% if not is_student_user %}
                     <th>Student</th>
                 {% endif %}
 
                 <th>Status</th>
-                <th>Submitted</th>
+                <th>Submitted At</th>
                 <th>Marks</th>
 
-                {% if user.is_staff %}
+                {% if can_review %}
                     <th>Action</th>
                 {% endif %}
             </tr>
+
         </thead>
 
         <tbody>
@@ -40,10 +47,12 @@
                     {{ submission.assignment.title }}
                 </td>
 
-                {% if user.is_staff %}
-                    <td>
-                        {{ submission.student.username }}
-                    </td>
+                {% if not is_student_user %}
+
+                <td>
+                    {{ submission.student.username }}
+                </td>
+
                 {% endif %}
 
                 <td>
@@ -59,7 +68,9 @@
                 </td>
 
                 <td>
-                    {% if submission.marks is not None %}
+                    {% if is_student_user %}
+                        Pending release
+                    {% elif submission.marks != None %}
                         {{ submission.marks }}
                         /
                         {{ submission.assignment.total_marks }}
@@ -68,16 +79,20 @@
                     {% endif %}
                 </td>
 
-                {% if user.is_staff %}
+                {% if can_review %}
 
-                    <td>
-                        <a
-                            href="{% url 'assignments:submission_review' submission.pk %}"
-                            class="btn btn-sm btn-dark"
-                        >
-                            Review
-                        </a>
-                    </td>
+                <td>
+                    {% if submission.status != "DRAFT" %}
+
+                    <a href="{% url 'assignments:submission_review' submission.pk %}"
+                       class="btn btn-dark btn-sm">
+                        Review
+                    </a>
+
+                    {% else %}
+                        Draft
+                    {% endif %}
+                </td>
 
                 {% endif %}
 
@@ -94,7 +109,7 @@
 {% else %}
 
 <div class="alert alert-info">
-    No submissions found.
+    No submissions available.
 </div>
 
 {% endif %}

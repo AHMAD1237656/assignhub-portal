@@ -22,14 +22,7 @@
                             Username
                         </label>
 
-                        <input
-                            type="text"
-                            name="username"
-                            id="username"
-                            class="form-control"
-                            required
-                            autofocus
-                        >
+                        <input type="text" name="username" id="username" class="form-control" required autofocus>
                     </div>
 
                     <div class="mb-3">
@@ -37,22 +30,17 @@
                             Password
                         </label>
 
-                        <input
-                            type="password"
-                            name="password"
-                            id="password"
-                            class="form-control"
-                            required
-                        >
+                        <input type="password" name="password" id="password" class="form-control" required>
                     </div>
 
-                    <button
-                        type="submit"
-                        class="btn btn-dark w-100"
-                    >
+                    <button type="submit" class="btn btn-dark w-100">
                         Login
                     </button>
-
+                    <div class="text-center mt-3">
+                        <a href="{% url 'accounts:password_reset' %}">
+                            Forgot your password?
+                        </a>
+                    </div>
                 </form>
 
             </div>

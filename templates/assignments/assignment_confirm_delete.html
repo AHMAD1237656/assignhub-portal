@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Delete Assignment - AssignHub{% endblock %}
+{% block title %}
+    Delete Assignment - AssignHub
+{% endblock %}
 
 {% block content %}
 
@@ -12,34 +14,30 @@
 
             <div class="card-body p-4">
 
-                <h3 class="mb-3">
+                <h3 class="text-danger">
                     Delete Assignment
                 </h3>
 
-                <p>
+                <p class="mt-3">
                     Are you sure you want to delete
                     <strong>{{ assignment.title }}</strong>?
                 </p>
 
-                <p class="text-danger">
-                    This will also remove its submissions.
-                </p>
+                <div class="alert alert-warning">
+                    This action cannot be undone.
+                </div>
 
                 <form method="post">
 
                     {% csrf_token %}
 
-                    <button
-                        type="submit"
-                        class="btn btn-danger"
-                    >
+                    <button type="submit"
+                            class="btn btn-danger">
                         Yes, Delete
                     </button>
 
-                    <a
-                        href="{% url 'assignments:detail' assignment.pk %}"
-                        class="btn btn-outline-secondary"
-                    >
+                    <a href="{% url 'assignments:detail' assignment.pk %}"
+                       class="btn btn-outline-secondary">
                         Cancel
                     </a>
 

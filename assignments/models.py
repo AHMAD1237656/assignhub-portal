@@ -11,7 +11,9 @@ class Assignment(models.Model):
         PUBLISHED = "PUBLISHED", "Published"
         CLOSED = "CLOSED", "Closed"
 
-    title = models.CharField(max_length=255)
+    title = models.CharField(
+        max_length=255
+    )
 
     instructions = models.TextField()
 
@@ -23,11 +25,12 @@ class Assignment(models.Model):
 
     deadline = models.DateTimeField()
 
-    total_marks = models.PositiveIntegerField(default=100)
+    total_marks = models.PositiveIntegerField(
+        default=100
+    )
 
     rubric = models.TextField(
-        blank=True,
-        help_text="Optional grading rubric.",
+        blank=True
     )
 
     status = models.CharField(
@@ -38,13 +41,17 @@ class Assignment(models.Model):
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="created_assignments",
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -52,14 +59,35 @@ class Assignment(models.Model):
     def __str__(self):
         return self.title
 
+    def clean(self):
+        errors = {}
+
+        if self.total_marks is not None:
+            if self.total_marks < 1:
+                errors["total_marks"] = (
+                    "Total marks must be at least 1."
+                )
+
+        if self.deadline is None:
+            errors["deadline"] = (
+                "Deadline is required."
+            )
+
+        if errors:
+            raise ValidationError(errors)
+
     @property
     def is_overdue(self):
+        if self.deadline is None:
+            return False
+
         return timezone.now() > self.deadline
 
     @property
     def is_open(self):
         return (
             self.status == self.Status.PUBLISHED
+            and self.deadline is not None
             and timezone.now() <= self.deadline
         )
 
@@ -79,12 +107,12 @@ class Submission(models.Model):
 
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="assignment_submissions",
     )
 
     text_content = models.TextField(
-        blank=True,
+        blank=True
     )
 
     submission_file = models.FileField(
@@ -112,42 +140,65 @@ class Submission(models.Model):
     )
 
     feedback = models.TextField(
-        blank=True,
+        blank=True
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
 
     class Meta:
         ordering = ["-created_at"]
+
         constraints = [
             models.UniqueConstraint(
                 fields=["assignment", "student"],
-                name="unique_assignment_student_submission",
+                name=(
+                    "unique_assignment_student_submission"
+                ),
             )
         ]
 
-    def clean(self):
-        if self.marks is not None and self.marks > self.assignment.total_marks:
-            raise ValidationError(
-                "Marks cannot be greater than the assignment total marks."
-            )
-
     def __str__(self):
-        return f"{self.student.username} - {self.assignment.title}"
+        return (
+            f"{self.student.username} - "
+            f"{self.assignment.title}"
+        )
 
-    def submit(self):
-        if timezone.now() > self.assignment.deadline:
-            raise ValidationError(
-                "The assignment deadline has passed."
-            )
+    def clean(self):
+        errors = {}
 
-        if not self.text_content.strip() and not self.submission_file:
-            raise ValidationError(
-                "A text response or submission file is required."
-            )
+        if self.marks is not None:
+            if (
+                self.marks < 0
+                or self.marks > self.assignment.total_marks
+            ):
+                errors["marks"] = (
+                    "Marks must be between 0 "
+                    "and total marks."
+                )
 
-        self.status = self.Status.SUBMITTED
-        self.submitted_at = timezone.now()
-        self.save()
+        if self.status in (
+            self.Status.SUBMITTED,
+            self.Status.GRADED,
+        ):
+            if not self.submitted_at:
+                errors["submitted_at"] = (
+                    "Finalized submissions require "
+                    "a submission timestamp."
+                )
+
+            if (
+                not self.text_content.strip()
+                and not self.submission_file
+            ):
+                errors["text_content"] = (
+                    "Provide text or a PDF submission."
+                )
+
+        if errors:
+            raise ValidationError(errors)

@@ -134,11 +134,17 @@ STATIC_URL = 'static/'
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+# AssignHub development email configuration
+
 MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    "default": {
+        "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
+
+DEFAULT_FROM_EMAIL = "AssignHub <noreply@assignhub.local>"
+
+PASSWORD_RESET_TIMEOUT = 3600
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [
@@ -152,3 +158,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+# Development-only email backend.
+
+
+DEFAULT_FROM_EMAIL = "AssignHub <noreply@assignhub.local>"
+
+PASSWORD_RESET_TIMEOUT = 3600

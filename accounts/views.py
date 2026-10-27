@@ -2,9 +2,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-
+from django.core.exceptions import PermissionDenied
+from .models import UserProfile
 from .forms import UserCreateForm
-
+from django.views.decorators.http import require_POST
 
 def user_login(request):
     if request.user.is_authenticated:
@@ -42,26 +43,32 @@ def user_login(request):
 
 
 @login_required
+@require_POST
 def user_logout(request):
     logout(request)
 
     messages.success(
         request,
-        "You have been logged out successfully.",
+        "You have been logged out successfully."
     )
 
     return redirect("accounts:login")
 
-
 @login_required
 def user_create(request):
-    if not request.user.is_staff:
-        messages.error(
-            request,
-            "You do not have permission to create users.",
+    if not (
+        request.user.is_superuser
+        or (
+            request.user.is_staff
+            and UserProfile.objects.filter(
+                user=request.user,
+                role=UserProfile.Role.ADMIN,
+            ).exists()
         )
-        return redirect("/")
-
+    ):
+        raise PermissionDenied(
+            "Only administrators can create users."
+        )
     if request.method == "POST":
         form = UserCreateForm(request.POST)
 

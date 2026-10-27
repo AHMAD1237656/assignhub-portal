@@ -1,71 +1,94 @@
-{% extends "base.html" %} {% block title %}Assignments - AssignHub{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Assignments - AssignHub{% endblock %}
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h2>Assignments</h2>
-    <p class="text-muted mb-0">Manage and view assignments.</p>
-  </div>
+<div class="d-flex justify-content-between
+            align-items-center mb-4">
 
-  {% if user.is_staff %}
-  <a href="{% url 'assignments:create' %}" class="btn btn-dark">
-    Create Assignment
-  </a>
-  {% endif %}
+    <div>
+        <h2 class="fw-bold">Assignments</h2>
+        <p class="text-muted">
+            View and manage assignments.
+        </p>
+    </div>
+
+    {% if can_create %}
+        <a href="{% url 'assignments:create' %}"
+           class="btn btn-dark">
+            Create Assignment
+        </a>
+    {% endif %}
+
 </div>
 
 {% if assignments %}
 
 <div class="row g-4">
-  {% for assignment in assignments %}
 
-  <div class="col-md-6 col-lg-4">
-    <div class="card h-100 shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">{{ assignment.title }}</h5>
+    {% for assignment in assignments %}
 
-        <p class="text-muted">{{ assignment.instructions|truncatewords:20 }}</p>
+    <div class="col-md-6 col-lg-4">
 
-        <p class="mb-1">
-          <strong>Deadline:</strong>
-          {{ assignment.deadline|date:"d M Y, h:i A" }}
-        </p>
+        <div class="card shadow-sm h-100">
 
-        <p class="mb-3">
-          <strong>Marks:</strong>
-          {{ assignment.total_marks }}
-        </p>
+            <div class="card-body">
 
-        <span class="badge bg-secondary">
-          {{ assignment.get_status_display }}
-        </span>
-      </div>
+                <h5 class="card-title fw-bold">
+                    {{ assignment.title }}
+                </h5>
 
-      <div class="card-footer bg-white">
-        <a
-          href="{% url 'assignments:detail' assignment.pk %}"
-          class="btn btn-outline-dark btn-sm"
-        >
-          View
-        </a>
+                <p class="text-muted">
+                    {{ assignment.instructions|truncatewords:20 }}
+                </p>
 
-        {% if user == assignment.created_by %}
-        <a
-          href="{% url 'assignments:edit' assignment.pk %}"
-          class="btn btn-outline-secondary btn-sm"
-        >
-          Edit
-        </a>
-        {% endif %}
-      </div>
+                <p>
+                    <strong>Deadline:</strong>
+                    {{ assignment.deadline|date:"d M Y, h:i A" }}
+                </p>
+
+                <p>
+                    <strong>Total Marks:</strong>
+                    {{ assignment.total_marks }}
+                </p>
+
+                <span class="badge bg-secondary">
+                    {{ assignment.get_status_display }}
+                </span>
+
+            </div>
+
+            <div class="card-footer bg-white">
+
+                <a href="{% url 'assignments:detail' assignment.pk %}"
+                   class="btn btn-outline-dark btn-sm">
+                    View Details
+                </a>
+
+                {% if can_create and user == assignment.created_by %}
+                    <a href="{% url 'assignments:edit' assignment.pk %}"
+                       class="btn btn-outline-primary btn-sm">
+                        Edit
+                    </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
     </div>
-  </div>
 
-  {% endfor %}
+    {% endfor %}
+
 </div>
 
 {% else %}
 
-<div class="alert alert-info">No assignments found.</div>
+<div class="alert alert-info">
+    No assignments available.
+</div>
 
-{% endif %} {% endblock %}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,51 @@
+
+{% extends "base.html" %}
+
+{% block title %}Delete {{ record_type }} | AssignHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <h3 class="text-danger fw-bold">
+                        Delete {{ record_type }}
+                    </h3>
+
+                    <p class="mt-3">
+                        Are you sure you want to delete
+                        <strong>{{ record }}</strong>?
+                    </p>
+
+                    <div class="alert alert-warning">
+                        This action cannot be undone.
+
+                        If this record is referenced by
+                        related academic data, deletion
+                        will be blocked.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Yes, Delete
+                        </button>
+
+                        <a href="{% url cancel_url record.pk %}"
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,195 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+{{ department.name }} | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-3">
+
+    <a href="{% url 'departments:department_list' %}"
+       class="btn btn-sm btn-outline-secondary mb-4">
+        Back to Departments
+    </a>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between
+                        align-items-start flex-wrap gap-3">
+
+                <div>
+                    <h2 class="fw-bold mb-2">
+                        {{ department.name }}
+                    </h2>
+
+                    <p class="text-muted">
+                        Department Code: {{ department.code }}
+                    </p>
+
+                    {% if department.is_active %}
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            Archived
+                        </span>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'departments:department_edit' department.pk %}"
+                   class="btn btn-outline-primary">
+                    Edit Department
+                </a>
+
+            </div>
+
+            <hr>
+
+            <h5>Description</h5>
+
+            <p>
+                {{ department.description|default:"No description provided."|linebreaksbr }}
+            </p>
+
+            <p class="text-muted small">
+                Created:
+                {{ department.created_at|date:"d M Y" }}
+            </p>
+
+            <div class="d-flex gap-2 flex-wrap mt-4">
+
+                <form method="post"
+                      action="{% url 'departments:department_toggle' department.pk %}">
+
+                    {% csrf_token %}
+
+                    {% if department.is_active %}
+
+                        <input type="hidden"
+                               name="action"
+                               value="archive">
+
+                        <button type="submit"
+                                class="btn btn-outline-warning">
+                            Archive Department
+                        </button>
+
+                    {% else %}
+
+                        <input type="hidden"
+                               name="action"
+                               value="restore">
+
+                        <button type="submit"
+                                class="btn btn-outline-success">
+                            Restore Department
+                        </button>
+
+                    {% endif %}
+
+                </form>
+
+                <a href="{% url 'departments:department_delete' department.pk %}"
+                   class="btn btn-outline-danger">
+                    Delete Department
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white
+                    d-flex justify-content-between
+                    align-items-center">
+
+            <h5 class="mb-0">
+                Programs
+            </h5>
+
+            {% if department.is_active %}
+                <a href="{% url 'departments:program_create' %}?department={{ department.pk }}"
+                   class="btn btn-dark btn-sm">
+                    Add Program
+                </a>
+            {% endif %}
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Code</th>
+                        <th>Name</th>
+                        <th>Semesters</th>
+                        <th>Status</th>
+                        <th class="pe-3">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for program in programs %}
+
+                    <tr>
+                        <td class="ps-3">
+                            {{ program.code }}
+                        </td>
+
+                        <td>
+                            {{ program.name }}
+                        </td>
+
+                        <td>
+                            {{ program.duration_semesters }}
+                        </td>
+
+                        <td>
+                            {% if program.is_active %}
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    Archived
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="pe-3">
+                            <a href="{% url 'departments:program_detail' program.pk %}"
+                               class="btn btn-sm btn-outline-dark">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5"
+                            class="text-center py-4 text-muted">
+                            No programs added yet.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
