@@ -1,82 +1,221 @@
-{% extends "base.html" %} {% block title %}Dashboard - AssignHub{% endblock %}
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - AssignHub{% endblock %}
+
 {% block content %}
 
-<div class="py-4">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+<div class="ah-dashboard">
+
   {% if user.is_authenticated %}
 
-  <div class="mb-4">
-    <h1 class="fw-bold">Welcome to AssignHub</h1>
+  <!-- WELCOME HERO -->
+  <section class="ah-hero">
+    <div class="ah-hero-content">
+      <div class="ah-welcome-tag">
+        <span class="ah-status-dot"></span>
+        YOUR WORKSPACE
+      </div>
 
-    <p class="text-muted">
-      Hello, {{ user.first_name|default:user.username }}.
-    </p>
-  </div>
+      <h1>
+        Welcome back,
+        <span>{{ user.first_name|default:user.username }}</span>
+        <span class="ah-wave">👋</span>
+      </h1>
 
-  <div class="row g-4">
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Assignments</h5>
+      <p>
+        Everything you need to manage your academic
+        assignments, all in one place.
+      </p>
 
-          <p class="card-text text-muted">View and manage assignments.</p>
-
-          <a href="{% url 'assignments:list' %}" class="btn btn-dark">
-            View Assignments
-          </a>
-        </div>
+      <div class="ah-hero-actions">
+        <a href="{% url 'assignments:list' %}" class="ah-btn ah-btn-white">
+          Explore Assignments
+          <i data-lucide="arrow-up-right"></i>
+        </a>
       </div>
     </div>
 
-    {% if user.is_staff %}
+    <div class="ah-hero-decoration" aria-hidden="true">
+      <div class="ah-orbit ah-orbit-one"></div>
+      <div class="ah-orbit ah-orbit-two"></div>
+      <div class="ah-hero-icon">
+        <i data-lucide="graduation-cap"></i>
+      </div>
+    </div>
+  </section>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Create Assignment</h5>
+  <!-- WORKSPACE HEADER -->
+  <section class="ah-workspace">
+    <div class="ah-section-header">
+      <div>
+        <div class="ah-section-eyebrow">QUICK ACCESS</div>
+        <h2>Your Workspace</h2>
+        <p>Choose where you'd like to get started.</p>
+      </div>
 
-          <p class="card-text text-muted">
-            Create a new assignment for students.
+      <div class="ah-live-label">
+        <span class="ah-live-dot"></span>
+        Workspace Active
+      </div>
+    </div>
+
+    <!-- DASHBOARD CARDS -->
+    <div class="ah-card-grid">
+
+      <!-- ASSIGNMENTS -->
+      <a href="{% url 'assignments:list' %}" class="ah-feature-card ah-card-blue">
+        <div class="ah-card-top">
+          <div class="ah-icon-box">
+            <i data-lucide="clipboard-list"></i>
+          </div>
+
+          <div class="ah-card-arrow">
+            <i data-lucide="arrow-up-right"></i>
+          </div>
+        </div>
+
+        <div class="ah-card-info">
+          <span class="ah-card-category">ACADEMIC WORK</span>
+          <h3>Assignments</h3>
+          <p>
+            Browse, view and manage your academic
+            assignments in one place.
           </p>
-
-          <a href="{% url 'assignments:create' %}" class="btn btn-dark">
-            Create Assignment
-          </a>
         </div>
-      </div>
-    </div>
 
-    <div class="col-md-6 col-lg-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Create User</h5>
+        <div class="ah-card-footer">
+          <span>View Assignments</span>
+          <i data-lucide="arrow-right"></i>
+        </div>
+      </a>
 
-          <p class="card-text text-muted">
-            Create Teacher or Student accounts.
+      {% if user.is_staff %}
+
+      <!-- CREATE ASSIGNMENT -->
+      <a href="{% url 'assignments:create' %}" class="ah-feature-card ah-card-purple">
+        <div class="ah-card-top">
+          <div class="ah-icon-box">
+            <i data-lucide="file-plus-2"></i>
+          </div>
+
+          <div class="ah-card-arrow">
+            <i data-lucide="arrow-up-right"></i>
+          </div>
+        </div>
+
+        <div class="ah-card-info">
+          <span class="ah-card-category">CONTENT MANAGEMENT</span>
+          <h3>Create Assignment</h3>
+          <p>
+            Design and publish new assignments
+            for your students.
           </p>
-
-          <a href="{% url 'accounts:user_create' %}" class="btn btn-dark">
-            Create User
-          </a>
         </div>
-      </div>
+
+        <div class="ah-card-footer">
+          <span>Create Assignment</span>
+          <i data-lucide="arrow-right"></i>
+        </div>
+      </a>
+
+      <!-- CREATE USER -->
+      <a href="{% url 'accounts:user_create' %}" class="ah-feature-card ah-card-green">
+        <div class="ah-card-top">
+          <div class="ah-icon-box">
+            <i data-lucide="user-round-plus"></i>
+          </div>
+
+          <div class="ah-card-arrow">
+            <i data-lucide="arrow-up-right"></i>
+          </div>
+        </div>
+
+        <div class="ah-card-info">
+          <span class="ah-card-category">USER MANAGEMENT</span>
+          <h3>Create User</h3>
+          <p>
+            Register and manage teacher or student
+            accounts in your workspace.
+          </p>
+        </div>
+
+        <div class="ah-card-footer">
+          <span>Create User</span>
+          <i data-lucide="arrow-right"></i>
+        </div>
+      </a>
+
+      {% endif %}
+
+    </div>
+  </section>
+
+  <!-- INFO BANNER -->
+  <section class="ah-info-banner">
+    <div class="ah-info-icon">
+      <i data-lucide="lightbulb"></i>
     </div>
 
-    {% endif %}
-  </div>
+    <div class="ah-info-text">
+      <h4>Stay organized, stay ahead.</h4>
+      <p>
+        Your AssignHub workspace makes academic
+        assignment management simpler and more efficient.
+      </p>
+    </div>
+
+    <div class="ah-info-decoration">
+      <i data-lucide="sparkles"></i>
+    </div>
+  </section>
 
   {% else %}
 
-  <div class="text-center py-5">
-    <h1 class="display-5 fw-bold">Welcome to AssignHub</h1>
+  <!-- GUEST PAGE -->
+  <section class="ah-guest-wrapper">
+    <div class="ah-guest-glow"></div>
 
-    <p class="lead text-muted mt-3">University Assignment Management System</p>
+    <div class="ah-guest-content">
+      <div class="ah-guest-logo">
+        <i data-lucide="graduation-cap"></i>
+      </div>
 
-    <a href="{% url 'accounts:login' %}" class="btn btn-dark btn-lg mt-3">
-      Login
-    </a>
-  </div>
+      <div class="ah-guest-badge">
+        SMART ACADEMIC WORKSPACE
+      </div>
+
+      <h1>
+        Welcome to
+        <span>AssignHub.</span>
+      </h1>
+
+      <p>
+        A modern University Assignment Management System.
+        Organize, submit and manage your academic work
+        with confidence.
+      </p>
+
+      <a href="{% url 'accounts:login' %}" class="ah-btn ah-btn-primary">
+        Get Started
+        <i data-lucide="arrow-right"></i>
+      </a>
+
+      <div class="ah-guest-footer">
+        <i data-lucide="shield-check"></i>
+        Secure Academic Workspace
+      </div>
+    </div>
+  </section>
 
   {% endif %}
+
 </div>
+
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+<script src="{% static 'js/app.js' %}" defer></script>
 
 {% endblock %}
