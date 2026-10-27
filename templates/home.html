@@ -6,8 +6,6 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-
 <div class="ah-dashboard">
 
   {% if user.is_authenticated %}
@@ -216,6 +214,5 @@
 </div>
 
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
-<script src="{% static 'js/app.js' %}" defer></script>
 
 {% endblock %}
