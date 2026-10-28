@@ -1,0 +1,66 @@
+{% load static %}
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css"
+>
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css"
+>
+
+<link
+    rel="stylesheet"
+    href="{% static 'css/rich_writing.css' %}"
+>
+
+<div class="card shadow-sm mt-3">
+
+    <div class="card-body">
+
+        <h2 class="h5">
+            Formatted Assignment Answer
+        </h2>
+
+        <div
+            id="rich-viewer"
+            class="ah-rich-viewer"
+        ></div>
+
+        <div id="rich-viewer-fallback">
+
+            {% if attempt %}
+                <pre class="text-wrap">{{ attempt.submission.text_content }}</pre>
+                {{ attempt.rich_delta|json_script:"rich-viewer-delta" }}
+
+            {% elif submission %}
+                <pre class="text-wrap">{{ submission.text_content }}</pre>
+                {{ submission.timed_attempt.rich_delta|json_script:"rich-viewer-delta" }}
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js"
+    defer
+></script>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"
+    defer
+></script>
+
+<script
+    src="{% static 'js/rich_shapes.js' %}"
+    defer
+></script>
+
+<script
+    src="{% static 'js/rich_viewer.js' %}"
+    defer
+></script>

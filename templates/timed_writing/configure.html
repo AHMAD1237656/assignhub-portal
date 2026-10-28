@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}
+Timed Writing Settings | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4"
+     style="max-width: 760px;">
+
+    <h1 class="mb-3">
+        Timed Writing Settings
+    </h1>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <p>
+                <strong>Assignment:</strong>
+                {{ assignment.title }}
+            </p>
+
+            <p class="text-muted">
+                Students will type their answers
+                directly in the browser.
+                PDF submission is disabled
+                when timed writing is enabled.
+            </p>
+
+            {% if has_attempts %}
+
+            <div class="alert alert-warning">
+                A student has already started.
+                The duration and enabled status
+                are now locked.
+            </div>
+
+            {% endif %}
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+
+                <div class="mb-3">
+
+                    <label
+                        class="form-label"
+                        for="{{ form.duration_minutes.id_for_label }}"
+                    >
+                        Duration (minutes)
+                    </label>
+
+                    {{ form.duration_minutes }}
+
+                    {{ form.duration_minutes.errors }}
+
+                    <small class="text-muted">
+                        Allowed: 1–240 minutes
+                    </small>
+
+                </div>
+
+                <div class="form-check mb-3">
+
+                    {{ form.is_enabled }}
+
+                    <label
+                        class="form-check-label"
+                        for="{{ form.is_enabled.id_for_label }}"
+                    >
+                        Enable Timed Writing
+                    </label>
+
+                    {{ form.is_enabled.errors }}
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Save Settings
+                </button>
+
+                <a
+                    href="{% url 'assignments:detail' assignment.pk %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

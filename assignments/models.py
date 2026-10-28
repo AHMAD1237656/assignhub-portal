@@ -71,6 +71,38 @@ class Assignment(models.Model):
         if self.deadline is None:
             errors["deadline"] = "Deadline is required."
 
+        else:
+            now = timezone.now()
+
+            if self.pk is None:
+                # Newly created assignments need
+                # a future submission deadline.
+                if self.deadline <= now:
+                    errors["deadline"] = (
+                        "Deadline must be in the future."
+                    )
+
+            else:
+                previous_deadline = (
+                    Assignment.objects.filter(
+                        pk=self.pk
+                    )
+                    .values_list(
+                        "deadline",
+                        flat=True,
+                    )
+                    .first()
+                )
+
+                if (
+                    previous_deadline is not None
+                    and self.deadline != previous_deadline
+                    and self.deadline <= now
+                ):
+                    errors["deadline"] = (
+                        "Cannot change the deadline "
+                        "to a past date or time."
+                    )
         if (
             self.status == self.Status.PUBLISHED
             and not self.course_offering_id

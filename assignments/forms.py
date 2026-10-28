@@ -1,6 +1,6 @@
 
 from pathlib import Path
-
+from django.utils import timezone
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
@@ -144,6 +144,45 @@ class AssignmentForm(forms.ModelForm):
             )
 
         return marks
+    def clean_deadline(self):
+        deadline = self.cleaned_data.get("deadline")
+
+        if deadline is None:
+            return deadline
+
+        now = timezone.now()
+
+        # New assignment must have a future deadline.
+        if not self.instance.pk and deadline <= now:
+            raise ValidationError(
+                "Deadline must be in the future. "
+                "Please select a later date and time."
+            )
+
+        # Editing an assignment must not allow
+        # setting an already-expired deadline.
+        if self.instance.pk:
+            original_deadline = (
+                Assignment.objects.filter(
+                    pk=self.instance.pk
+                )
+                .values_list(
+                    "deadline",
+                    flat=True,
+                )
+                .first()
+            )
+
+            if (
+                deadline != original_deadline
+                and deadline <= now
+            ):
+                raise ValidationError(
+                    "Cannot change the deadline "
+                    "to a past date or time."
+                )
+
+        return deadline
 
 
 def models_Q_for_existing(queryset, existing_id):

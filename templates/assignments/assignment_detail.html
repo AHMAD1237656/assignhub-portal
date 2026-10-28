@@ -764,5 +764,66 @@
     </div>
 
 </div>
+<!-- Timed Writing Integration -->
 
+{% if can_manage %}
+
+<div class="card shadow-sm mt-4 mb-4">
+
+    <div class="card-body">
+
+        <h2 class="h5">
+            Timed Online Writing
+        </h2>
+
+        <p class="text-muted">
+            Configure an optional timed typing
+            session for this assignment.
+        </p>
+
+        <a
+            href="{% url 'timed_writing:configure' assignment.pk %}"
+            class="btn btn-outline-primary"
+        >
+            Timed Writing Settings
+        </a>
+
+    </div>
+
+</div>
+
+{% elif is_student_user %}
+
+    {% if assignment.timed_writing_config.is_enabled %}
+
+    <div class="card shadow-sm mt-4 mb-4">
+
+        <div class="card-body">
+
+            <h2 class="h5">
+                Timed Online Assignment
+            </h2>
+
+            <p class="text-muted">
+                Complete this assignment directly
+                in your browser.
+
+                Your timer starts when you press Start
+                and cannot be reset by refreshing.
+            </p>
+
+            <a
+                href="{% url 'timed_writing:editor' assignment.pk %}"
+                class="btn btn-primary"
+            >
+                Open Timed Writing Editor
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+{% endif %}
 {% endblock %}

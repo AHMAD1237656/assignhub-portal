@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "courses",
     "semesters",
     "departments",
+    "timed_writing",
+
 ]
 
 MIDDLEWARE = [

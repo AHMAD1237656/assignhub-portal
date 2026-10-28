@@ -799,7 +799,71 @@ class AssignmentCreationTests(AssignmentTestBase):
             assignment.status,
             Assignment.Status.DRAFT,
         )
+    def test_past_deadline_rejected_on_creation(self):
+        self.login_as(self.teacher)
 
+        response = self.client.post(
+            reverse("assignments:create"),
+            self.assignment_data(
+                deadline=deadline_input(
+                    past_date()
+                ),
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(
+            "deadline",
+            response.context["form"].errors,
+        )
+
+        self.assertFalse(
+            Assignment.objects.filter(
+                title="Software Engineering Assignment",
+                created_by=self.teacher,
+            ).exists()
+        )
+
+    def test_current_deadline_rejected_on_creation(self):
+        self.login_as(self.teacher)
+
+        response = self.client.post(
+            reverse("assignments:create"),
+            self.assignment_data(
+                deadline=deadline_input(
+                    timezone.now()
+                ),
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(
+            "deadline",
+            response.context["form"].errors,
+        )
+
+    def test_future_deadline_accepted_on_creation(self):
+        self.login_as(self.teacher)
+
+        response = self.client.post(
+            reverse("assignments:create"),
+            self.assignment_data(
+                deadline=deadline_input(
+                    future_date(days=3)
+                ),
+            ),
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(
+            Assignment.objects.filter(
+                title="Software Engineering Assignment",
+                created_by=self.teacher,
+            ).exists()
+        )
 
 # ============================================================
 # 5. ASSIGNMENT EDIT TESTS
@@ -917,7 +981,31 @@ class AssignmentEditTests(AssignmentTestBase):
             "Python Assignment",
         )
 
+    def test_cannot_change_deadline_to_past_date(self):
+        self.login_as(self.teacher)
 
+        response = self.client.post(
+            self.edit_url(),
+            self.assignment_data(
+                deadline=deadline_input(
+                    past_date()
+                ),
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(
+            "deadline",
+            response.context["form"].errors,
+        )
+
+        self.assignment.refresh_from_db()
+
+        self.assertGreater(
+            self.assignment.deadline,
+            timezone.now(),
+        )
 # ============================================================
 # 6. ASSIGNMENT DELETION TESTS
 # ============================================================
@@ -2677,3 +2765,172 @@ class CourseAccessRegressionTests(AssignmentTestBase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn("course_offering", response.context["form"].errors)
+class AssignmentRosterTests(AssignmentTestBase):
+
+    def roster_url(self, assignment=None):
+        return reverse(
+            "assignments:roster",
+            args=[
+                (assignment or self.assignment).pk
+            ],
+        )
+
+    def test_teacher_can_view_own_roster(self):
+        self.login_as(self.teacher)
+
+        response = self.client.get(
+            self.roster_url()
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            response.context["total_students"],
+            2,
+        )
+
+    def test_teacher_cannot_view_other_roster(self):
+        self.login_as(self.teacher2)
+
+        response = self.client.get(
+            self.roster_url()
+        )
+
+        self.assertEqual(
+            response.status_code,
+            403,
+        )
+
+    def test_student_cannot_view_roster(self):
+        self.login_as(self.student)
+
+        response = self.client.get(
+            self.roster_url()
+        )
+
+        self.assertEqual(
+            response.status_code,
+            403,
+        )
+
+    def test_roster_counts_submitted_and_pending(self):
+        self.make_submission(
+            student=self.student,
+        )
+
+        self.login_as(self.teacher)
+
+        response = self.client.get(
+            self.roster_url()
+        )
+
+        self.assertEqual(
+            response.context["total_students"],
+            2,
+        )
+
+        self.assertEqual(
+            response.context["submitted_count"],
+            1,
+        )
+
+        self.assertEqual(
+            response.context["pending_count"],
+            1,
+        )
+
+    def test_roster_counts_graded_submissions(self):
+        self.make_submission(
+            student=self.student,
+            status=Submission.Status.GRADED,
+            marks=Decimal("85.00"),
+        )
+
+        self.login_as(self.teacher)
+
+        response = self.client.get(
+            self.roster_url()
+        )
+
+        self.assertEqual(
+            response.context["graded_count"],
+            1,
+        )
+
+        self.assertEqual(
+            response.context["submitted_count"],
+            1,
+        )
+
+    def test_teacher_assignment_list_has_class_info(self):
+        self.login_as(self.teacher)
+
+        response = self.client.get(
+            reverse("assignments:list")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            self.course.code,
+        )
+
+        self.assertContains(
+            response,
+            self.section.code,
+        )
+    def test_expired_empty_attempt_shows_not_submitted(self):
+        from timed_writing.models import (
+            TimedWritingAttempt,
+            TimedWritingConfig,
+        )
+
+        config = TimedWritingConfig.objects.create(
+            assignment=self.assignment,
+            duration_minutes=30,
+            is_enabled=True,
+        )
+
+        submission = self.make_submission(
+            status=Submission.Status.DRAFT,
+            text="",
+        )
+
+        TimedWritingAttempt.objects.create(
+            config=config,
+            student=self.student,
+            submission=submission,
+            started_at=timezone.now() - timedelta(hours=1),
+            expires_at=timezone.now() - timedelta(minutes=30),
+            status=TimedWritingAttempt.Status.EXPIRED,
+        )
+
+        self.login_as(self.teacher)
+
+        response = self.client.get(
+            self.roster_url()
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.context["submitted_count"],
+            0,
+        )
+
+        self.assertEqual(
+            response.context["pending_count"],
+            2,
+        )
+
+        self.assertContains(
+            response,
+            "Expired",
+        )

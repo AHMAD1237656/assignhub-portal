@@ -5,6 +5,7 @@ from django.core.exceptions import (
     PermissionDenied,
     ValidationError,
 )
+from django.db.models import Count, Q
 from django.db import transaction
 from django.http import FileResponse, Http404
 from django.shortcuts import (
@@ -76,12 +77,15 @@ def can_view(request, assignment):
 @login_required
 @require_http_methods(["GET"])
 def assignment_list(request):
-    if is_teacher(request.user):
+
+    user = request.user
+
+    if is_teacher(user):
         assignments = Assignment.objects.filter(
-            created_by=request.user
+            created_by=user
         )
 
-    elif is_student(request.user):
+    elif is_student(user):
         assignments = Assignment.objects.filter(
             status=Assignment.Status.PUBLISHED,
             course_offering__is_active=True,
@@ -90,30 +94,64 @@ def assignment_list(request):
             course_offering__course__semester__is_active=True,
             course_offering__course__program__is_active=True,
             course_offering__course__program__department__is_active=True,
-            course_offering__enrollments__student=request.user,
+            course_offering__enrollments__student=user,
             course_offering__enrollments__status=(
                 CourseEnrollment.Status.ACTIVE
             ),
         ).distinct()
 
-    elif is_admin(request.user):
+    elif is_admin(user):
         assignments = Assignment.objects.all()
 
     else:
         raise PermissionDenied
 
+    assignments = assignments.select_related(
+        "created_by",
+        "course_offering",
+        "course_offering__course",
+        "course_offering__course__program",
+        "course_offering__section",
+        "course_offering__section__semester",
+        "course_offering__section__semester__program",
+    )
+
+    show_progress = (
+        is_teacher(user) or is_admin(user)
+    )
+
+    if show_progress:
+        assignments = assignments.annotate(
+            enrolled_count=Count(
+                "course_offering__enrollments",
+                filter=Q(
+                    course_offering__enrollments__status=(
+                        CourseEnrollment.Status.ACTIVE
+                    )
+                ),
+                distinct=True,
+            ),
+            submitted_count=Count(
+                "submissions",
+                filter=Q(
+                    submissions__status__in=[
+                        Submission.Status.SUBMITTED,
+                        Submission.Status.GRADED,
+                    ]
+                ),
+                distinct=True,
+            ),
+        )
+
     return render(
         request,
         "assignments/assignment_list.html",
         {
-            "assignments": assignments.select_related(
-                "course_offering",
-                "created_by",
-            ),
-            "can_create": is_teacher(request.user),
+            "assignments": assignments,
+            "can_create": is_teacher(user),
+            "show_progress": show_progress,
         },
     )
-
 
 
 
@@ -255,7 +293,17 @@ def assignment_edit(request, pk):
 
     if not can_manage(request, assignment):
         raise PermissionDenied
+    # Assignment editing is locked once
+    # any timed writing attempt has started.
 
+    if (
+        hasattr(assignment, "timed_writing_config")
+        and assignment.timed_writing_config.attempts.exists()
+    ):
+        raise PermissionDenied(
+            "Cannot edit assignment after "
+            "a timed writing attempt has started."
+        )
     if assignment.submissions.filter(
         status__in=[
             Submission.Status.SUBMITTED,
@@ -366,6 +414,23 @@ def submit_assignment(request, pk):
         raise PermissionDenied(
             "You are not enrolled in this course offering."
         )
+    # Timed assignments cannot be submitted
+    # through the ordinary submission form.
+
+    if (
+        hasattr(assignment, "timed_writing_config")
+        and assignment.timed_writing_config.is_enabled
+    ):
+        if request.method == "GET":
+            return redirect(
+                "timed_writing:editor",
+                assignment_pk=assignment.pk,
+            )
+
+        raise PermissionDenied(
+            "Use the timed writing editor "
+            "for this assignment."
+        )   
 
     existing = Submission.objects.filter(
         assignment=assignment,
@@ -397,7 +462,14 @@ def submit_assignment(request, pk):
                 Assignment.objects.select_for_update()
                 .get(pk=assignment.pk)
             )
-
+            if (
+                hasattr(assignment, "timed_writing_config")
+                and assignment.timed_writing_config.is_enabled
+            ):
+                raise PermissionDenied(
+                    "Use the timed writing editor "
+                    "for this assignment."
+                )
             current = (
                 Submission.objects.select_for_update()
                 .filter(
@@ -614,6 +686,20 @@ def assignment_close(request, pk):
     if not can_manage(request, assignment):
         raise PermissionDenied
 
+    # Prevent closing while students
+    # still have active timed attempts.
+    if (
+        hasattr(assignment, "timed_writing_config")
+        and assignment.timed_writing_config.attempts.filter(
+            status="ACTIVE",
+            expires_at__gt=timezone.now(),
+        ).exists()
+    ):
+        raise PermissionDenied(
+            "Cannot close assignment during "
+            "an active timed attempt."
+        )
+
     if assignment.status != Assignment.Status.PUBLISHED:
         messages.error(
             request,
@@ -640,4 +726,132 @@ def assignment_close(request, pk):
     return redirect(
         "assignments:detail",
         pk=assignment.pk,
+    )
+
+@login_required
+@require_http_methods(["GET"])
+def assignment_roster(request, pk):
+
+    assignment = get_object_or_404(
+        Assignment.objects.select_related(
+            "course_offering",
+            "course_offering__course",
+            "course_offering__section",
+            "course_offering__section__semester",
+        ),
+        pk=pk,
+    )
+
+    if not (
+        can_manage(request, assignment)
+        or is_admin(request.user)
+    ):
+        raise PermissionDenied(
+            "You cannot view this assignment's students."
+        )
+
+    enrolled_students = []
+
+    if assignment.course_offering_id:
+        enrolled_students = (
+            CourseEnrollment.objects.filter(
+                offering_id=assignment.course_offering_id,
+                status=CourseEnrollment.Status.ACTIVE,
+            )
+            .select_related("student")
+            .order_by("student__username")
+        )
+
+    submissions = (
+        Submission.objects
+        .filter(assignment=assignment)
+        .select_related(
+            "student",
+            "timed_attempt",
+        )
+    )
+
+    submission_map = {
+        submission.student_id: submission
+        for submission in submissions
+    }
+
+    student_rows = []
+
+    submitted_count = 0
+    graded_count = 0
+    draft_count = 0
+
+    for enrollment in enrolled_students:
+
+        student = enrollment.student
+
+        submission = submission_map.get(
+            student.pk
+        )
+
+        if submission is None:
+            status = "NOT_SUBMITTED"
+
+        elif submission.status == Submission.Status.GRADED:
+            status = "GRADED"
+            graded_count += 1
+            submitted_count += 1
+
+        elif submission.status == Submission.Status.SUBMITTED:
+            status = "SUBMITTED"
+            submitted_count += 1
+
+        else:
+            # The submission is still a draft.
+            # Check whether its timed attempt expired.
+            timed_attempt = getattr(
+                submission,
+                "timed_attempt",
+                None,
+            )
+
+            if (
+                timed_attempt is not None
+                and timed_attempt.status == "EXPIRED"
+            ):
+                status = "EXPIRED"
+
+            elif (
+                timed_attempt is not None
+                and timed_attempt.status == "ACTIVE"
+                and timed_attempt.expires_at <= timezone.now()
+            ):
+                # Expired by clock, but settlement has
+                # not yet updated the database.
+                status = "EXPIRY_PENDING"
+
+            else:
+                status = "DRAFT"
+                draft_count += 1
+
+        student_rows.append({
+            "student": student,
+            "submission": submission,
+            "status": status,
+        })
+
+    total_students = len(student_rows)
+
+    pending_count = (
+        total_students - submitted_count
+    )
+
+    return render(
+        request,
+        "assignments/assignment_roster.html",
+        {
+            "assignment": assignment,
+            "student_rows": student_rows,
+            "total_students": total_students,
+            "submitted_count": submitted_count,
+            "graded_count": graded_count,
+            "draft_count": draft_count,
+            "pending_count": pending_count,
+        },
     )

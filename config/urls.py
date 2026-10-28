@@ -40,5 +40,9 @@ urlpatterns = [
         "departments/",
         include("departments.urls"),
     ),
+    path(
+    "timed-writing/",
+    include("timed_writing.urls"),
+),
 
 ]

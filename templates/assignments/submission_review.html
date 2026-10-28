@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Review Submission - AssignHub
+Review Submission - AssignHub
 {% endblock %}
 
 {% block content %}
@@ -25,7 +25,17 @@
 
                 <hr>
 
-                <h5>Student Answer</h5>
+                {% if submission.timed_attempt.rich_delta.ops %}
+
+                {% include "timed_writing/viewer.html" %}
+
+                {% else %}
+
+                <div style="white-space: pre-wrap;">
+                    {{ submission.text_content }}
+                </div>
+
+                {% endif %}
 
                 {% if submission.text_content %}
 
@@ -47,8 +57,7 @@
 
                 <h5>Submitted PDF</h5>
 
-                <a href="{% url 'assignments:submission_file' submission.pk %}"
-                   class="btn btn-outline-primary">
+                <a href="{% url 'assignments:submission_file' submission.pk %}" class="btn btn-outline-primary">
                     Download Student PDF
                 </a>
 
@@ -92,8 +101,7 @@
 
                     <div class="mb-3">
 
-                        <label for="{{ field.id_for_label }}"
-                               class="form-label fw-semibold">
+                        <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
                             {{ field.label }}
                         </label>
 
@@ -111,8 +119,7 @@
 
                     {% endfor %}
 
-                    <button type="submit"
-                            class="btn btn-dark">
+                    <button type="submit" class="btn btn-dark">
                         Save Grade
                     </button>
 
