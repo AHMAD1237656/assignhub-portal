@@ -6,57 +6,89 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <meta name="theme-color" content="#101c32">
 
-    <title>{% block title %}AssignHub{% endblock %}</title>
+    <title>
+        {% block title %}AssignHub{% endblock %}
+    </title>
 
     <!-- Bootstrap 5 -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+        rel="stylesheet"
+    >
 
     <!-- Bootstrap Icons -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-        rel="stylesheet">
+        rel="stylesheet"
+    >
 
-    <!-- Existing application CSS -->
+    <!-- Existing Application Styles -->
     <link
         rel="stylesheet"
-        href="{% static 'css/app.css' %}">
+        href="{% static 'css/app.css' %}"
+    >
 
-    <!-- Modern navbar and shared layout -->
+    <!-- Sidebar and Shared UI Styles -->
     <link
         rel="stylesheet"
-        href="{% static 'css/assignhub-navbar.css' %}">
+        href="{% static 'css/assignhub-navbar.css' %}"
+    >
 
     {% block extra_css %}{% endblock %}
 </head>
 
 <body class="assignhub-body">
 
-    <!-- ==========================================
-         MAIN NAVIGATION
-    =========================================== -->
+    <!-- =====================================
+         MOBILE SIDEBAR OVERLAY
+    ====================================== -->
 
-    <nav class="navbar navbar-expand-xl assignhub-navbar sticky-top"
-         aria-label="Main navigation">
+    {% if user.is_authenticated %}
 
-        <div class="container-fluid px-3 px-lg-4">
+    <div
+        id="ah-sidebar-overlay"
+        class="ah-sidebar-overlay"
+        aria-hidden="true"
+    ></div>
 
-            <!-- BRAND -->
-            <a href="{% url 'home' %}"
-               class="navbar-brand assignhub-brand">
+    <!-- =====================================
+         LEFT SIDEBAR
+    ====================================== -->
+
+    <aside
+        class="ah-sidebar"
+        id="ah-sidebar"
+        aria-label="Main navigation"
+    >
+
+        <!-- SIDEBAR BRAND -->
+
+        <div class="ah-sidebar-header">
+
+            <a
+                href="{% url 'home' %}"
+                class="ah-sidebar-brand"
+                aria-label="AssignHub Dashboard"
+                title="AssignHub Dashboard"
+            >
 
                 <span class="assignhub-brand-icon">
-                    <i class="bi bi-mortarboard-fill"
-                       aria-hidden="true"></i>
+                    <i
+                        class="bi bi-mortarboard-fill"
+                        aria-hidden="true"
+                    ></i>
                 </span>
 
-                <span class="assignhub-brand-text">
+                <span class="ah-sidebar-brand-text">
+
                     <span class="assignhub-brand-name">
                         Assign<span>Hub</span>
                     </span>
@@ -64,481 +96,877 @@
                     <small class="assignhub-brand-subtitle">
                         ACADEMIC PORTAL
                     </small>
+
                 </span>
+
             </a>
 
-            <!-- MOBILE TOGGLE -->
-            <button
-                class="navbar-toggler assignhub-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
+            <!-- MOBILE CLOSE -->
 
-                <span class="navbar-toggler-icon"></span>
+            <button
+                type="button"
+                id="ah-sidebar-close"
+                class="ah-sidebar-close"
+                aria-label="Close navigation"
+            >
+                <i
+                    class="bi bi-x-lg"
+                    aria-hidden="true"
+                ></i>
             </button>
 
-            <div class="collapse navbar-collapse"
-                 id="mainNavbar">
+        </div>
 
-                {% if user.is_authenticated %}
+        <!-- NAVIGATION SCROLL AREA -->
 
-                <!-- LEFT NAVIGATION -->
-                <ul class="navbar-nav assignhub-nav-links
-                           align-items-xl-center me-auto">
+        <nav
+            class="ah-sidebar-navigation"
+            aria-label="AssignHub modules"
+        >
 
-                    <!-- DASHBOARD -->
-                    <li class="nav-item">
+            <div class="ah-sidebar-section">
 
-                        <a href="{% url 'home' %}"
-                           class="nav-link assignhub-nav-link
-                           {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <div class="ah-sidebar-section-label">
+                    WORKSPACE
+                </div>
 
-                            <i class="bi bi-grid-1x2-fill"
-                               aria-hidden="true"></i>
+                <!-- DASHBOARD -->
 
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
+                <a
+                    href="{% url 'home' %}"
+                    class="ah-sidebar-link
+                    {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                    title="Dashboard"
+                    {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}
+                >
 
-                    <!-- ASSIGNMENTS -->
-                    <li class="nav-item">
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-grid-1x2-fill"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
 
-                        <a href="{% url 'assignments:list' %}"
-                           class="nav-link assignhub-nav-link
-                           {% if request.resolver_match.namespace == 'assignments' %}active{% endif %}">
+                    <span class="ah-sidebar-link-label">
+                        Dashboard
+                    </span>
 
-                            <i class="bi bi-journal-text"
-                               aria-hidden="true"></i>
+                </a>
 
-                            <span>Assignments</span>
-                        </a>
-                    </li>
+                <!-- ASSIGNMENTS -->
 
-                    <!-- ==================================
-                         ADMIN NAVIGATION
-                    =================================== -->
+                <a
+                    href="{% url 'assignments:list' %}"
+                    class="ah-sidebar-link
+                    {% if request.resolver_match.namespace == 'assignments' or request.resolver_match.namespace == 'timed_writing' %}active{% endif %}"
+                    title="Assignments"
+                >
 
-                    {% if nav_is_admin %}
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-journal-text"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
 
-                    <!-- ACADEMIC MANAGEMENT DROPDOWN -->
-                    <li class="nav-item dropdown">
+                    <span class="ah-sidebar-link-label">
+                        Assignments
+                    </span>
 
-                        <a
-                            href="#"
-                            class="nav-link dropdown-toggle
-                                   assignhub-nav-link
-                                   {% if request.resolver_match.namespace == 'departments' or request.resolver_match.namespace == 'semesters' %}active{% endif %}"
-                            id="academicDropdown"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                </a>
 
-                            <i class="bi bi-buildings-fill"
-                               aria-hidden="true"></i>
+            </div>
 
-                            <span>Academics</span>
-                        </a>
+            <!-- =================================
+                 ADMIN MODULES
+            ================================== -->
 
-                        <ul class="dropdown-menu
-                                   assignhub-dropdown"
-                            aria-labelledby="academicDropdown">
+            {% if nav_is_admin %}
 
-                            <li class="dropdown-header">
-                                ACADEMIC STRUCTURE
-                            </li>
+            <div class="ah-sidebar-section">
 
-                            <li>
-                                <a
-                                    class="dropdown-item
-                                    {% if request.resolver_match.url_name == 'department_list' %}active{% endif %}"
-                                    href="{% url 'departments:department_list' %}">
+                <div class="ah-sidebar-section-label">
+                    ACADEMIC MANAGEMENT
+                </div>
 
-                                    <i class="bi bi-building"
-                                       aria-hidden="true"></i>
+                <!-- ACADEMICS GROUP -->
 
-                                    Departments
-                                </a>
-                            </li>
+                <div class="ah-sidebar-group">
 
-                            <li>
-                                <a
-                                    class="dropdown-item
-                                    {% if request.resolver_match.url_name == 'program_list' %}active{% endif %}"
-                                    href="{% url 'departments:program_list' %}">
+                    <div
+                        class="ah-sidebar-group-heading
+                        {% if request.resolver_match.namespace == 'departments' or request.resolver_match.namespace == 'semesters' %}active{% endif %}"
+                        title="Academic Structure"
+                    >
 
-                                    <i class="bi bi-diagram-3"
-                                       aria-hidden="true"></i>
+                        <span class="ah-sidebar-link-icon">
+                            <i
+                                class="bi bi-buildings-fill"
+                                aria-hidden="true"
+                            ></i>
+                        </span>
 
-                                    Programs
-                                </a>
-                            </li>
+                        <span class="ah-sidebar-link-label">
+                            Academics
+                        </span>
 
-                            <li>
-                                <a
-                                    class="dropdown-item
-                                    {% if request.resolver_match.url_name == 'semester_list' %}active{% endif %}"
-                                    href="{% url 'semesters:semester_list' %}">
+                    </div>
 
-                                    <i class="bi bi-calendar3"
-                                       aria-hidden="true"></i>
-
-                                    Semesters
-                                </a>
-                            </li>
-
-                            <li>
-                                <a
-                                    class="dropdown-item
-                                    {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}"
-                                    href="{% url 'semesters:section_list' %}">
-
-                                    <i class="bi bi-people"
-                                       aria-hidden="true"></i>
-
-                                    Sections
-                                </a>
-                            </li>
-
-                        </ul>
-                    </li>
-
-                    <!-- COURSES DROPDOWN -->
-                    <li class="nav-item dropdown">
+                    <div class="ah-sidebar-submenu">
 
                         <a
-                            href="#"
-                            class="nav-link dropdown-toggle
-                                   assignhub-nav-link
-                                   {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
-                            id="coursesDropdown"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-
-                            <i class="bi bi-collection-fill"
-                               aria-hidden="true"></i>
-
-                            <span>Courses</span>
+                            href="{% url 'departments:department_list' %}"
+                            class="ah-sidebar-sublink
+                            {% if request.resolver_match.url_name == 'department_list' %}active{% endif %}"
+                        >
+                            <i
+                                class="bi bi-building"
+                                aria-hidden="true"
+                            ></i>
+                            Departments
                         </a>
 
-                        <ul class="dropdown-menu
-                                   assignhub-dropdown"
-                            aria-labelledby="coursesDropdown">
+                        <a
+                            href="{% url 'departments:program_list' %}"
+                            class="ah-sidebar-sublink
+                            {% if request.resolver_match.url_name == 'program_list' %}active{% endif %}"
+                        >
+                            <i
+                                class="bi bi-diagram-3"
+                                aria-hidden="true"
+                            ></i>
+                            Programs
+                        </a>
 
-                            <li class="dropdown-header">
-                                COURSE MANAGEMENT
-                            </li>
+                        <a
+                            href="{% url 'semesters:semester_list' %}"
+                            class="ah-sidebar-sublink
+                            {% if request.resolver_match.url_name == 'semester_list' %}active{% endif %}"
+                        >
+                            <i
+                                class="bi bi-calendar3"
+                                aria-hidden="true"
+                            ></i>
+                            Semesters
+                        </a>
 
-                            <li>
-                                <a
-                                    href="{% url 'courses:course_list' %}"
-                                    class="dropdown-item
-                                    {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}">
+                        <a
+                            href="{% url 'semesters:section_list' %}"
+                            class="ah-sidebar-sublink
+                            {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}"
+                        >
+                            <i
+                                class="bi bi-people"
+                                aria-hidden="true"
+                            ></i>
+                            Sections
+                        </a>
 
-                                    <i class="bi bi-book"
-                                       aria-hidden="true"></i>
+                    </div>
 
-                                    Course Catalog
-                                </a>
-                            </li>
+                </div>
 
-                            <li>
-                                <a
-                                    href="{% url 'courses:offering_list' %}"
-                                    class="dropdown-item
-                                    {% if request.resolver_match.url_name == 'offering_list' %}active{% endif %}">
+                <!-- COURSES GROUP -->
 
-                                    <i class="bi bi-person-workspace"
-                                       aria-hidden="true"></i>
+                <div class="ah-sidebar-group">
 
-                                    Course Offerings
-                                </a>
-                            </li>
+                    <div
+                        class="ah-sidebar-group-heading
+                        {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
+                        title="Course Management"
+                    >
 
-                            <li>
-                                <a
-                                    href="{% url 'courses:enrollment_list' %}"
-                                    class="dropdown-item
-                                    {% if request.resolver_match.url_name == 'enrollment_list' %}active{% endif %}">
+                        <span class="ah-sidebar-link-icon">
+                            <i
+                                class="bi bi-collection-fill"
+                                aria-hidden="true"
+                            ></i>
+                        </span>
 
-                                    <i class="bi bi-person-check"
-                                       aria-hidden="true"></i>
+                        <span class="ah-sidebar-link-label">
+                            Courses
+                        </span>
 
-                                    Student Enrollments
-                                </a>
-                            </li>
+                    </div>
 
-                        </ul>
-                    </li>
+                    <div class="ah-sidebar-submenu">
 
-                    {% elif nav_is_teacher %}
-
-                    <!-- TEACHER COURSES -->
-                    <li class="nav-item">
+                        <a
+                            href="{% url 'courses:course_list' %}"
+                            class="ah-sidebar-sublink
+                            {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}"
+                        >
+                            <i
+                                class="bi bi-book"
+                                aria-hidden="true"
+                            ></i>
+                            Course Catalog
+                        </a>
 
                         <a
                             href="{% url 'courses:offering_list' %}"
-                            class="nav-link assignhub-nav-link
-                            {% if request.resolver_match.namespace == 'courses' %}active{% endif %}">
-
-                            <i class="bi bi-book-half"
-                               aria-hidden="true"></i>
-
-                            <span>My Courses</span>
+                            class="ah-sidebar-sublink
+                            {% if request.resolver_match.url_name == 'offering_list' %}active{% endif %}"
+                        >
+                            <i
+                                class="bi bi-person-workspace"
+                                aria-hidden="true"
+                            ></i>
+                            Course Offerings
                         </a>
-                    </li>
 
-                    {% endif %}
+                        <a
+                            href="{% url 'courses:enrollment_list' %}"
+                            class="ah-sidebar-sublink
+                            {% if request.resolver_match.url_name == 'enrollment_list' %}active{% endif %}"
+                        >
+                            <i
+                                class="bi bi-person-check"
+                                aria-hidden="true"
+                            ></i>
+                            Student Enrollments
+                        </a>
 
-                </ul>
-
-                <!-- ==================================
-                     RIGHT USER MENU
-                =================================== -->
-
-                <div class="assignhub-user-area">
-
-                    <div class="dropdown">
-
-                        <button
-                            type="button"
-                            class="btn assignhub-user-button
-                                   dropdown-toggle"
-                            id="userDropdown"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-
-                            <span class="assignhub-avatar">
-                                <i class="bi bi-person-fill"
-                                   aria-hidden="true"></i>
-                            </span>
-
-                            <span class="assignhub-user-info">
-
-                                <span class="assignhub-username">
-                                    {{ user.get_full_name|default:user.username }}
-                                </span>
-
-                                <small class="assignhub-user-role">
-
-                                    {% if nav_is_admin %}
-                                        Administrator
-                                    {% elif nav_is_teacher %}
-                                        Teacher
-                                    {% elif nav_is_student %}
-                                        Student
-                                    {% else %}
-                                        User
-                                    {% endif %}
-
-                                </small>
-
-                            </span>
-
-                        </button>
-
-                        <ul class="dropdown-menu
-                                   dropdown-menu-end
-                                   assignhub-dropdown
-                                   assignhub-user-dropdown"
-                            aria-labelledby="userDropdown">
-
-                            <li class="px-3 py-2">
-                                <div class="fw-semibold">
-                                    {{ user.username }}
-                                </div>
-
-                                <small class="text-muted">
-                                    {{ user.email|default:"AssignHub Account" }}
-                                </small>
-                            </li>
-
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-                            <li>
-                                <a href="{% url 'home' %}"
-                                   class="dropdown-item">
-
-                                    <i class="bi bi-speedometer2"
-                                       aria-hidden="true"></i>
-
-                                    Dashboard
-                                </a>
-                            </li>
-
-                            {% if nav_is_admin and user.is_superuser %}
-
-                            <li>
-                                <a href="{% url 'admin:index' %}"
-                                   class="dropdown-item">
-
-                                    <i class="bi bi-gear"
-                                       aria-hidden="true"></i>
-
-                                    Django Admin
-                                </a>
-                            </li>
-
-                            {% endif %}
-
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-                            <li>
-
-                                <form method="post"
-                                      action="{% url 'accounts:logout' %}">
-
-                                    {% csrf_token %}
-
-                                    <button
-                                        type="submit"
-                                        class="dropdown-item
-                                               assignhub-logout">
-
-                                        <i class="bi bi-box-arrow-right"
-                                           aria-hidden="true"></i>
-
-                                        Sign Out
-                                    </button>
-
-                                </form>
-
-                            </li>
-
-                        </ul>
                     </div>
+
                 </div>
 
-                {% else %}
+                <!-- CLASS ALLOCATION -->
 
-                <!-- GUEST NAVIGATION -->
-                <ul class="navbar-nav ms-auto">
+                <a
+                    href="{% url 'class_allocations:dashboard' %}"
+                    class="ah-sidebar-link
+                    {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
+                    title="Class Allocation"
+                >
 
-                    <li class="nav-item">
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-people-fill"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
 
-                        <a href="{% url 'accounts:login' %}"
-                           class="btn assignhub-login-btn">
+                    <span class="ah-sidebar-link-label">
+                        Class Allocation
+                    </span>
 
-                            <i class="bi bi-box-arrow-in-right"
-                               aria-hidden="true"></i>
-
-                            Sign In
-                        </a>
-
-                    </li>
-                </ul>
-
-                {% endif %}
+                </a>
 
             </div>
-        </div>
-    </nav>
 
-    <!-- ==========================================
-         MAIN PAGE AREA
-    =========================================== -->
+            <!-- =================================
+                 TEACHER MODULES
+            ================================== -->
 
-    <main class="assignhub-main">
+            {% elif nav_is_teacher %}
 
-        <div class="container-fluid px-3 px-lg-4 py-4">
+            <div class="ah-sidebar-section">
 
-            <!-- Django Messages -->
-            {% if messages %}
-
-            <div class="assignhub-messages"
-                 aria-live="polite">
-
-                {% for message in messages %}
-
-                <div
-                    class="alert
-                    alert-{{ message.tags|default:'info' }}
-                    alert-dismissible fade show
-                    assignhub-alert"
-                    role="alert">
-
-                    <div class="d-flex align-items-center gap-2">
-
-                        <i class="bi bi-info-circle"
-                           aria-hidden="true"></i>
-
-                        <div>
-                            {{ message }}
-                        </div>
-
-                    </div>
-
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                        aria-label="Close">
-                    </button>
-
+                <div class="ah-sidebar-section-label">
+                    TEACHING
                 </div>
 
-                {% endfor %}
+                <a
+                    href="{% url 'courses:offering_list' %}"
+                    class="ah-sidebar-link
+                    {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
+                    title="My Courses"
+                >
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-book-half"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        My Courses
+                    </span>
+
+                </a>
+
+                <a
+                    href="{% url 'class_allocations:my_classes' %}"
+                    class="ah-sidebar-link
+                    {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
+                    title="My Classes"
+                >
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-person-lines-fill"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        My Classes
+                    </span>
+
+                </a>
+
+            </div>
+
+            {% elif nav_is_student %}
+
+            <div class="ah-sidebar-section">
+
+                <div class="ah-sidebar-section-label">
+                    LEARNING
+                </div>
+
+                <div class="ah-sidebar-info">
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-mortarboard"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        Student Workspace
+                    </span>
+
+                </div>
 
             </div>
 
             {% endif %}
 
-            {% block content %}{% endblock %}
+            <!-- ADMIN SETTINGS -->
+
+            {% if nav_is_admin and user.is_superuser %}
+
+            <div class="ah-sidebar-section">
+
+                <div class="ah-sidebar-section-label">
+                    SYSTEM
+                </div>
+
+                <a
+                    href="{% url 'admin:index' %}"
+                    class="ah-sidebar-link"
+                    title="Django Administration"
+                >
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-gear-fill"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        Django Admin
+                    </span>
+
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </nav>
+
+        <!-- SIDEBAR BOTTOM -->
+
+        <div class="ah-sidebar-bottom">
+
+            <div class="ah-sidebar-account">
+
+                <span class="ah-sidebar-link-icon">
+                    <i
+                        class="bi bi-person-circle"
+                        aria-hidden="true"
+                    ></i>
+                </span>
+
+                <span class="ah-sidebar-account-text">
+
+                    <strong>
+                        {{ user.username }}
+                    </strong>
+
+                    <small>
+                        {% if nav_is_admin %}
+                            Administrator
+                        {% elif nav_is_teacher %}
+                            Teacher
+                        {% elif nav_is_student %}
+                            Student
+                        {% else %}
+                            User
+                        {% endif %}
+                    </small>
+
+                </span>
+
+            </div>
 
         </div>
 
-    </main>
+    </aside>
 
-    <!-- ==========================================
-         FOOTER
-    =========================================== -->
+    {% endif %}
 
-    <footer class="assignhub-footer">
+    <!-- =====================================
+         APPLICATION SHELL
+    ====================================== -->
 
-        <div class="container-fluid px-3 px-lg-4">
+    <div class="ah-app-shell">
 
-            <div class="d-flex flex-column flex-md-row
-                        justify-content-between align-items-center
-                        gap-2">
+        <!-- TOP HEADER -->
 
-                <div class="assignhub-footer-brand">
+        <header class="ah-topbar">
 
-                    <i class="bi bi-mortarboard-fill"
-                       aria-hidden="true"></i>
+            <div class="ah-topbar-left">
+
+                {% if user.is_authenticated %}
+
+                <button
+                    type="button"
+                    id="ah-sidebar-toggle"
+                    class="ah-mobile-menu-button"
+                    aria-controls="ah-sidebar"
+                    aria-expanded="false"
+                    aria-label="Open navigation"
+                >
+                    <i
+                        class="bi bi-list"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+
+                {% else %}
+
+                <a
+                    href="{% url 'home' %}"
+                    class="ah-guest-brand"
+                >
+                    <span class="assignhub-brand-icon">
+                        <i
+                            class="bi bi-mortarboard-fill"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
 
                     <span>
                         AssignHub
                     </span>
+                </a>
 
-                    <small>
-                        University Assignment Management
-                    </small>
+                {% endif %}
 
-                </div>
+                <div class="ah-topbar-heading">
 
-                <div class="assignhub-footer-copy">
-                    © {% now "Y" %} AssignHub.
-                    All rights reserved.
+                    <span class="ah-topbar-eyebrow">
+                        UNIVERSITY PORTAL
+                    </span>
+
+                    <strong>
+                        {% if user.is_authenticated %}
+                            Academic Workspace
+                        {% else %}
+                            AssignHub
+                        {% endif %}
+                    </strong>
+
                 </div>
 
             </div>
-        </div>
-    </footer>
 
-    <!-- Bootstrap Bundle -->
+            <!-- USER CONTROLS -->
+
+            <div class="ah-topbar-actions">
+
+                {% if user.is_authenticated %}
+
+                <div class="dropdown">
+
+                    <button
+                        type="button"
+                        class="btn ah-topbar-user dropdown-toggle"
+                        id="userDropdown"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                    >
+
+                        <span class="ah-topbar-avatar">
+                            <i
+                                class="bi bi-person-fill"
+                                aria-hidden="true"
+                            ></i>
+                        </span>
+
+                        <span class="ah-topbar-user-details">
+
+                            <strong>
+                                {{ user.get_full_name|default:user.username }}
+                            </strong>
+
+                            <small>
+                                {% if nav_is_admin %}
+                                    Administrator
+                                {% elif nav_is_teacher %}
+                                    Teacher
+                                {% elif nav_is_student %}
+                                    Student
+                                {% else %}
+                                    User
+                                {% endif %}
+                            </small>
+
+                        </span>
+
+                    </button>
+
+                    <ul
+                        class="dropdown-menu dropdown-menu-end
+                               assignhub-dropdown ah-topbar-dropdown"
+                        aria-labelledby="userDropdown"
+                    >
+
+                        <li class="px-3 py-2">
+
+                            <strong class="d-block">
+                                {{ user.username }}
+                            </strong>
+
+                            <small class="text-muted">
+                                {{ user.email|default:"AssignHub Account" }}
+                            </small>
+
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+
+                            <a
+                                href="{% url 'home' %}"
+                                class="dropdown-item"
+                            >
+                                <i
+                                    class="bi bi-speedometer2"
+                                    aria-hidden="true"
+                                ></i>
+
+                                Dashboard
+                            </a>
+
+                        </li>
+
+                        {% if nav_is_admin and user.is_superuser %}
+
+                        <li>
+
+                            <a
+                                href="{% url 'admin:index' %}"
+                                class="dropdown-item"
+                            >
+                                <i
+                                    class="bi bi-gear"
+                                    aria-hidden="true"
+                                ></i>
+
+                                Django Admin
+                            </a>
+
+                        </li>
+
+                        {% endif %}
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+
+                            <form
+                                method="post"
+                                action="{% url 'accounts:logout' %}"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="dropdown-item assignhub-logout"
+                                >
+                                    <i
+                                        class="bi bi-box-arrow-right"
+                                        aria-hidden="true"
+                                    ></i>
+
+                                    Sign Out
+                                </button>
+
+                            </form>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+                {% else %}
+
+                <a
+                    href="{% url 'accounts:login' %}"
+                    class="btn btn-primary ah-guest-login"
+                >
+
+                    <i
+                        class="bi bi-box-arrow-in-right"
+                        aria-hidden="true"
+                    ></i>
+
+                    Sign In
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+        </header>
+
+        <!-- =================================
+             MAIN PAGE CONTENT
+        ================================== -->
+
+        <main class="assignhub-main ah-page-main">
+
+            <div class="container-fluid px-3 px-lg-4 py-4">
+
+                <!-- DJANGO MESSAGES -->
+
+                {% if messages %}
+
+                <div
+                    class="assignhub-messages"
+                    aria-live="polite"
+                >
+
+                    {% for message in messages %}
+
+                    <div
+                        class="alert
+                               alert-{{ message.tags|default:'info' }}
+                               alert-dismissible fade show
+                               assignhub-alert"
+                        role="alert"
+                    >
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <i
+                                class="bi bi-info-circle"
+                                aria-hidden="true"
+                            ></i>
+
+                            <div>
+                                {{ message }}
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"
+                        ></button>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+                <!-- EXISTING PAGE TEMPLATES -->
+
+                {% block content %}{% endblock %}
+
+            </div>
+
+        </main>
+
+        <!-- =================================
+             FOOTER
+        ================================== -->
+
+        <footer class="assignhub-footer">
+
+            <div class="container-fluid px-3 px-lg-4">
+
+                <div
+                    class="d-flex flex-column flex-md-row
+                           justify-content-between align-items-center gap-2"
+                >
+
+                    <div class="assignhub-footer-brand">
+
+                        <i
+                            class="bi bi-mortarboard-fill"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span>
+                            AssignHub
+                        </span>
+
+                        <small>
+                            University Assignment Management
+                        </small>
+
+                    </div>
+
+                    <div class="assignhub-footer-copy">
+
+                        © {% now "Y" %} AssignHub.
+                        All rights reserved.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </footer>
+
+    </div>
+
+    <!-- Bootstrap JS -->
     <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-    </script>
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    ></script>
 
-    <!-- Existing app JavaScript -->
-    <script src="{% static 'js/app.js' %}"></script>
+    <!-- Existing Application JS -->
+    <script
+        src="{% static 'js/app.js' %}"
+    ></script>
+
+    <!-- MOBILE SIDEBAR CONTROLLER -->
+    <script>
+        (function () {
+            "use strict";
+
+            const sidebar = document.getElementById(
+                "ah-sidebar"
+            );
+
+            const toggle = document.getElementById(
+                "ah-sidebar-toggle"
+            );
+
+            const closeButton = document.getElementById(
+                "ah-sidebar-close"
+            );
+
+            const overlay = document.getElementById(
+                "ah-sidebar-overlay"
+            );
+
+            if (!sidebar || !toggle || !overlay) {
+                return;
+            }
+
+            let previousFocus = null;
+
+            const mobileBreakpoint = window.matchMedia(
+                "(max-width: 991.98px)"
+            );
+
+            function setOpen(open) {
+                if (open) {
+                    previousFocus = document.activeElement;
+                }
+
+                document.body.classList.toggle(
+                    "ah-sidebar-open",
+                    open
+                );
+
+                toggle.setAttribute(
+                    "aria-expanded",
+                    String(open)
+                );
+
+                toggle.setAttribute(
+                    "aria-label",
+                    open
+                        ? "Close navigation"
+                        : "Open navigation"
+                );
+
+                if (open && closeButton) {
+                    closeButton.focus();
+                }
+
+                if (!open && previousFocus) {
+                    previousFocus.focus();
+                    previousFocus = null;
+                }
+            }
+
+            toggle.addEventListener(
+                "click",
+                function () {
+                    setOpen(
+                        !document.body.classList.contains(
+                            "ah-sidebar-open"
+                        )
+                    );
+                }
+            );
+
+            if (closeButton) {
+                closeButton.addEventListener(
+                    "click",
+                    function () {
+                        setOpen(false);
+                    }
+                );
+            }
+
+            overlay.addEventListener(
+                "click",
+                function () {
+                    setOpen(false);
+                }
+            );
+
+            document.addEventListener(
+                "keydown",
+                function (event) {
+                    if (
+                        event.key === "Escape" &&
+                        document.body.classList.contains(
+                            "ah-sidebar-open"
+                        )
+                    ) {
+                        setOpen(false);
+                    }
+                }
+            );
+
+            mobileBreakpoint.addEventListener(
+                "change",
+                function () {
+                    if (!mobileBreakpoint.matches) {
+                        setOpen(false);
+                    }
+                }
+            );
+        })();
+    </script>
 
     {% block extra_js %}{% endblock %}
 

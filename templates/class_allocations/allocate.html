@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}
+Allocate Students | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+
+        <a
+            href="{% url 'class_allocations:dashboard' %}"
+            class="btn btn-outline-secondary btn-sm mb-3"
+        >
+            Back to Allocations
+        </a>
+
+        <h1 class="fw-bold mb-1">
+            Allocate Students
+        </h1>
+
+        <p class="text-muted">
+            Assign students to a section and
+            automatically enroll them in its
+            active course offerings.
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- MAIN FORM -->
+        <div class="col-12 col-xl-8">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <form method="post" novalidate>
+
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+
+                        <div
+                            class="alert alert-danger"
+                            role="alert"
+                        >
+                            {{ form.non_field_errors }}
+                        </div>
+
+                        {% endif %}
+
+                        <h2 class="h5 fw-bold mb-3">
+                            Academic Class Details
+                        </h2>
+
+                        <!-- SECTION -->
+                        <div class="mb-3">
+
+                            <label
+                                for="{{ form.section.id_for_label }}"
+                                class="form-label fw-semibold"
+                            >
+                                Program / Semester / Section
+                            </label>
+
+                            {{ form.section }}
+
+                            <div class="text-danger small">
+                                {{ form.section.errors }}
+                            </div>
+
+                        </div>
+
+                        <div class="row g-3 mb-3">
+
+                            <!-- ACADEMIC YEAR -->
+                            <div class="col-12 col-md-6">
+
+                                <label
+                                    for="{{ form.academic_year.id_for_label }}"
+                                    class="form-label fw-semibold"
+                                >
+                                    Academic Year
+                                </label>
+
+                                {{ form.academic_year }}
+
+                                <div class="text-danger small">
+                                    {{ form.academic_year.errors }}
+                                </div>
+
+                            </div>
+
+                            <!-- TERM -->
+                            <div class="col-12 col-md-6">
+
+                                <label
+                                    for="{{ form.term.id_for_label }}"
+                                    class="form-label fw-semibold"
+                                >
+                                    Academic Term
+                                </label>
+
+                                {{ form.term }}
+
+                                <div class="text-danger small">
+                                    {{ form.term.errors }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h2 class="h5 fw-bold mb-3">
+                            Select Students
+                        </h2>
+
+                        <!-- USERNAMES -->
+                        <div class="mb-3">
+
+                            <label
+                                for="{{ form.usernames.id_for_label }}"
+                                class="form-label fw-semibold"
+                            >
+                                Student Usernames
+                            </label>
+
+                            {{ form.usernames }}
+
+                            <div class="form-text">
+                                {{ form.usernames.help_text }}
+                            </div>
+
+                            <div class="text-danger small">
+                                {{ form.usernames.errors }}
+                            </div>
+
+                        </div>
+
+                        <!-- TRANSFER -->
+                        <div class="border rounded-3 p-3 mb-3">
+
+                            <div class="form-check">
+
+                                {{ form.allow_transfer }}
+
+                                <label
+                                    class="form-check-label fw-semibold"
+                                    for="{{ form.allow_transfer.id_for_label }}"
+                                >
+                                    Allow Section Transfer
+                                </label>
+
+                            </div>
+
+                            <p class="small text-muted mt-2 mb-0">
+                                Enable this only when moving
+                                an already allocated student
+                                to another section in the same
+                                academic year and term.
+                                Existing course enrollments
+                                from the old section will
+                                become Dropped. Existing
+                                submission records will remain
+                                in the database, but access to
+                                the old section's assignments
+                                may be lost.
+                            </p>
+
+                        </div>
+
+                        <!-- REASON -->
+                        <div class="mb-4">
+
+                            <label
+                                for="{{ form.reason.id_for_label }}"
+                                class="form-label fw-semibold"
+                            >
+                                Allocation Note
+                            </label>
+
+                            {{ form.reason }}
+
+                            <div class="text-danger small">
+                                {{ form.reason.errors }}
+                            </div>
+
+                        </div>
+
+                        <!-- ACTIONS -->
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary px-4"
+                                id="allocate-submit"
+                            >
+                                Confirm Allocation
+                            </button>
+
+                            <a
+                                href="{% url 'class_allocations:dashboard' %}"
+                                class="btn btn-outline-secondary px-4"
+                            >
+                                Cancel
+                            </a>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- GUIDANCE -->
+        <div class="col-12 col-xl-4">
+
+            <div class="card border-0 shadow-sm rounded-4 mb-3">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-3">
+                        How Allocation Works
+                    </h2>
+
+                    <ol class="small text-muted mb-0">
+
+                        <li class="mb-2">
+                            Select the student's target
+                            semester and section.
+                        </li>
+
+                        <li class="mb-2">
+                            Enter one or multiple
+                            existing student usernames.
+                        </li>
+
+                        <li class="mb-2">
+                            Choose academic year and term.
+                        </li>
+
+                        <li class="mb-2">
+                            The system checks roles,
+                            capacity and existing allocations.
+                        </li>
+
+                        <li>
+                            Students are enrolled in the
+                            section's active course offerings.
+                        </li>
+
+                    </ol>
+
+                </div>
+
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-3">
+                        Semester Promotion
+                    </h2>
+
+                    <p class="small text-muted">
+                        To promote students, select a
+                        section belonging to the next
+                        semester and specify the new
+                        academic period.
+                    </p>
+
+                    <p class="small text-muted mb-0">
+                        Allocations from previous
+                        academic periods will remain
+                        in the allocation history.
+                        The Section Transfer checkbox
+                        is not required for promotion
+                        into a new academic period.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

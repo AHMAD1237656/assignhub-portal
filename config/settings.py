@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "semesters",
     "departments",
     "timed_writing",
+    # "class_allocations.apps.ClassAllocationsConfig",
+    "class_allocations",
 
 ]
 

@@ -7,9 +7,43 @@ Assignments | AssignHub
 
 {% block content %}
 
-<div class="container-fluid px-4 py-4">
+<style>
+    /* Assignment submission progress */
 
-    <!-- Page Header -->
+    .ah-submission-progress {
+        display: block;
+        width: 100%;
+        height: 8px;
+        appearance: none;
+        -webkit-appearance: none;
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #e9ecef;
+    }
+
+    .ah-submission-progress::-webkit-progress-bar {
+        background-color: #e9ecef;
+        border-radius: 8px;
+    }
+
+    .ah-submission-progress::-webkit-progress-value {
+        background-color: #0d6efd;
+        border-radius: 8px;
+    }
+
+    .ah-submission-progress::-moz-progress-bar {
+        background-color: #0d6efd;
+        border-radius: 8px;
+    }
+</style>
+
+<main class="container-fluid px-4 py-4">
+
+    <!-- ====================================== -->
+    <!-- PAGE HEADER -->
+    <!-- ====================================== -->
+
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
         <div>
@@ -23,69 +57,98 @@ Assignments | AssignHub
         </div>
 
         {% if can_create %}
+
         <a
             href="{% url 'assignments:create' %}"
             class="btn btn-primary"
         >
             Create Assignment
         </a>
+
         {% endif %}
 
     </div>
 
-    <!-- Assignment Cards -->
+    <!-- ====================================== -->
+    <!-- ASSIGNMENT LIST -->
+    <!-- ====================================== -->
+
     <div class="row g-4">
 
         {% for assignment in assignments %}
 
         <div class="col-12 col-lg-6 col-xxl-4">
 
-            <div class="card h-100 shadow-sm border-0 rounded-4">
+            <article class="card h-100 shadow-sm border-0 rounded-4">
+
+                <!-- ========================== -->
+                <!-- ASSIGNMENT INFORMATION -->
+                <!-- ========================== -->
 
                 <div class="card-body p-4">
 
-                    <!-- Title and Status -->
+                    <!-- TITLE AND STATUS -->
+
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
 
                         <div>
+
                             <h2 class="h5 fw-bold mb-1">
                                 {{ assignment.title }}
                             </h2>
 
                             {% if assignment.course_offering %}
+
                             <div class="text-muted small">
+
                                 {{ assignment.course_offering.course.code }}
+
                                 —
+
                                 {{ assignment.course_offering.course.title }}
+
                             </div>
+
                             {% endif %}
+
                         </div>
 
+                        <!-- ASSIGNMENT STATUS -->
+
                         {% if assignment.status == "PUBLISHED" %}
+
                         <span class="badge bg-success">
                             Published
                         </span>
 
                         {% elif assignment.status == "DRAFT" %}
+
                         <span class="badge bg-secondary">
                             Draft
                         </span>
 
                         {% elif assignment.status == "CLOSED" %}
+
                         <span class="badge bg-dark">
                             Closed
                         </span>
+
                         {% endif %}
 
                     </div>
 
-                    <!-- Academic Information -->
+                    <!-- ========================== -->
+                    <!-- ACADEMIC INFORMATION -->
+                    <!-- ========================== -->
+
                     {% if assignment.course_offering %}
 
                     <div class="row g-2 mb-3">
 
-                        <!-- Program -->
+                        <!-- PROGRAM -->
+
                         <div class="col-6">
+
                             <div class="bg-light rounded-3 p-3 h-100">
 
                                 <div class="small text-muted">
@@ -93,14 +156,19 @@ Assignments | AssignHub
                                 </div>
 
                                 <strong class="small">
+
                                     {{ assignment.course_offering.section.semester.program.name }}
+
                                 </strong>
 
                             </div>
+
                         </div>
 
-                        <!-- Semester and Section -->
+                        <!-- SEMESTER AND SECTION -->
+
                         <div class="col-6">
+
                             <div class="bg-light rounded-3 p-3 h-100">
 
                                 <div class="small text-muted">
@@ -108,16 +176,23 @@ Assignments | AssignHub
                                 </div>
 
                                 <strong class="small">
+
                                     {{ assignment.course_offering.section.semester.number }}
+
                                     /
+
                                     {{ assignment.course_offering.section.code }}
+
                                 </strong>
 
                             </div>
+
                         </div>
 
-                        <!-- Academic Year -->
+                        <!-- ACADEMIC YEAR -->
+
                         <div class="col-6">
+
                             <div class="bg-light rounded-3 p-3 h-100">
 
                                 <div class="small text-muted">
@@ -125,14 +200,19 @@ Assignments | AssignHub
                                 </div>
 
                                 <strong class="small">
+
                                     {{ assignment.course_offering.academic_year }}
+
                                 </strong>
 
                             </div>
+
                         </div>
 
-                        <!-- Term -->
+                        <!-- TERM -->
+
                         <div class="col-6">
+
                             <div class="bg-light rounded-3 p-3 h-100">
 
                                 <div class="small text-muted">
@@ -140,10 +220,13 @@ Assignments | AssignHub
                                 </div>
 
                                 <strong class="small">
+
                                     {{ assignment.course_offering.get_term_display }}
+
                                 </strong>
 
                             </div>
+
                         </div>
 
                     </div>
@@ -156,7 +239,10 @@ Assignments | AssignHub
 
                     {% endif %}
 
-                    <!-- Assignment Deadline -->
+                    <!-- ========================== -->
+                    <!-- DEADLINE -->
+                    <!-- ========================== -->
+
                     <div class="mb-2">
 
                         <span class="text-muted">
@@ -164,12 +250,17 @@ Assignments | AssignHub
                         </span>
 
                         <strong>
+
                             {{ assignment.deadline|date:"d M Y, h:i A" }}
+
                         </strong>
 
                     </div>
 
-                    <!-- Maximum Marks -->
+                    <!-- ========================== -->
+                    <!-- TOTAL MARKS -->
+                    <!-- ========================== -->
+
                     <div class="mb-3">
 
                         <span class="text-muted">
@@ -182,7 +273,11 @@ Assignments | AssignHub
 
                     </div>
 
-                    <!-- Teacher / Admin Progress -->
+                    <!-- ========================== -->
+                    <!-- SUBMISSION PROGRESS -->
+                    <!-- TEACHER / ADMIN ONLY -->
+                    <!-- ========================== -->
+
                     {% if show_progress %}
 
                     <hr>
@@ -194,32 +289,35 @@ Assignments | AssignHub
                         </strong>
 
                         <span class="small text-muted">
+
                             {{ assignment.submitted_count }}
+
                             /
+
                             {{ assignment.enrolled_count }}
+
                         </span>
 
                     </div>
 
                     {% if assignment.enrolled_count %}
 
-                    {% widthratio assignment.submitted_count assignment.enrolled_count 100 as progress_percent %}
+                    <!--
+                        Native HTML progress avoids
+                        complex Django template logic
+                        inside a CSS style attribute.
+                    -->
 
-                    <div
-                        class="progress mb-2"
-                        style="height: 8px;"
+                    <progress
+                        class="ah-submission-progress mb-2"
+                        value="{{ assignment.submitted_count }}"
+                        max="{{ assignment.enrolled_count }}"
+                        aria-label="Assignment submission progress"
                     >
-
-                        <div
-                            class="progress-bar bg-primary"
-                            role="progressbar"
-                            style="width: {% if progress_percent|add:0 > 100 %}100{% else %}{{ progress_percent }}{% endif %}%;"
-                            aria-valuenow="{{ assignment.submitted_count }}"
-                            aria-valuemin="0"
-                            aria-valuemax="{{ assignment.enrolled_count }}"
-                        ></div>
-
-                    </div>
+                        {{ assignment.submitted_count }}
+                        of
+                        {{ assignment.enrolled_count }}
+                    </progress>
 
                     {% else %}
 
@@ -230,20 +328,27 @@ Assignments | AssignHub
                     {% endif %}
 
                     <p class="text-muted small mb-0">
+
                         {{ assignment.submitted_count }}
+
                         final submissions received.
+
                     </p>
 
                     {% endif %}
 
                 </div>
 
-                <!-- Card Footer -->
+                <!-- ========================== -->
+                <!-- CARD FOOTER -->
+                <!-- ========================== -->
+
                 <div class="card-footer bg-white border-top p-3">
 
                     <div class="d-flex flex-wrap gap-2">
 
-                        <!-- Assignment Detail -->
+                        <!-- VIEW DETAILS -->
+
                         <a
                             href="{% url 'assignments:detail' assignment.pk %}"
                             class="btn btn-outline-secondary btn-sm"
@@ -251,9 +356,10 @@ Assignments | AssignHub
                             View Details
                         </a>
 
+                        <!-- SUBMISSION ROSTER -->
+
                         {% if show_progress %}
 
-                        <!-- Submission Roster -->
                         <a
                             href="{% url 'assignments:roster' assignment.pk %}"
                             class="btn btn-primary btn-sm"
@@ -263,19 +369,16 @@ Assignments | AssignHub
 
                         {% endif %}
 
-                        <!-- Teacher Edit Button -->
+                        <!-- TEACHER EDIT OPTION -->
+
                         {% if can_create %}
 
-                            {% if assignment.created_by_id == request.user.pk %}
-
-                            <a
-                                href="{% url 'assignments:edit' assignment.pk %}"
-                                class="btn btn-outline-primary btn-sm"
-                            >
-                                Edit
-                            </a>
-
-                            {% endif %}
+                        <a
+                            href="{% url 'assignments:edit' assignment.pk %}"
+                            class="btn btn-outline-primary btn-sm"
+                        >
+                            Edit
+                        </a>
 
                         {% endif %}
 
@@ -283,13 +386,16 @@ Assignments | AssignHub
 
                 </div>
 
-            </div>
+            </article>
 
         </div>
 
         {% empty %}
 
-        <!-- No Assignments -->
+        <!-- ================================== -->
+        <!-- EMPTY ASSIGNMENT STATE -->
+        <!-- ================================== -->
+
         <div class="col-12">
 
             <div class="card border-0 shadow-sm rounded-4">
@@ -314,6 +420,6 @@ Assignments | AssignHub
 
     </div>
 
-</div>
+</main>
 
 {% endblock %}

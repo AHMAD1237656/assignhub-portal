@@ -760,3 +760,865 @@ body.assignhub-body {
         animation: none !important;
     }
 }
+
+/* =====================================================
+   ASSIGNHUB — COLLAPSIBLE LEFT SIDEBAR
+   Desktop: icons only, expand on hover / keyboard focus
+   Mobile: slide-in navigation drawer
+===================================================== */
+
+:root {
+    --ah-sidebar-collapsed: 76px;
+    --ah-sidebar-expanded: 272px;
+    --ah-sidebar-bg: #101c32;
+    --ah-sidebar-bg-light: #192b48;
+    --ah-sidebar-accent: #5475f3;
+    --ah-sidebar-text: #bbc9de;
+    --ah-sidebar-speed: 280ms;
+    --ah-topbar-height: 74px;
+}
+
+/* =====================================================
+   APP LAYOUT
+===================================================== */
+
+body.assignhub-body {
+    min-width: 320px;
+    overflow-x: hidden;
+    background: var(--ah-background, #f6f8fc);
+}
+
+.ah-app-shell {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    min-width: 0;
+    min-height: 100vh;
+    margin-left: var(--ah-sidebar-collapsed);
+    transition: none;
+}
+
+.ah-app-shell > .assignhub-main {
+    flex: 1 0 auto;
+    min-width: 0;
+}
+
+.ah-app-shell .assignhub-footer {
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Guests have no sidebar */
+
+body.assignhub-body:not(:has(.ah-sidebar))
+.ah-app-shell {
+    margin-left: 0;
+}
+
+/* =====================================================
+   SIDEBAR CONTAINER
+===================================================== */
+
+.ah-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1050;
+
+    display: flex;
+    flex-direction: column;
+
+    width: var(--ah-sidebar-collapsed);
+    height: 100vh;
+    height: 100dvh;
+
+    overflow: hidden;
+
+    background: var(--ah-sidebar-bg);
+    border-right: 1px solid rgba(255, 255, 255, .09);
+
+    box-shadow: 4px 0 22px rgba(16, 28, 50, .10);
+
+    transition:
+        width var(--ah-sidebar-speed)
+        cubic-bezier(.22, 1, .36, 1),
+        box-shadow var(--ah-sidebar-speed) ease;
+}
+
+/* Desktop hover expansion */
+
+@media (min-width: 992px) {
+    .ah-sidebar:hover,
+    .ah-sidebar:focus-within {
+        width: var(--ah-sidebar-expanded);
+        box-shadow: 14px 0 42px rgba(16, 28, 50, .20);
+    }
+}
+
+/* =====================================================
+   SIDEBAR HEADER / BRAND
+===================================================== */
+
+.ah-sidebar-header {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    min-height: 86px;
+    padding: 17px 16px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+
+    flex-shrink: 0;
+}
+
+.ah-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    width: 100%;
+    min-width: 0;
+
+    color: #ffffff;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.ah-sidebar-brand:hover {
+    color: #ffffff;
+}
+
+.ah-sidebar-brand .assignhub-brand-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+
+    border-radius: 13px;
+    font-size: 23px;
+}
+
+.ah-sidebar-brand-text {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    white-space: nowrap;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateX(-8px);
+
+    transition:
+        opacity 180ms ease,
+        transform 220ms ease,
+        visibility 180ms ease;
+}
+
+.ah-sidebar-brand-text .assignhub-brand-name {
+    font-size: 22px;
+}
+
+.ah-sidebar-close {
+    display: none;
+}
+
+/* =====================================================
+   NAVIGATION SCROLL AREA
+===================================================== */
+
+.ah-sidebar-navigation {
+    flex: 1 1 auto;
+    min-height: 0;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    padding: 17px 12px 20px;
+
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.ah-sidebar:hover .ah-sidebar-navigation,
+.ah-sidebar:focus-within .ah-sidebar-navigation {
+    scrollbar-color:
+        rgba(255, 255, 255, .20)
+        transparent;
+}
+
+.ah-sidebar-navigation::-webkit-scrollbar {
+    width: 5px;
+}
+
+.ah-sidebar-navigation::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .22);
+    border-radius: 10px;
+}
+
+/* =====================================================
+   NAVIGATION SECTIONS
+===================================================== */
+
+.ah-sidebar-section {
+    margin-bottom: 19px;
+}
+
+.ah-sidebar-section-label {
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+
+    padding-left: 15px;
+
+    color: #8da1bf;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+
+    white-space: nowrap;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 180ms ease,
+        visibility 180ms ease;
+}
+
+/* =====================================================
+   MAIN NAVIGATION LINKS
+===================================================== */
+
+.ah-sidebar-link,
+.ah-sidebar-group-heading,
+.ah-sidebar-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    min-height: 48px;
+
+    margin: 3px 0;
+    padding: 5px 0 5px 8px;
+
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    color: var(--ah-sidebar-text);
+
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.3;
+
+    text-decoration: none;
+    white-space: nowrap;
+
+    transition:
+        background-color 180ms ease,
+        color 180ms ease,
+        border-color 180ms ease;
+}
+
+.ah-sidebar-link-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+
+    flex-shrink: 0;
+}
+
+.ah-sidebar-link-icon i {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.ah-sidebar-link-label {
+    display: inline-block;
+
+    max-width: 180px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateX(-8px);
+
+    transition:
+        opacity 180ms ease,
+        transform 220ms ease,
+        visibility 180ms ease;
+}
+
+.ah-sidebar-link:hover,
+.ah-sidebar-link:focus-visible {
+    color: #ffffff;
+    background: rgba(255, 255, 255, .09);
+}
+
+.ah-sidebar-link.active,
+.ah-sidebar-group-heading.active {
+    color: #ffffff;
+    background: rgba(84, 117, 243, .23);
+    border-color: rgba(124, 148, 255, .15);
+}
+
+.ah-sidebar-link.active .ah-sidebar-link-icon,
+.ah-sidebar-group-heading.active .ah-sidebar-link-icon {
+    color: #aebfff;
+}
+
+.ah-sidebar-link:focus-visible,
+.ah-sidebar-sublink:focus-visible,
+.ah-sidebar-brand:focus-visible,
+.ah-sidebar-close:focus-visible,
+.ah-mobile-menu-button:focus-visible {
+    outline: 2px solid #aebfff;
+    outline-offset: 2px;
+}
+
+/* =====================================================
+   NAVIGATION GROUPS AND SUBMENUS
+===================================================== */
+
+.ah-sidebar-group {
+    margin: 3px 0;
+}
+
+.ah-sidebar-group-heading {
+    cursor: default;
+}
+
+.ah-sidebar-submenu {
+    display: none;
+    padding: 3px 0 8px 17px;
+}
+
+.ah-sidebar-sublink {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    min-height: 40px;
+
+    margin: 3px 0;
+    padding: 8px 11px;
+
+    border-radius: 9px;
+
+    color: #aebed6;
+
+    font-size: 12.5px;
+    font-weight: 500;
+
+    text-decoration: none;
+
+    transition:
+        color 160ms ease,
+        background-color 160ms ease;
+}
+
+.ah-sidebar-sublink i {
+    width: 18px;
+    flex-shrink: 0;
+
+    color: #8ea5ca;
+    text-align: center;
+
+    font-size: 15px;
+}
+
+.ah-sidebar-sublink:hover,
+.ah-sidebar-sublink:focus-visible {
+    color: #ffffff;
+    background: rgba(255, 255, 255, .09);
+}
+
+.ah-sidebar-sublink.active {
+    color: #ffffff;
+    background: rgba(84, 117, 243, .24);
+    font-weight: 700;
+}
+
+.ah-sidebar-sublink.active i {
+    color: #b3c3ff;
+}
+
+/* =====================================================
+   EXPANDED STATE: DESKTOP
+===================================================== */
+
+@media (min-width: 992px) {
+    .ah-sidebar:hover .ah-sidebar-brand-text,
+    .ah-sidebar:focus-within .ah-sidebar-brand-text,
+    .ah-sidebar:hover .ah-sidebar-link-label,
+    .ah-sidebar:focus-within .ah-sidebar-link-label,
+    .ah-sidebar:hover .ah-sidebar-account-text,
+    .ah-sidebar:focus-within .ah-sidebar-account-text {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+    }
+
+    .ah-sidebar:hover .ah-sidebar-section-label,
+    .ah-sidebar:focus-within .ah-sidebar-section-label {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .ah-sidebar:hover .ah-sidebar-submenu,
+    .ah-sidebar:focus-within .ah-sidebar-submenu {
+        display: block;
+    }
+}
+
+/* =====================================================
+   STUDENT WORKSPACE INFO ITEM
+===================================================== */
+
+.ah-sidebar-info {
+    color: #9fb2ce;
+    cursor: default;
+}
+
+/* =====================================================
+   SIDEBAR BOTTOM ACCOUNT
+===================================================== */
+
+.ah-sidebar-bottom {
+    flex-shrink: 0;
+
+    padding: 14px 12px 18px;
+
+    background: rgba(0, 0, 0, .10);
+    border-top: 1px solid rgba(255, 255, 255, .08);
+}
+
+.ah-sidebar-account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    min-height: 47px;
+    padding: 4px 8px;
+
+    color: #d9e4f5;
+}
+
+.ah-sidebar-account .ah-sidebar-link-icon {
+    color: #b9caff;
+}
+
+.ah-sidebar-account-text {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateX(-8px);
+
+    transition:
+        opacity 180ms ease,
+        transform 220ms ease,
+        visibility 180ms ease;
+}
+
+.ah-sidebar-account-text strong {
+    max-width: 165px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 12.5px;
+}
+
+.ah-sidebar-account-text small {
+    color: #9eafca;
+    font-size: 11px;
+}
+
+/* =====================================================
+   TOP HEADER
+===================================================== */
+
+.ah-topbar {
+    position: relative;
+    z-index: 1030;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    min-height: var(--ah-topbar-height);
+    padding: 12px 27px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid var(--ah-border, #e7ebf1);
+
+    box-shadow: 0 2px 14px rgba(16, 28, 50, .035);
+}
+
+.ah-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    min-width: 0;
+}
+
+.ah-topbar-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.ah-topbar-eyebrow {
+    color: #8593a8;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+}
+
+.ah-topbar-heading strong {
+    color: #20314c;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.ah-topbar-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.ah-topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 5px 10px 5px 5px;
+
+    border: 1px solid #e4e9f1;
+    border-radius: 12px;
+
+    background: #f8faff;
+    color: #273950;
+
+    text-align: left;
+}
+
+.ah-topbar-user:hover,
+.ah-topbar-user:focus-visible,
+.ah-topbar-user.show {
+    border-color: #cfd9f5;
+    background: #f0f4ff;
+    color: #273950;
+}
+
+.ah-topbar-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+
+    border-radius: 10px;
+
+    color: #4565db;
+    background: #e5ebff;
+
+    font-size: 19px;
+}
+
+.ah-topbar-user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    min-width: 0;
+    max-width: 170px;
+}
+
+.ah-topbar-user-details strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.ah-topbar-user-details small {
+    color: #75849b;
+    font-size: 11px;
+}
+
+.ah-topbar-user.dropdown-toggle::after {
+    margin-left: 8px;
+    opacity: .55;
+}
+
+.ah-topbar-dropdown {
+    margin-top: 8px !important;
+}
+
+.ah-guest-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+
+    color: #20314c;
+    font-size: 19px;
+    font-weight: 800;
+
+    text-decoration: none;
+}
+
+.ah-guest-brand:hover {
+    color: #20314c;
+}
+
+.ah-guest-brand .assignhub-brand-icon {
+    width: 41px;
+    height: 41px;
+    font-size: 21px;
+}
+
+.ah-guest-login {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 9px 17px;
+
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* =====================================================
+   MAIN CONTENT / FOOTER
+===================================================== */
+
+.ah-page-main {
+    width: 100%;
+    min-height: 0;
+}
+
+.ah-page-main > .container-fluid {
+    min-width: 0;
+}
+
+.ah-app-shell .assignhub-footer {
+    background: #ffffff;
+    border-top: 1px solid #e7ebf1;
+}
+
+/* =====================================================
+   MOBILE MENU CONTROLS
+===================================================== */
+
+.ah-mobile-menu-button {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    border: 1px solid #e2e8f1;
+    border-radius: 10px;
+
+    color: #2b4166;
+    background: #f6f8fc;
+
+    cursor: pointer;
+}
+
+.ah-mobile-menu-button i {
+    font-size: 24px;
+}
+
+.ah-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 1040;
+
+    background: rgba(8, 18, 35, .55);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 240ms ease,
+        visibility 240ms ease;
+}
+
+/* =====================================================
+   RESPONSIVE SIDEBAR / MOBILE DRAWER
+===================================================== */
+
+@media (max-width: 991.98px) {
+
+    .ah-app-shell,
+    body.assignhub-body:not(:has(.ah-sidebar))
+    .ah-app-shell {
+        margin-left: 0;
+    }
+
+    .ah-sidebar {
+        width: min(290px, 85vw);
+
+        transform: translateX(-105%);
+
+        transition:
+            transform 280ms cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .ah-sidebar-brand-text,
+    .ah-sidebar-link-label,
+    .ah-sidebar-account-text {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+
+    .ah-sidebar-section-label {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .ah-sidebar-submenu {
+        display: block;
+    }
+
+    .ah-sidebar-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 33px;
+        height: 33px;
+
+        position: absolute;
+        right: 8px;
+        top: 25px;
+
+        border: 0;
+        border-radius: 8px;
+
+        color: #dce5ff;
+        background: rgba(255, 255, 255, .08);
+
+        cursor: pointer;
+    }
+
+    .ah-sidebar-close:hover {
+        background: rgba(255, 255, 255, .17);
+    }
+
+    .ah-mobile-menu-button {
+        display: inline-flex;
+    }
+
+    body.ah-sidebar-open .ah-sidebar {
+        transform: translateX(0);
+    }
+
+    body.ah-sidebar-open .ah-sidebar-overlay {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    body.ah-sidebar-open {
+        overflow: hidden;
+    }
+
+    .ah-topbar {
+        min-height: 68px;
+        padding: 10px 17px;
+    }
+}
+
+/* =====================================================
+   SMALL MOBILE SCREENS
+===================================================== */
+
+@media (max-width: 575.98px) {
+
+    .ah-topbar {
+        gap: 9px;
+        padding: 10px 13px;
+    }
+
+    .ah-topbar-heading strong {
+        font-size: 14px;
+    }
+
+    .ah-topbar-eyebrow {
+        font-size: 9px;
+    }
+
+    .ah-topbar-user {
+        padding: 4px 7px 4px 4px;
+    }
+
+    .ah-topbar-user-details {
+        display: none;
+    }
+
+    .ah-topbar-user.dropdown-toggle::after {
+        margin-left: 2px;
+    }
+
+    .ah-topbar-avatar {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+    }
+
+    .ah-guest-brand > span:last-child {
+        display: none;
+    }
+
+    .ah-sidebar-navigation {
+        padding-bottom: 24px;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY / REDUCED MOTION
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .ah-sidebar,
+    .ah-sidebar *,
+    .ah-sidebar-overlay,
+    .ah-app-shell,
+    .ah-topbar * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
