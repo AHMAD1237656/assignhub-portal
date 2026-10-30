@@ -2,220 +2,1327 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Dashboard - AssignHub{% endblock %}
+{% block title %}Dashboard | AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ASSIGNHUB - ROLE BASED DASHBOARD */
+
+.ah-dash {
+    --navy: #101c32;
+    --blue: #4669ed;
+    --line: #e6ebf3;
+    --muted: #77869c;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 4px 0 32px;
+    color: #253650;
+}
+
+.ah-dash a { text-decoration: none; }
+
+.ah-dash-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+
+.ah-dash-kicker {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    color: #5370ca;
+    margin-bottom: 8px;
+}
+
+.ah-dash-title {
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 800;
+    letter-spacing: -.8px;
+    color: var(--navy);
+    margin: 0 0 8px;
+}
+
+.ah-dash-subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.ah-dash-actions,
+.ah-dash-toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ah-dash-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 41px;
+    padding: 9px 15px;
+    background: #fff;
+    color: #365071;
+    border: 1px solid #dce3f0;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 750;
+    transition: background .2s, border-color .2s, transform .2s;
+}
+
+.ah-dash-btn:hover {
+    background: #f1f5ff;
+    border-color: #c6d4ff;
+    color: #365bd4;
+    transform: translateY(-1px);
+}
+
+.ah-dash-btn-primary {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+}
+
+.ah-dash-btn-primary:hover {
+    background: #3657ce;
+    color: #fff;
+    border-color: #3657ce;
+}
+
+.ah-dash-hero {
+    background: linear-gradient(112deg, #101c32 0%, #223c70 66%, #3555ac 100%);
+    border-radius: 18px;
+    min-height: 168px;
+    margin-bottom: 23px;
+    padding: 30px 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(16,28,50,.11);
+}
+
+.ah-dash-hero h2 {
+    font-size: clamp(21px, 2.5vw, 29px);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 10px;
+}
+
+.ah-dash-hero p {
+    color: #cbd7ee;
+    font-size: 12.5px;
+    line-height: 1.8;
+    max-width: 680px;
+    margin: 0;
+}
+
+.ah-dash-tag {
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+    color: #d7e3ff;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.13);
+    border-radius: 50px;
+    padding: 6px 11px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    margin-bottom: 15px;
+}
+
+.ah-dash-hero-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 26px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.1);
+    color: #e0eaff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 45px;
+    flex-shrink: 0;
+}
+
+.ah-dash-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 23px;
+}
+
+.ah-dash-kpi {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 21px;
+    box-shadow: 0 5px 18px rgba(16,28,50,.035);
+}
+
+.ah-dash-icon {
+    height: 45px;
+    width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #edf2ff;
+    color: #4669ed;
+    font-size: 21px;
+    margin-bottom: 15px;
+}
+
+.ah-dash-icon.green { background: #e6f7ed; color: #16875b; }
+.ah-dash-icon.amber { background: #fff2dd; color: #ad761e; }
+.ah-dash-icon.violet { background: #f0eaff; color: #7453bd; }
+
+.ah-dash-kpi-label {
+    font-size: 11.5px;
+    color: var(--muted);
+    font-weight: 650;
+}
+
+.ah-dash-kpi-value {
+    font-size: clamp(26px, 3vw, 35px);
+    font-weight: 800;
+    color: #1a2b45;
+    line-height: 1.3;
+    margin: 4px 0;
+}
+
+.ah-dash-kpi-note {
+    font-size: 10.5px;
+    color: #92a0b1;
+}
+
+.ah-dash-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(290px, 1fr);
+    gap: 20px;
+    margin-bottom: 23px;
+    align-items: stretch;
+}
+
+.ah-dash-panel {
+    min-width: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 17px;
+    box-shadow: 0 5px 18px rgba(16,28,50,.035);
+    overflow: hidden;
+    margin-bottom: 23px;
+}
+
+.ah-dash-columns > .ah-dash-panel { margin-bottom: 0; }
+
+.ah-dash-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 23px 24px 16px;
+}
+
+.ah-dash-panel-head h2,
+.ah-dash-panel-body h2 {
+    color: #243652;
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0 0 6px;
+}
+
+.ah-dash-panel-head p,
+.ah-dash-panel-body > p {
+    color: #8593a5;
+    font-size: 11.5px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.ah-dash-panel-body { padding: 23px 24px; }
+.ah-dash-panel-body > p { margin-bottom: 18px; }
+
+.ah-dash-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.ah-dash-mini {
+    border: 1px solid #eaf0f6;
+    background: #f9fbfe;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.ah-dash-mini span {
+    display: block;
+    color: #7c899b;
+    font-size: 11px;
+    margin-bottom: 7px;
+}
+
+.ah-dash-mini strong {
+    font-size: 23px;
+    font-weight: 800;
+    color: #263a5c;
+}
+
+.ah-dash-link-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.ah-dash-quick {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #e7ecf4;
+    border-radius: 12px;
+    padding: 14px;
+    background: #fbfcff;
+    color: #354966;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.ah-dash-quick:hover {
+    background: #eef3ff;
+    color: #3356c9;
+    border-color: #d0dcff;
+}
+
+.ah-dash-quick i { color: #4669ed; font-size: 19px; }
+
+.ah-dash-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ah-dash-table th {
+    background: #f8faff;
+    border-bottom: 1px solid #edf0f5;
+    color: #77869b;
+    font-size: 10.5px;
+    white-space: nowrap;
+    font-weight: 800;
+    padding: 13px 17px;
+}
+
+.ah-dash-table td {
+    border-bottom: 1px solid #edf0f5;
+    color: #43546e;
+    font-size: 12px;
+    vertical-align: middle;
+    padding: 15px 17px;
+}
+
+.ah-dash-table tbody tr:last-child td { border-bottom: 0; }
+.ah-dash-table tbody tr:hover { background: #fafbff; }
+
+.ah-dash-primary {
+    color: #283c5a;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.ah-dash-secondary {
+    display: block;
+    color: #8b98aa;
+    font-size: 10.5px;
+    margin-top: 5px;
+    line-height: 1.5;
+}
+
+.ah-dash-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 30px;
+    font-size: 10.5px;
+    font-weight: 750;
+    white-space: nowrap;
+    background: #e6f7ed;
+    color: #17845a;
+}
+
+.ah-dash-chip.amber { background: #fff2de; color: #a57422; }
+.ah-dash-chip.blue { background: #eaf0ff; color: #4565d2; }
+
+.ah-dash-empty {
+    text-align: center;
+    color: #8997a9;
+    font-size: 12px;
+    padding: 36px 20px;
+}
+
+.ah-dash-empty i {
+    display: block;
+    color: #5572e8;
+    font-size: 27px;
+    margin-bottom: 10px;
+}
+
+.ah-dash-progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 20px 0 13px;
+}
+
+.ah-dash-progress-head strong {
+    font-size: 32px;
+    color: #1e3150;
+    font-weight: 800;
+}
+
+.ah-dash-progress-track {
+    width: 100%;
+    height: 11px;
+    background: #edf1f8;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.ah-dash-progress-fill {
+    height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #4669ed, #8299ff);
+}
+
+.ah-dash-progress-key {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: #79899e;
+    margin-top: 14px;
+}
+
+.ah-dash-course-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    padding: 0 24px 24px;
+}
+
+.ah-dash-course {
+    background: #fbfcff;
+    border: 1px solid #e5ebf4;
+    border-radius: 14px;
+    padding: 19px;
+    min-width: 0;
+}
+
+.ah-dash-course-code {
+    display: inline-block;
+    background: #eaf0ff;
+    color: #4161d1;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 11px;
+    padding: 6px 10px;
+}
+
+.ah-dash-course h3 {
+    font-size: 13px;
+    font-weight: 800;
+    color: #263956;
+    line-height: 1.5;
+    margin: 12px 0;
+}
+
+.ah-dash-course-meta {
+    display: grid;
+    gap: 8px;
+    font-size: 11px;
+    color: #7d8ca1;
+    margin-bottom: 16px;
+}
+
+.ah-dash-course-meta i { margin-right: 6px; color: #6680e6; }
+
+.ah-dash-course-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid #e8edf5;
+    padding-top: 12px;
+    color: #536780;
+    font-size: 11px;
+}
+
+.ah-dash-workspace {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ah-dash-workspace a {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+    color: #2b3e5b;
+}
+
+.ah-dash-workspace a:hover {
+    background: #f7f9ff;
+    border-color: #cdd9fb;
+}
+
+.ah-dash-workspace i { color: var(--blue); font-size: 26px; }
+.ah-dash-workspace h3 { font-size: 15px; font-weight: 800; margin: 14px 0 8px; }
+.ah-dash-workspace p { font-size: 12px; color: #8593a6; line-height: 1.7; margin: 0; }
+
+@media(max-width:1199px) {
+    .ah-dash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ah-dash-columns { grid-template-columns: 1fr; }
+    .ah-dash-course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media(max-width:767px) {
+    .ah-dash-hero { padding: 23px; }
+    .ah-dash-hero-icon { display: none; }
+    .ah-dash-course-grid,
+    .ah-dash-workspace { grid-template-columns: 1fr; }
+}
+
+@media(max-width:480px) {
+    .ah-dash-kpis { gap: 10px; }
+    .ah-dash-kpi { padding: 16px; }
+    .ah-dash-mini-grid,
+    .ah-dash-link-grid { grid-template-columns: 1fr; }
+    .ah-dash-actions { width: 100%; }
+    .ah-dash-actions .ah-dash-btn { flex: 1; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .ah-dash-btn { transition: none; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="ah-dash">
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% if dashboard_role == "admin" %}
 
-<div class="ah-dashboard">
+<!-- ADMIN DASHBOARD -->
 
-  {% if user.is_authenticated %}
+<div class="ah-dash-head">
+    <div>
+        <span class="ah-dash-kicker">ADMINISTRATION / OVERVIEW</span>
+        <h1 class="ah-dash-title">Admin Dashboard</h1>
+        <p class="ah-dash-subtitle">
+            University operations, academic activity and student onboarding.
+        </p>
+    </div>
 
-  <!-- WELCOME HERO -->
-  <section class="ah-hero">
-    <div class="ah-hero-content">
-      <div class="ah-welcome-tag">
-        <span class="ah-status-dot"></span>
-        YOUR WORKSPACE
-      </div>
-
-      <h1>
-        Welcome back,
-        <span>{{ user.first_name|default:user.username }}</span>
-        <span class="ah-wave">👋</span>
-      </h1>
-
-      <p>
-        Everything you need to manage your academic
-        assignments, all in one place.
-      </p>
-
-      <div class="ah-hero-actions">
-        <a href="{% url 'assignments:list' %}" class="ah-btn ah-btn-white">
-          Explore Assignments
-          <i data-lucide="arrow-up-right"></i>
+    <div class="ah-dash-actions">
+        <a href="{% url 'student_onboarding:student_directory' %}" class="ah-dash-btn">
+            <i class="bi bi-people"></i> Manage Students
         </a>
-      </div>
+        <a href="{% url 'student_onboarding:upload' %}" class="ah-dash-btn ah-dash-btn-primary">
+            <i class="bi bi-person-plus"></i> Import Students
+        </a>
+    </div>
+</div>
+
+<div class="ah-dash-hero">
+    <div>
+        <span class="ah-dash-tag">
+            <i class="bi bi-shield-check"></i> UNIVERSITY ADMINISTRATION
+        </span>
+        <h2>Welcome back, {{ user.first_name|default:user.username }}.</h2>
+        <p>
+            Live statistics from the current AssignHub database,
+            with shortcuts to key administrative modules.
+        </p>
+    </div>
+    <div class="ah-dash-hero-icon">
+        <i class="bi bi-speedometer2"></i>
+    </div>
+</div>
+
+<div class="ah-dash-kpis">
+
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <div class="ah-dash-kpi-label">Total Students</div>
+        <div class="ah-dash-kpi-value">{{ total_students|default:0 }}</div>
+        <div class="ah-dash-kpi-note">{{ active_students|default:0 }} active accounts</div>
     </div>
 
-    <div class="ah-hero-decoration" aria-hidden="true">
-      <div class="ah-orbit ah-orbit-one"></div>
-      <div class="ah-orbit ah-orbit-two"></div>
-      <div class="ah-hero-icon">
-        <i data-lucide="graduation-cap"></i>
-      </div>
-    </div>
-  </section>
-
-  <!-- WORKSPACE HEADER -->
-  <section class="ah-workspace">
-    <div class="ah-section-header">
-      <div>
-        <div class="ah-section-eyebrow">QUICK ACCESS</div>
-        <h2>Your Workspace</h2>
-        <p>Choose where you'd like to get started.</p>
-      </div>
-
-      <div class="ah-live-label">
-        <span class="ah-live-dot"></span>
-        Workspace Active
-      </div>
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon violet"><i class="bi bi-person-workspace"></i></div>
+        <div class="ah-dash-kpi-label">Total Teachers</div>
+        <div class="ah-dash-kpi-value">{{ total_teachers|default:0 }}</div>
+        <div class="ah-dash-kpi-note">{{ active_teachers|default:0 }} active accounts</div>
     </div>
 
-    <!-- DASHBOARD CARDS -->
-    <div class="ah-card-grid">
-
-      <!-- ASSIGNMENTS -->
-      <a href="{% url 'assignments:list' %}" class="ah-feature-card ah-card-blue">
-        <div class="ah-card-top">
-          <div class="ah-icon-box">
-            <i data-lucide="clipboard-list"></i>
-          </div>
-
-          <div class="ah-card-arrow">
-            <i data-lucide="arrow-up-right"></i>
-          </div>
-        </div>
-
-        <div class="ah-card-info">
-          <span class="ah-card-category">ACADEMIC WORK</span>
-          <h3>Assignments</h3>
-          <p>
-            Browse, view and manage your academic
-            assignments in one place.
-          </p>
-        </div>
-
-        <div class="ah-card-footer">
-          <span>View Assignments</span>
-          <i data-lucide="arrow-right"></i>
-        </div>
-      </a>
-
-      {% if user.is_staff %}
-
-      <!-- CREATE ASSIGNMENT -->
-      <a href="{% url 'assignments:create' %}" class="ah-feature-card ah-card-purple">
-        <div class="ah-card-top">
-          <div class="ah-icon-box">
-            <i data-lucide="file-plus-2"></i>
-          </div>
-
-          <div class="ah-card-arrow">
-            <i data-lucide="arrow-up-right"></i>
-          </div>
-        </div>
-
-        <div class="ah-card-info">
-          <span class="ah-card-category">CONTENT MANAGEMENT</span>
-          <h3>Create Assignment</h3>
-          <p>
-            Design and publish new assignments
-            for your students.
-          </p>
-        </div>
-
-        <div class="ah-card-footer">
-          <span>Create Assignment</span>
-          <i data-lucide="arrow-right"></i>
-        </div>
-      </a>
-
-      <!-- CREATE USER -->
-      <a href="{% url 'accounts:user_create' %}" class="ah-feature-card ah-card-green">
-        <div class="ah-card-top">
-          <div class="ah-icon-box">
-            <i data-lucide="user-round-plus"></i>
-          </div>
-
-          <div class="ah-card-arrow">
-            <i data-lucide="arrow-up-right"></i>
-          </div>
-        </div>
-
-        <div class="ah-card-info">
-          <span class="ah-card-category">USER MANAGEMENT</span>
-          <h3>Create User</h3>
-          <p>
-            Register and manage teacher or student
-            accounts in your workspace.
-          </p>
-        </div>
-
-        <div class="ah-card-footer">
-          <span>Create User</span>
-          <i data-lucide="arrow-right"></i>
-        </div>
-      </a>
-
-      {% endif %}
-
-    </div>
-  </section>
-
-  <!-- INFO BANNER -->
-  <section class="ah-info-banner">
-    <div class="ah-info-icon">
-      <i data-lucide="lightbulb"></i>
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon green"><i class="bi bi-collection-fill"></i></div>
+        <div class="ah-dash-kpi-label">Total Courses</div>
+        <div class="ah-dash-kpi-value">{{ total_courses|default:0 }}</div>
+        <div class="ah-dash-kpi-note">{{ active_offerings|default:0 }} active offerings</div>
     </div>
 
-    <div class="ah-info-text">
-      <h4>Stay organized, stay ahead.</h4>
-      <p>
-        Your AssignHub workspace makes academic
-        assignment management simpler and more efficient.
-      </p>
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon amber"><i class="bi bi-journal-check"></i></div>
+        <div class="ah-dash-kpi-label">Total Assignments</div>
+        <div class="ah-dash-kpi-value">{{ total_assignments|default:0 }}</div>
+        <div class="ah-dash-kpi-note">{{ published_assignments|default:0 }} published</div>
     </div>
-
-    <div class="ah-info-decoration">
-      <i data-lucide="sparkles"></i>
-    </div>
-  </section>
-
-  {% else %}
-
-  <!-- GUEST PAGE -->
-  <section class="ah-guest-wrapper">
-    <div class="ah-guest-glow"></div>
-
-    <div class="ah-guest-content">
-      <div class="ah-guest-logo">
-        <i data-lucide="graduation-cap"></i>
-      </div>
-
-      <div class="ah-guest-badge">
-        SMART ACADEMIC WORKSPACE
-      </div>
-
-      <h1>
-        Welcome to
-        <span>AssignHub.</span>
-      </h1>
-
-      <p>
-        A modern University Assignment Management System.
-        Organize, submit and manage your academic work
-        with confidence.
-      </p>
-
-      <a href="{% url 'accounts:login' %}" class="ah-btn ah-btn-primary">
-        Get Started
-        <i data-lucide="arrow-right"></i>
-      </a>
-
-      <div class="ah-guest-footer">
-        <i data-lucide="shield-check"></i>
-        Secure Academic Workspace
-      </div>
-    </div>
-  </section>
-
-  {% endif %}
 
 </div>
 
-<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
-<script src="{% static 'js/app.js' %}" defer></script>
+<div class="ah-dash-columns">
 
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-body">
+            <h2>Academic Structure</h2>
+            <p>University-wide academic records.</p>
+
+            <div class="ah-dash-mini-grid">
+                <div class="ah-dash-mini"><span>Departments</span><strong>{{ total_departments|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Programs</span><strong>{{ total_programs|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Semesters</span><strong>{{ total_semesters|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Sections</span><strong>{{ total_sections|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Course Offerings</span><strong>{{ total_offerings|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Active Enrollments</span><strong>{{ total_enrollments|default:0 }}</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-body">
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                <h2>Student Onboarding</h2>
+                <a href="{% url 'student_onboarding:dashboard' %}" class="ah-dash-btn">
+                    Open <i class="bi bi-arrow-up-right"></i>
+                </a>
+            </div>
+
+            <p>Imported student account activation.</p>
+
+            <div class="ah-dash-mini-grid">
+                <div class="ah-dash-mini"><span>Imported Accounts</span><strong>{{ total_imported_students|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Activated</span><strong>{{ activated_imported_students|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Pending Activation</span><strong>{{ pending_activations|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Cancelled</span><strong>{{ cancelled_accounts|default:0 }}</strong></div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<div class="ah-dash-columns">
+
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-body">
+            <h2>Assignment &amp; Submission Overview</h2>
+            <p>Academic workload statistics.</p>
+
+            <div class="ah-dash-mini-grid">
+                <div class="ah-dash-mini"><span>Published Assignments</span><strong>{{ published_assignments|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Draft Assignments</span><strong>{{ draft_assignments|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Submitted / Graded Work</span><strong>{{ total_submissions|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Pending Grading</span><strong>{{ pending_grading|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Graded Submissions</span><strong>{{ graded_submissions|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Active Class Allocations</span><strong>{{ total_allocations|default:0 }}</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-body">
+            <h2>Quick Actions</h2>
+            <p>Frequently used management tools.</p>
+
+            <div class="ah-dash-link-grid">
+                <a class="ah-dash-quick" href="{% url 'departments:department_list' %}"><i class="bi bi-building"></i>Departments</a>
+                <a class="ah-dash-quick" href="{% url 'departments:program_list' %}"><i class="bi bi-diagram-3"></i>Programs</a>
+                <a class="ah-dash-quick" href="{% url 'semesters:section_list' %}"><i class="bi bi-people"></i>Sections</a>
+                <a class="ah-dash-quick" href="{% url 'courses:course_list' %}"><i class="bi bi-book"></i>Courses</a>
+                <a class="ah-dash-quick" href="{% url 'courses:offering_list' %}"><i class="bi bi-collection"></i>Offerings</a>
+                <a class="ah-dash-quick" href="{% url 'class_allocations:dashboard' %}"><i class="bi bi-person-check"></i>Class Allocation</a>
+                <a class="ah-dash-quick" href="{% url 'student_onboarding:student_directory' %}"><i class="bi bi-person-vcard"></i>Manage Students</a>
+                <a class="ah-dash-quick" href="{% url 'assignments:list' %}"><i class="bi bi-journal-text"></i>Assignments</a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<section class="ah-dash-panel">
+
+    <div class="ah-dash-panel-head">
+        <div>
+            <h2>Recent Student Imports</h2>
+            <p>Latest imported batches.</p>
+        </div>
+        <a href="{% url 'student_onboarding:dashboard' %}" class="ah-dash-btn">View All</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="ah-dash-table">
+            <thead>
+                <tr>
+                    <th>BATCH</th>
+                    <th>SECTION</th>
+                    <th>RECORDS</th>
+                    <th>STATUS</th>
+                    <th>DATE</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for batch in recent_imports %}
+                <tr>
+                    <td>
+                        <span class="ah-dash-primary">Import #{{ batch.pk }}</span>
+                        <span class="ah-dash-secondary">{{ batch.filename|truncatechars:32 }}</span>
+                    </td>
+                    <td>
+                        <span class="ah-dash-primary">{{ batch.section }}</span>
+                        <span class="ah-dash-secondary">{{ batch.get_term_display }} {{ batch.academic_year }}</span>
+                    </td>
+                    <td>{{ batch.row_count }}</td>
+                    <td>
+                        {% if batch.status == 'CONFIRMED' %}
+                            <span class="ah-dash-chip">Confirmed</span>
+                        {% else %}
+                            <span class="ah-dash-chip amber">Preview</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ batch.created_at|date:'d M Y' }}</td>
+                    <td>
+                        {% if batch.status == 'CONFIRMED' %}
+                            <a class="ah-dash-btn" href="{% url 'student_onboarding:batch_detail' batch.pk %}">Details</a>
+                        {% else %}
+                            <a class="ah-dash-btn" href="{% url 'student_onboarding:preview' batch.pk %}">Preview</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="ah-dash-empty">
+                            <i class="bi bi-inbox"></i>
+                            No student import batches yet.
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<section class="ah-dash-panel">
+
+    <div class="ah-dash-panel-head">
+        <div>
+            <h2>Recent Assignments</h2>
+            <p>Latest university assignments.</p>
+        </div>
+        <a href="{% url 'assignments:list' %}" class="ah-dash-btn">View All</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="ah-dash-table">
+            <thead>
+                <tr>
+                    <th>ASSIGNMENT</th>
+                    <th>CREATED BY</th>
+                    <th>DEADLINE</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in recent_assignments %}
+                <tr>
+                    <td class="ah-dash-primary">{{ assignment.title|truncatechars:55 }}</td>
+                    <td>{{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</td>
+                    <td>{{ assignment.deadline|date:'d M Y, h:i A' }}</td>
+                    <td>
+                        {% if assignment.status == 'PUBLISHED' %}
+                            <span class="ah-dash-chip">Published</span>
+                        {% elif assignment.status == 'DRAFT' %}
+                            <span class="ah-dash-chip amber">Draft</span>
+                        {% else %}
+                            <span class="ah-dash-chip blue">{{ assignment.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="ah-dash-empty">
+                            <i class="bi bi-journal"></i>
+                            No assignments created yet.
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% elif dashboard_role == "teacher" %}
+
+<!-- TEACHER DASHBOARD -->
+
+<div class="ah-dash-head">
+    <div>
+        <span class="ah-dash-kicker">TEACHING / DASHBOARD</span>
+        <h1 class="ah-dash-title">Teacher Dashboard</h1>
+        <p class="ah-dash-subtitle">
+            Your classes, assignments, student work and grading progress.
+        </p>
+    </div>
+
+    <div class="ah-dash-actions">
+        <a href="{% url 'class_allocations:my_classes' %}" class="ah-dash-btn">
+            <i class="bi bi-people"></i> My Classes
+        </a>
+        <a href="{% url 'assignments:create' %}" class="ah-dash-btn ah-dash-btn-primary">
+            <i class="bi bi-plus-lg"></i> Create Assignment
+        </a>
+    </div>
+</div>
+
+<div class="ah-dash-hero">
+    <div>
+        <span class="ah-dash-tag">
+            <i class="bi bi-person-workspace"></i> TEACHER WORKSPACE
+        </span>
+
+        <h2>Welcome back, {{ user.first_name|default:user.username }}.</h2>
+
+        <p>
+            Stay organized with assigned courses, upcoming deadlines,
+            recent student submissions and grading.
+        </p>
+    </div>
+
+    <div class="ah-dash-hero-icon">
+        <i class="bi bi-easel2-fill"></i>
+    </div>
+</div>
+
+<div class="ah-dash-kpis">
+
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon"><i class="bi bi-book-half"></i></div>
+        <div class="ah-dash-kpi-label">Assigned Courses</div>
+        <div class="ah-dash-kpi-value">{{ teacher_total_courses|default:0 }}</div>
+        <div class="ah-dash-kpi-note">{{ teacher_total_offerings|default:0 }} active offerings</div>
+    </div>
+
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon violet"><i class="bi bi-people-fill"></i></div>
+        <div class="ah-dash-kpi-label">My Students</div>
+        <div class="ah-dash-kpi-value">{{ teacher_total_students|default:0 }}</div>
+        <div class="ah-dash-kpi-note">Unique enrolled students</div>
+    </div>
+
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon green"><i class="bi bi-journal-text"></i></div>
+        <div class="ah-dash-kpi-label">My Assignments</div>
+        <div class="ah-dash-kpi-value">{{ teacher_total_assignments|default:0 }}</div>
+        <div class="ah-dash-kpi-note">{{ teacher_published_assignments|default:0 }} published</div>
+    </div>
+
+    <div class="ah-dash-kpi">
+        <div class="ah-dash-icon amber"><i class="bi bi-clipboard-check"></i></div>
+        <div class="ah-dash-kpi-label">Pending Grading</div>
+        <div class="ah-dash-kpi-value">{{ teacher_pending_grading|default:0 }}</div>
+        <div class="ah-dash-kpi-note">Submitted work awaiting review</div>
+    </div>
+
+</div>
+
+<div class="ah-dash-columns">
+
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-body">
+            <h2>Teaching Overview</h2>
+            <p>Your current teaching activity.</p>
+
+            <div class="ah-dash-mini-grid">
+                <div class="ah-dash-mini"><span>Active Course Offerings</span><strong>{{ teacher_total_offerings|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Active Enrollments</span><strong>{{ teacher_total_enrollments|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Draft Assignments</span><strong>{{ teacher_draft_assignments|default:0 }}</strong></div>
+                <div class="ah-dash-mini"><span>Closed Assignments</span><strong>{{ teacher_closed_assignments|default:0 }}</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-body">
+            <h2>Grading Progress</h2>
+            <p>Share of submitted work already graded.</p>
+
+            <div class="ah-dash-progress-head">
+                <strong>{{ teacher_grading_percentage|default:0 }}%</strong>
+                <span class="ah-dash-chip blue">{{ teacher_graded_submissions|default:0 }} Graded</span>
+            </div>
+
+            <div
+                class="ah-dash-progress-track"
+                role="progressbar"
+                aria-label="Grading completion"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ teacher_grading_percentage|default:0 }}"
+            >
+                <div
+                    class="ah-dash-progress-fill"
+                    style="width: {{ teacher_grading_percentage|default:0 }}%;"
+                ></div>
+            </div>
+
+            <div class="ah-dash-progress-key">
+                <span>{{ teacher_graded_submissions|default:0 }} graded</span>
+                <span>{{ teacher_pending_grading|default:0 }} awaiting grading</span>
+            </div>
+
+            <a
+                href="{% url 'assignments:submissions' %}"
+                class="ah-dash-btn ah-dash-btn-primary w-100 mt-4"
+            >
+                <i class="bi bi-clipboard-check"></i>
+                Open Submission Management
+            </a>
+        </div>
+    </section>
+
+</div>
+
+<section class="ah-dash-panel">
+
+    <div class="ah-dash-panel-head">
+        <div>
+            <h2>
+                <i class="bi bi-clipboard-check text-primary me-2"></i>
+                Submissions Awaiting Grading
+            </h2>
+            <p>Oldest pending submissions appear first.</p>
+        </div>
+        <a href="{% url 'assignments:submissions' %}" class="ah-dash-btn">View All</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="ah-dash-table">
+            <thead>
+                <tr>
+                    <th>STUDENT</th>
+                    <th>ASSIGNMENT</th>
+                    <th>COURSE</th>
+                    <th>SUBMITTED AT</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for submission in teacher_grading_queue %}
+                <tr>
+                    <td>
+                        <span class="ah-dash-primary">
+                            {{ submission.student.get_full_name|default:submission.student.username }}
+                        </span>
+                        <span class="ah-dash-secondary">{{ submission.student.username }}</span>
+                    </td>
+                    <td class="ah-dash-primary">
+                        {{ submission.assignment.title|truncatechars:42 }}
+                    </td>
+                    <td>
+                        {% if submission.assignment.course_offering %}
+                            <span class="ah-dash-primary">
+                                {{ submission.assignment.course_offering.course.code }}
+                            </span>
+                            <span class="ah-dash-secondary">
+                                {{ submission.assignment.course_offering.section.code }}
+                            </span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>{{ submission.submitted_at|date:'d M Y, h:i A'|default:'—' }}</td>
+                    <td><span class="ah-dash-chip amber">Pending Review</span></td>
+                    <td>
+                        <a href="{% url 'assignments:submission_review' submission.pk %}" class="ah-dash-btn">
+                            <i class="bi bi-pencil-square"></i> Grade
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="ah-dash-empty">
+                            <i class="bi bi-check2-all"></i>
+                            No pending submissions. Your grading queue is clear.
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<section class="ah-dash-panel">
+
+    <div class="ah-dash-panel-head">
+        <div>
+            <h2>
+                <i class="bi bi-calendar-event text-primary me-2"></i>
+                Upcoming Assignment Deadlines
+            </h2>
+            <p>Published assignments with future deadlines.</p>
+        </div>
+        <a href="{% url 'assignments:list' %}" class="ah-dash-btn">View All</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="ah-dash-table">
+            <thead>
+                <tr>
+                    <th>ASSIGNMENT</th>
+                    <th>COURSE</th>
+                    <th>SECTION</th>
+                    <th>DEADLINE</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for assignment in teacher_upcoming_assignments %}
+                <tr>
+                    <td>
+                        <span class="ah-dash-primary">
+                            {{ assignment.title|truncatechars:48 }}
+                        </span>
+                        <span class="ah-dash-secondary">
+                            {{ assignment.total_marks }} total marks
+                        </span>
+                    </td>
+                    <td>
+                        <span class="ah-dash-primary">
+                            {{ assignment.course_offering.course.code }}
+                        </span>
+                        <span class="ah-dash-secondary">
+                            {{ assignment.course_offering.course.title|truncatechars:30 }}
+                        </span>
+                    </td>
+                    <td>{{ assignment.course_offering.section.code }}</td>
+                    <td>{{ assignment.deadline|date:'d M Y, h:i A' }}</td>
+                    <td><span class="ah-dash-chip">Published</span></td>
+                    <td>
+                        <a href="{% url 'assignments:detail' assignment.pk %}" class="ah-dash-btn">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="ah-dash-empty">
+                            <i class="bi bi-calendar-check"></i>
+                            No upcoming assignment deadlines.
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<section class="ah-dash-panel">
+
+    <div class="ah-dash-panel-head">
+        <div>
+            <h2>
+                <i class="bi bi-collection text-primary me-2"></i>
+                My Assigned Classes
+            </h2>
+            <p>Active course offerings assigned to you.</p>
+        </div>
+        <a href="{% url 'class_allocations:my_classes' %}" class="ah-dash-btn">
+            View All Classes
+        </a>
+    </div>
+
+    {% if teacher_my_classes %}
+    <div class="ah-dash-course-grid">
+        {% for offering in teacher_my_classes %}
+        <div class="ah-dash-course">
+
+            <span class="ah-dash-course-code">
+                {{ offering.course.code }}
+            </span>
+
+            <h3>{{ offering.course.title }}</h3>
+
+            <div class="ah-dash-course-meta">
+                <span>
+                    <i class="bi bi-people"></i>
+                    Section: {{ offering.section.code }}
+                </span>
+                <span>
+                    <i class="bi bi-calendar3"></i>
+                    {{ offering.get_term_display }} {{ offering.academic_year }}
+                </span>
+                <span>
+                    <i class="bi bi-mortarboard"></i>
+                    Semester {{ offering.section.semester.number }}
+                </span>
+            </div>
+
+            <div class="ah-dash-course-footer">
+                <span>{{ offering.student_count }} students</span>
+                <a
+                    class="ah-dash-btn"
+                    href="{% url 'class_allocations:class_roster' offering.pk %}"
+                >
+                    View Class <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <div class="ah-dash-empty">
+            <i class="bi bi-book"></i>
+            No active classes assigned yet.
+        </div>
+    {% endif %}
+
+</section>
+
+<div class="ah-dash-columns">
+
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-head">
+            <div>
+                <h2>Recent Student Submissions</h2>
+                <p>Latest submitted and graded student work.</p>
+            </div>
+            <a href="{% url 'assignments:submissions' %}" class="ah-dash-btn">
+                View All
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="ah-dash-table">
+                <thead>
+                    <tr>
+                        <th>STUDENT / ASSIGNMENT</th>
+                        <th>STATUS</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in teacher_recent_submissions %}
+                    <tr>
+                        <td>
+                            <span class="ah-dash-primary">
+                                {{ submission.student.get_full_name|default:submission.student.username }}
+                            </span>
+                            <span class="ah-dash-secondary">
+                                {{ submission.assignment.title|truncatechars:40 }}
+                            </span>
+                            <span class="ah-dash-secondary">
+                                {{ submission.submitted_at|date:'d M Y, h:i A' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if submission.status == 'GRADED' %}
+                                <span class="ah-dash-chip">Graded</span>
+                            {% else %}
+                                <span class="ah-dash-chip amber">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'assignments:submission_review' submission.pk %}" class="ah-dash-btn">
+                                Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">
+                            <div class="ah-dash-empty">
+                                <i class="bi bi-inbox"></i>
+                                No student submissions yet.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="ah-dash-panel">
+        <div class="ah-dash-panel-body">
+            <h2>Quick Actions</h2>
+            <p>Frequently used teaching tools.</p>
+
+            <div class="ah-dash-link-grid">
+                <a class="ah-dash-quick" href="{% url 'assignments:create' %}">
+                    <i class="bi bi-file-earmark-plus"></i>Create Assignment
+                </a>
+                <a class="ah-dash-quick" href="{% url 'assignments:list' %}">
+                    <i class="bi bi-journal-text"></i>My Assignments
+                </a>
+                <a class="ah-dash-quick" href="{% url 'assignments:submissions' %}">
+                    <i class="bi bi-clipboard-check"></i>Grade Submissions
+                </a>
+                <a class="ah-dash-quick" href="{% url 'courses:offering_list' %}">
+                    <i class="bi bi-book-half"></i>My Courses
+                </a>
+                <a class="ah-dash-quick" href="{% url 'class_allocations:my_classes' %}">
+                    <i class="bi bi-people"></i>My Classes
+                </a>
+                <a class="ah-dash-quick" href="{% url 'accounts:my_profile' %}">
+                    <i class="bi bi-person-circle"></i>My Profile
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+{% elif dashboard_role == "student" %}
+
+<!-- STUDENT DASHBOARD: PHASE 9.4 -->
+
+<div class="ah-dash-head">
+    <div>
+        <span class="ah-dash-kicker">LEARNING / WORKSPACE</span>
+        <h1 class="ah-dash-title">Student Dashboard</h1>
+        <p class="ah-dash-subtitle">
+            Welcome back, {{ user.first_name|default:user.username }}.
+        </p>
+    </div>
+</div>
+
+<div class="ah-dash-hero">
+    <div>
+        <span class="ah-dash-tag">
+            <i class="bi bi-mortarboard"></i> STUDENT WORKSPACE
+        </span>
+        <h2>Stay on top of your academic work.</h2>
+        <p>
+            View your assignments, manage submissions and access your personal profile.
+        </p>
+    </div>
+    <div class="ah-dash-hero-icon">
+        <i class="bi bi-mortarboard-fill"></i>
+    </div>
+</div>
+
+<div class="ah-dash-workspace">
+    <a href="{% url 'assignments:list' %}">
+        <i class="bi bi-journal-text"></i>
+        <h3>My Assignments</h3>
+        <p>View assignments available to your enrolled classes.</p>
+    </a>
+
+    <a href="{% url 'accounts:my_profile' %}">
+        <i class="bi bi-person-circle"></i>
+        <h3>My Profile</h3>
+        <p>View and update allowed account information.</p>
+    </a>
+
+    <a href="{% url 'accounts:profile_password' %}">
+        <i class="bi bi-shield-lock"></i>
+        <h3>Account Security</h3>
+        <p>Change your account password securely.</p>
+    </a>
+</div>
+
+{% elif dashboard_role == "unknown" %}
+
+<div class="ah-dash-head">
+    <div>
+        <h1 class="ah-dash-title">AssignHub Workspace</h1>
+        <p class="ah-dash-subtitle">
+            Your academic role has not been configured.
+            Contact your university administrator.
+        </p>
+    </div>
+</div>
+
+{% else %}
+
+<!-- GUEST HOMEPAGE -->
+
+<div class="ah-dash-head">
+    <div>
+        <span class="ah-dash-kicker">UNIVERSITY ASSIGNMENT MANAGEMENT</span>
+        <h1 class="ah-dash-title">Welcome to AssignHub</h1>
+        <p class="ah-dash-subtitle">
+            A modern academic assignment management portal.
+        </p>
+    </div>
+</div>
+
+<div class="ah-dash-hero">
+    <div>
+        <span class="ah-dash-tag">
+            <i class="bi bi-shield-check"></i> SECURE ACADEMIC WORKSPACE
+        </span>
+
+        <h2>Simplify your academic workflow.</h2>
+
+        <p>
+            Manage assignments, submit academic work
+            and collaborate across your university.
+        </p>
+
+        <a href="{% url 'accounts:login' %}" class="ah-dash-btn ah-dash-btn-primary mt-3">
+            <i class="bi bi-box-arrow-in-right"></i> Sign In
+        </a>
+    </div>
+
+    <div class="ah-dash-hero-icon">
+        <i class="bi bi-mortarboard-fill"></i>
+    </div>
+</div>
+
+{% endif %}
+
+</div>
 {% endblock %}

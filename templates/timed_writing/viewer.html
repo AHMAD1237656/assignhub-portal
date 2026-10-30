@@ -1,3 +1,4 @@
+
 {% load static %}
 
 <link
@@ -15,28 +16,47 @@
     href="{% static 'css/rich_writing.css' %}"
 >
 
-<div class="card shadow-sm mt-3">
+<div class="card border-0 shadow-sm mt-3">
 
     <div class="card-body">
 
-        <h2 class="h5">
+        <h2 class="h5 fw-bold">
             Formatted Assignment Answer
         </h2>
+
+        <p class="text-muted small">
+            Read-only copy of the saved answer,
+            including formulas and tables.
+        </p>
+
+        <!-- RICH ANSWER -->
 
         <div
             id="rich-viewer"
             class="ah-rich-viewer"
+            aria-label="Read-only formatted answer"
         ></div>
+
+        <!-- PLAIN TEXT FALLBACK -->
 
         <div id="rich-viewer-fallback">
 
             {% if attempt %}
+
                 <pre class="text-wrap">{{ attempt.submission.text_content }}</pre>
+
                 {{ attempt.rich_delta|json_script:"rich-viewer-delta" }}
 
             {% elif submission %}
+
                 <pre class="text-wrap">{{ submission.text_content }}</pre>
-                {{ submission.timed_attempt.rich_delta|json_script:"rich-viewer-delta" }}
+
+                {% if submission.timed_attempt %}
+
+                    {{ submission.timed_attempt.rich_delta|json_script:"rich-viewer-delta" }}
+
+                {% endif %}
+
             {% endif %}
 
         </div>
@@ -44,6 +64,8 @@
     </div>
 
 </div>
+
+<!-- VIEWER LIBRARIES -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js"

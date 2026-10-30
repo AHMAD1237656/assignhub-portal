@@ -1,19 +1,30 @@
+
+/* ==========================================
+   ASSIGNHUB TIMED WRITING EDITOR
+   QUILL 2.0.3
+   PROFESSIONAL ACADEMIC EDITOR
+========================================== */
+
 .ah-writing-page {
-    max-width: 1120px;
+    max-width: 1250px;
 }
 
 .ah-instructions {
     white-space: pre-wrap;
-    line-height: 1.7;
+    line-height: 1.75;
 }
+
+/* EDITOR CONTAINER */
 
 .ah-editor-shell {
     background: #fff;
     border: 1px solid #dce3ef;
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 8px 28px rgba(15, 23, 42, .07);
+    box-shadow: 0 8px 28px rgba(15,23,42,.07);
 }
+
+/* TIMER HEADER */
 
 .ah-editor-topbar {
     display: flex;
@@ -29,15 +40,17 @@
 .ah-topbar-label {
     display: block;
     color: #64748b;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 750;
     text-transform: uppercase;
+    letter-spacing: .3px;
 }
 
 .ah-clock {
     display: block;
     color: #1d4ed8;
-    font-size: 26px;
+    font-size: 28px;
+    font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
 
@@ -45,11 +58,13 @@
     color: #dc2626;
 }
 
+/* SAVE STATUS */
+
 .ah-save-status {
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 650;
     border-radius: 20px;
-    padding: 7px 12px;
+    padding: 8px 12px;
     color: #475569;
     background: #e2e8f0;
 }
@@ -69,17 +84,131 @@
     color: #92400e;
 }
 
+/* RIBBON */
+
+.ah-ribbon-title {
+    padding: 9px 15px;
+    color: #344c81;
+    background: #f3f6ff;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    border-bottom: 1px solid #e3e9f3;
+}
+
+/* QUILL TOOLBAR */
+
 #writing-toolbar {
     border: 0;
     border-bottom: 1px solid #e3e9f3;
     background: #fff;
     padding: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
 }
+
+#writing-toolbar .ql-formats {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#writing-toolbar .ql-picker.ql-font {
+    width: 112px;
+}
+
+#writing-toolbar .ql-picker.ql-size {
+    width: 77px;
+}
+
+#writing-toolbar .ql-picker.ql-header {
+    width: 108px;
+}
+
+/* FONT LABELS */
+
+.ql-snow .ql-picker.ql-font
+.ql-picker-label[data-value="arial"]::before,
+.ql-snow .ql-picker.ql-font
+.ql-picker-item[data-value="arial"]::before {
+    content: "Arial";
+    font-family: Arial, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font
+.ql-picker-label[data-value="serif"]::before,
+.ql-snow .ql-picker.ql-font
+.ql-picker-item[data-value="serif"]::before {
+    content: "Serif";
+    font-family: Georgia, serif;
+}
+
+.ql-snow .ql-picker.ql-font
+.ql-picker-label[data-value="monospace"]::before,
+.ql-snow .ql-picker.ql-font
+.ql-picker-item[data-value="monospace"]::before {
+    content: "Monospace";
+    font-family: monospace;
+}
+
+.ql-snow .ql-picker.ql-font
+.ql-picker-label:not([data-value])::before {
+    content: "Default";
+}
+
+/* FONT SIZE LABELS */
+
+.ql-snow .ql-picker.ql-size
+.ql-picker-item[data-value="12px"]::before,
+.ql-snow .ql-picker.ql-size
+.ql-picker-label[data-value="12px"]::before {
+    content: "12 px";
+}
+
+.ql-snow .ql-picker.ql-size
+.ql-picker-item[data-value="14px"]::before,
+.ql-snow .ql-picker.ql-size
+.ql-picker-label[data-value="14px"]::before {
+    content: "14 px";
+}
+
+.ql-snow .ql-picker.ql-size
+.ql-picker-item[data-value="16px"]::before,
+.ql-snow .ql-picker.ql-size
+.ql-picker-label[data-value="16px"]::before {
+    content: "16 px";
+}
+
+.ql-snow .ql-picker.ql-size
+.ql-picker-item[data-value="18px"]::before,
+.ql-snow .ql-picker.ql-size
+.ql-picker-label[data-value="18px"]::before {
+    content: "18 px";
+}
+
+.ql-snow .ql-picker.ql-size
+.ql-picker-item[data-value="24px"]::before,
+.ql-snow .ql-picker.ql-size
+.ql-picker-label[data-value="24px"]::before {
+    content: "24 px";
+}
+
+.ql-snow .ql-picker.ql-size
+.ql-picker-item[data-value="32px"]::before,
+.ql-snow .ql-picker.ql-size
+.ql-picker-label[data-value="32px"]::before {
+    content: "32 px";
+}
+
+/* ACADEMIC TOOLBAR */
 
 .ah-academic-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 13px;
+    align-items: center;
     padding: 12px 16px;
     border-bottom: 1px solid #e3e9f3;
     background: #f9fbff;
@@ -93,15 +222,17 @@
 }
 
 .ah-tool-group label {
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 750;
     color: #475569;
 }
 
 .ah-tool-group select,
-.ah-tool-group button {
+.ah-tool-group button,
+.ah-find-panel button,
+.ah-find-panel input {
     padding: 7px 10px;
-    border-radius: 7px;
+    border-radius: 8px;
     border: 1px solid #cbd5e1;
     background: white;
     font-size: 12px;
@@ -109,27 +240,96 @@
 
 .ah-tool-group button {
     color: #1d4ed8;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
 }
 
-.ah-tool-group button:hover {
+.ah-tool-group button:hover,
+.ah-find-panel button:hover {
     background: #eff6ff;
 }
 
+.ah-tool-group button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* FIND / REPLACE */
+
+.ah-find-panel {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #eef3ff;
+    border-bottom: 1px solid #d9e4fb;
+    color: #2d426b;
+    font-size: 12px;
+}
+
+.ah-find-panel[hidden] {
+    display: none !important;
+}
+
+.ah-find-panel input {
+    min-width: 115px;
+    flex: 1;
+}
+
+.ah-find-panel label {
+    font-weight: 750;
+}
+
+/* WRITING AREA */
+
 #writing-editor {
-    min-height: 450px;
     border: 0;
-    background: white;
+    background: #fff;
+    min-height: 450px;
 }
 
 #writing-editor .ql-editor {
     min-height: 450px;
     padding: 28px 32px;
-    line-height: 1.8;
+    line-height: 1.5;
     font-size: 16px;
     color: #0f172a;
 }
+
+/* CUSTOM FONTS */
+
+.ql-editor .ql-font-arial {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.ql-editor .ql-font-serif {
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+.ql-editor .ql-font-monospace {
+    font-family: Consolas, "Courier New", monospace;
+}
+
+/* LINE HEIGHT */
+
+.ql-editor .ql-lineheight-single {
+    line-height: 1.2;
+}
+
+.ql-editor .ql-lineheight-normal {
+    line-height: 1.5;
+}
+
+.ql-editor .ql-lineheight-relaxed {
+    line-height: 1.8;
+}
+
+.ql-editor .ql-lineheight-double {
+    line-height: 2;
+}
+
+/* FOOTER */
 
 .ah-editor-bottom {
     display: flex;
@@ -140,16 +340,20 @@
     border-top: 1px solid #e3e9f3;
     padding: 12px 18px;
     color: #64748b;
-    font-size: 12px;
+    font-size: 11px;
 }
+
+/* SUBMISSION ACTIONS */
 
 .ah-submit-actions {
     display: flex;
     gap: 12px;
     justify-content: flex-end;
     flex-wrap: wrap;
-    margin-top: 20px;
+    margin-top: 18px;
 }
+
+/* SHAPES */
 
 .ah-shape {
     margin: 18px auto;
@@ -160,7 +364,7 @@
     padding: 12px;
     text-align: center;
     color: #1e40af;
-    font-weight: 600;
+    font-weight: 650;
     box-sizing: border-box;
 }
 
@@ -188,7 +392,8 @@
     transform: rotate(45deg) scale(.75);
 }
 
-.ah-shape[data-kind="diamond"] .ah-shape-label {
+.ah-shape[data-kind="diamond"]
+.ah-shape-label {
     transform: rotate(-45deg) scale(1.2);
 }
 
@@ -198,9 +403,13 @@
     background: #dbeafe;
     border: 2px solid #2563eb;
     clip-path: polygon(
-        0 20%, 78% 20%, 78% 0,
-        100% 50%, 78% 100%,
-        78% 80%, 0 80%
+        0 20%,
+        78% 20%,
+        78% 0,
+        100% 50%,
+        78% 100%,
+        78% 80%,
+        0 80%
     );
 }
 
@@ -210,30 +419,133 @@
     border-bottom: 3px solid #2563eb;
 }
 
+/* TABLE EMBED */
+
+.ah-table-embed {
+    display: block;
+    overflow-x: auto;
+    padding: 9px;
+    margin: 12px 0;
+    border: 1px solid #dce3ef;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.ah-table-embed:focus {
+    outline: 2px solid #4669ed;
+    outline-offset: 2px;
+}
+
+.ah-doc-table {
+    width: 100%;
+    min-width: 200px;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ah-doc-table th,
+.ah-doc-table td {
+    padding: 9px 12px;
+    border: 1px solid #bfccdd;
+    min-width: 85px;
+    text-align: left;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.ah-doc-table th {
+    background: #edf2ff;
+    color: #203c71;
+    font-weight: 750;
+}
+
+.ah-table-edit-hint {
+    display: block;
+    margin-top: 7px;
+    font-size: 10px;
+    color: #7082a1;
+}
+
+/* HORIZONTAL RULE */
+
+.ah-rich-rule {
+    border: 0;
+    border-top: 2px solid #93a6c6;
+    margin: 15px 0;
+}
+
+/* TABLE EDITING MODAL */
+
+.ah-table-grid {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.ah-table-entry {
+    min-width: 420px;
+}
+
+.ah-table-entry input {
+    min-width: 95px;
+}
+
+/* READ-ONLY VIEWER */
+
 .ah-rich-viewer {
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    background: white;
+    background: #fff;
     overflow: hidden;
 }
 
 .ah-rich-viewer .ql-editor {
-    min-height: 100px;
-    line-height: 1.8;
+    min-height: 110px;
     padding: 22px;
+    line-height: 1.6;
 }
 
+.ah-rich-viewer .ah-table-embed {
+    cursor: default;
+}
+
+.ah-rich-viewer .ah-table-edit-hint {
+    display: none;
+}
+
+.ah-rich-viewer .ql-toolbar {
+    display: none;
+}
+
+/* MOBILE */
+
 @media (max-width: 768px) {
+
     .ah-academic-toolbar {
         flex-direction: column;
+        align-items: stretch;
     }
 
     #writing-editor .ql-editor {
-        padding: 18px;
+        padding: 17px;
         min-height: 330px;
     }
 
     .ah-submit-actions button {
         flex: 1;
     }
+
+    #writing-toolbar {
+        padding: 8px;
+    }
+
+}
+
+/* ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ah-writing-page * {
+        transition: none !important;
+    }
+
 }

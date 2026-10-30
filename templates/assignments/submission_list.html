@@ -1,117 +1,1807 @@
+
 {% extends "base.html" %}
 
 {% block title %}
-    Submissions - AssignHub
+Submissions | AssignHub
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================
+   ASSIGNHUB - SUBMISSION MANAGEMENT
+   PROFESSIONAL DASHBOARD
+   EXISTING NAVY / BLUE THEME
+============================================ */
+
+.ah-submissions {
+    --sl-navy: #101c32;
+    --sl-blue: #4669ed;
+    --sl-border: #e5eaf3;
+    --sl-muted: #7b8ba2;
+
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 4px 0 35px;
+    color: #263956;
+}
+
+.ah-submissions a {
+    text-decoration: none;
+}
+
+/* HEADER */
+
+.sl-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.sl-eyebrow {
+    display: block;
+    margin-bottom: 9px;
+    color: #536fca;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+}
+
+.sl-heading {
+    margin: 0 0 8px;
+    color: var(--sl-navy);
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 800;
+    letter-spacing: -.8px;
+}
+
+.sl-subtitle {
+    margin: 0;
+    color: var(--sl-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.sl-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sl-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 9px 15px;
+    border-radius: 10px;
+    border: 1px solid #dbe3f0;
+    background: #fff;
+    color: #3d5271;
+    font-size: 12px;
+    font-weight: 750;
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.sl-btn:hover {
+    background: #f0f4ff;
+    border-color: #cbd6ff;
+    color: #3759ce;
+}
+
+.sl-btn-primary {
+    color: #fff;
+    border-color: var(--sl-blue);
+    background: var(--sl-blue);
+}
+
+.sl-btn-primary:hover {
+    color: #fff;
+    background: #3657d1;
+    border-color: #3657d1;
+}
+
+/* HERO */
+
+.sl-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 27px 31px;
+    margin-bottom: 24px;
+    border-radius: 18px;
+    color: #fff;
+    background: linear-gradient(
+        110deg,
+        #101c32 0%,
+        #233f75 65%,
+        #3558ad 100%
+    );
+    box-shadow: 0 11px 25px rgba(16,28,50,.1);
+}
+
+.sl-hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 11px;
+    margin-bottom: 13px;
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.1);
+    color: #dce5ff;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .7px;
+}
+
+.sl-hero h2 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: clamp(20px, 2.5vw, 26px);
+    font-weight: 800;
+    letter-spacing: -.4px;
+}
+
+.sl-hero p {
+    margin: 0;
+    color: #cedaf2;
+    font-size: 12px;
+    line-height: 1.85;
+    max-width: 720px;
+}
+
+.sl-hero-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 94px;
+    height: 94px;
+    flex-shrink: 0;
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,.17);
+    background: rgba(255,255,255,.1);
+    color: #e5ecff;
+    font-size: 42px;
+}
+
+/* SUMMARY CARDS */
+
+.sl-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.sl-stat {
+    padding: 21px;
+    background: #fff;
+    border: 1px solid var(--sl-border);
+    border-radius: 16px;
+    box-shadow: 0 5px 19px rgba(16,28,50,.035);
+    transition: transform .2s ease;
+}
+
+.sl-stat:hover {
+    transform: translateY(-3px);
+}
+
+.sl-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    background: #eef2ff;
+    color: #4669ed;
+    font-size: 20px;
+}
+
+.sl-stat-icon.amber {
+    background: #fff3e0;
+    color: #b98120;
+}
+
+.sl-stat-icon.green {
+    background: #e7f7ed;
+    color: #16865a;
+}
+
+.sl-stat-icon.gray {
+    background: #eef1f5;
+    color: #69788e;
+}
+
+.sl-stat-label {
+    color: #7b899e;
+    font-size: 11.5px;
+    font-weight: 650;
+}
+
+.sl-stat-value {
+    margin: 5px 0;
+    color: #1b2d49;
+    font-size: clamp(27px,3vw,35px);
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.sl-stat-description {
+    color: #95a1b0;
+    font-size: 10.5px;
+}
+
+/* FILTER PANEL */
+
+.sl-panel {
+    overflow: hidden;
+    border: 1px solid var(--sl-border);
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 5px 19px rgba(16,28,50,.035);
+}
+
+.sl-filter-panel {
+    padding: 23px;
+    margin-bottom: 22px;
+}
+
+.sl-panel-title {
+    margin: 0 0 6px;
+    color: #243651;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.sl-panel-description {
+    margin: 0 0 19px;
+    color: #8795a9;
+    font-size: 11.5px;
+    line-height: 1.7;
+}
+
+.sl-filter-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.8fr)
+        minmax(145px, 1fr)
+        minmax(165px, 1.1fr)
+        minmax(145px, 1fr);
+    gap: 14px;
+}
+
+.sl-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #475971;
+    font-size: 11.5px;
+    font-weight: 750;
+}
+
+.sl-input,
+.sl-select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #dce4ee;
+    border-radius: 10px;
+    outline: none;
+    background: #fff;
+    color: #30445e;
+    font-size: 12.5px;
+}
+
+.sl-input:focus,
+.sl-select:focus {
+    border-color: #758def;
+    box-shadow: 0 0 0 3px rgba(70,105,237,.11);
+}
+
+.sl-search-field {
+    position: relative;
+}
+
+.sl-search-field i {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    color: #93a1b7;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.sl-search-field .sl-input {
+    padding-left: 41px;
+}
+
+.sl-filter-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 17px;
+}
+
+.sl-filter-hint {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #8392a7;
+    font-size: 11px;
+}
+
+.sl-clear {
+    padding: 8px 12px;
+    border: 1px solid #dce4f0;
+    border-radius: 9px;
+    background: #fff;
+    color: #536987;
+    font-size: 11.5px;
+    font-weight: 750;
+}
+
+.sl-clear:hover {
+    background: #f3f6ff;
+    color: #3558cc;
+}
+
+/* RESULTS TABLE */
+
+.sl-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 21px 23px;
+    border-bottom: 1px solid var(--sl-border);
+}
+
+.sl-toolbar-title {
+    margin: 0;
+    color: #263954;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.sl-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    flex-wrap: wrap;
+}
+
+.sl-count-badge {
+    padding: 7px 11px;
+    border-radius: 9px;
+    background: #edf2ff;
+    color: #4160c7;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.sl-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #4669ed;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.sl-loading[hidden] {
+    display: none !important;
+}
+
+.sl-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+.sl-table th {
+    padding: 15px 18px;
+    border-bottom: 1px solid #e8edf5;
+    background: #f8faff;
+    color: #78889c;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .35px;
+    white-space: nowrap;
+}
+
+.sl-table td {
+    padding: 17px 18px;
+    border-bottom: 1px solid #edf0f5;
+    color: #40526d;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.sl-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.sl-table tbody tr:hover {
+    background: #fafbff;
+}
+
+.sl-primary {
+    display: block;
+    color: #263a59;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.sl-secondary {
+    display: block;
+    margin-top: 5px;
+    color: #8d99aa;
+    font-size: 10.5px;
+    line-height: 1.6;
+}
+
+.sl-student-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #edf2ff;
+    color: #4869e4;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.sl-student-cell {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 170px;
+}
+
+/* STATUS BADGES */
+
+.sl-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 24px;
+    font-size: 10.5px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.sl-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.sl-status-submitted {
+    background: #fff2df;
+    color: #a97824;
+}
+
+.sl-status-graded {
+    background: #e5f7ec;
+    color: #16865d;
+}
+
+.sl-status-draft {
+    background: #eef1f5;
+    color: #6c7a8d;
+}
+
+.sl-marks {
+    display: inline-flex;
+    gap: 5px;
+    align-items: baseline;
+    color: #25446e;
+    font-weight: 800;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.sl-marks small {
+    color: #8997aa;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.sl-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+}
+
+.sl-row-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 11px;
+    border: 1px solid #d6e0f8;
+    border-radius: 9px;
+    background: #fff;
+    color: #4160cf;
+    font-size: 11px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.sl-row-button:hover {
+    background: #edf2ff;
+    color: #3152c7;
+    border-color: #c7d3fc;
+}
+
+.sl-row-button.primary {
+    background: #4669ed;
+    border-color: #4669ed;
+    color: #fff;
+}
+
+.sl-row-button.primary:hover {
+    background: #3657d1;
+    border-color: #3657d1;
+    color: #fff;
+}
+
+/* PAGINATION */
+
+.sl-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 18px 23px;
+    border-top: 1px solid var(--sl-border);
+}
+
+.sl-pagination-note {
+    color: #8491a5;
+    font-size: 11px;
+}
+
+.sl-empty {
+    padding: 48px 20px;
+    text-align: center;
+}
+
+.sl-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    margin: 0 auto 15px;
+    border-radius: 16px;
+    background: #edf2ff;
+    color: #5571e3;
+    font-size: 27px;
+}
+
+.sl-empty h3 {
+    margin-bottom: 6px;
+    color: #32445f;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.sl-empty p {
+    margin: 0;
+    color: #8795a9;
+    font-size: 12px;
+}
+
+.sl-results-updating {
+    opacity: .55;
+    transition: opacity .15s ease;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1199px) {
+    .sl-stats-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+
+    .sl-filter-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .sl-hero {
+        padding: 23px;
+    }
+
+    .sl-hero-icon {
+        display: none;
+    }
+
+    .sl-header-actions {
+        width: 100%;
+    }
+
+    .sl-header-actions .sl-btn {
+        flex: 1;
+    }
+}
+
+@media (max-width: 575px) {
+    .sl-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sl-stat {
+        padding: 16px;
+    }
+
+    .sl-stats-grid {
+        gap: 10px;
+    }
+
+    .sl-filter-panel,
+    .sl-table-toolbar {
+        padding: 17px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ah-submissions *,
+    .ah-submissions *::before,
+    .ah-submissions *::after {
+        transition: none !important;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
 
-<h2 class="fw-bold mb-4">
-    Submissions
-</h2>
+<div class="ah-submissions">
 
-{% if submissions %}
+    <!-- PAGE HEADER -->
 
-<div class="table-responsive">
+    <div class="sl-header">
 
-    <table class="table table-bordered
-                  table-hover align-middle">
+        <div>
+            <span class="sl-eyebrow">
+                ASSIGNHUB / SUBMISSION MANAGEMENT
+            </span>
 
-        <thead class="table-light">
+            <h1 class="sl-heading">
 
-            <tr>
-                <th>Assignment</th>
-
-                {% if not is_student_user %}
-                    <th>Student</th>
+                {% if is_student_user %}
+                    My Submissions
+                {% elif is_teacher_user %}
+                    Submission Management
+                {% else %}
+                    All Submissions
                 {% endif %}
 
-                <th>Status</th>
-                <th>Submitted At</th>
-                <th>Marks</th>
+            </h1>
 
-                {% if can_review %}
-                    <th>Action</th>
-                {% endif %}
-            </tr>
+            <p class="sl-subtitle">
 
-        </thead>
-
-        <tbody>
-
-            {% for submission in submissions %}
-
-            <tr>
-
-                <td>
-                    {{ submission.assignment.title }}
-                </td>
-
-                {% if not is_student_user %}
-
-                <td>
-                    {{ submission.student.username }}
-                </td>
-
+                {% if is_student_user %}
+                    Track your assignment submissions
+                    and review their current status.
+                {% elif is_teacher_user %}
+                    Manage student submissions,
+                    review pending work and track grading.
+                {% else %}
+                    Monitor submission activity
+                    across AssignHub.
                 {% endif %}
 
-                <td>
-                    {{ submission.get_status_display }}
-                </td>
+            </p>
+        </div>
 
-                <td>
-                    {% if submission.submitted_at %}
-                        {{ submission.submitted_at|date:"d M Y, h:i A" }}
-                    {% else %}
-                        —
-                    {% endif %}
-                </td>
+        <div class="sl-header-actions">
 
-                <td>
-                    {% if is_student_user %}
-                        Pending release
-                    {% elif submission.marks != None %}
-                        {{ submission.marks }}
-                        /
-                        {{ submission.assignment.total_marks }}
-                    {% else %}
-                        —
-                    {% endif %}
-                </td>
+            <a
+                href="{% url 'assignments:list' %}"
+                class="sl-btn"
+            >
+                <i class="bi bi-arrow-left"></i>
+                Assignments
+            </a>
 
-                {% if can_review %}
+            {% if not is_student_user %}
 
-                <td>
-                    {% if submission.status != "DRAFT" %}
+            <a
+                href="{% url 'assignments:submissions' %}?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}export=csv"
+                class="sl-btn sl-btn-primary"
+                id="sl-export-link"
+            >
+                <i class="bi bi-download"></i>
+                Export CSV
+            </a>
 
-                    <a href="{% url 'assignments:submission_review' submission.pk %}"
-                       class="btn btn-dark btn-sm">
-                        Review
-                    </a>
+            {% endif %}
 
-                    {% else %}
-                        Draft
-                    {% endif %}
-                </td>
+        </div>
+
+    </div>
+
+    <!-- HERO -->
+
+    <section class="sl-hero">
+
+        <div>
+
+            <div class="sl-hero-label">
+                <i class="bi bi-shield-check"></i>
+                ACADEMIC SUBMISSION TRACKING
+            </div>
+
+            <h2>
+                {% if is_student_user %}
+                    Your academic work, in one place.
+                {% else %}
+                    A clearer way to manage submissions.
+                {% endif %}
+            </h2>
+
+            <p>
+                {% if is_student_user %}
+                    See which assignments are saved as drafts,
+                    submitted or graded.
+                {% else %}
+                    Find student work quickly, prioritize
+                    submissions awaiting grading and
+                    monitor the review workflow.
+                {% endif %}
+            </p>
+
+        </div>
+
+        <div class="sl-hero-icon" aria-hidden="true">
+            <i class="bi bi-clipboard2-check"></i>
+        </div>
+
+    </section>
+
+    <!-- LIVE SUMMARY CARDS -->
+
+    <div class="sl-stats-grid">
+
+        <div class="sl-stat">
+
+            <div class="sl-stat-icon">
+                <i class="bi bi-files"></i>
+            </div>
+
+            <div class="sl-stat-label">
+                Total Records
+            </div>
+
+            <div class="sl-stat-value">
+                {{ summary.total|default:0 }}
+            </div>
+
+            <div class="sl-stat-description">
+                All accessible submission records
+            </div>
+
+        </div>
+
+        <div class="sl-stat">
+
+            <div class="sl-stat-icon amber">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+
+            <div class="sl-stat-label">
+                Awaiting Grading
+            </div>
+
+            <div class="sl-stat-value">
+                {{ summary.submitted|default:0 }}
+            </div>
+
+            <div class="sl-stat-description">
+                Submitted, not yet graded
+            </div>
+
+        </div>
+
+        <div class="sl-stat">
+
+            <div class="sl-stat-icon green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+
+            <div class="sl-stat-label">
+                Graded
+            </div>
+
+            <div class="sl-stat-value">
+                {{ summary.graded|default:0 }}
+            </div>
+
+            <div class="sl-stat-description">
+                Assessment completed
+            </div>
+
+        </div>
+
+        <div class="sl-stat">
+
+            <div class="sl-stat-icon gray">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+
+            <div class="sl-stat-label">
+                Drafts
+            </div>
+
+            <div class="sl-stat-value">
+                {{ summary.draft|default:0 }}
+            </div>
+
+            <div class="sl-stat-description">
+                Not yet submitted
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- AUTOMATIC FILTERS -->
+
+    <section class="sl-panel sl-filter-panel">
+
+        <h2 class="sl-panel-title">
+            Search &amp; Filter
+        </h2>
+
+        <p class="sl-panel-description">
+            Search automatically updates after 200ms
+            without a full page reload.
+        </p>
+
+        <form
+            method="get"
+            action="{% url 'assignments:submissions' %}"
+            id="sl-filter-form"
+            role="search"
+        >
+
+            <div class="sl-filter-grid">
+
+                <!-- SEARCH -->
+
+                <div>
+
+                    <label for="sl-search" class="sl-label">
+                        Search Records
+                    </label>
+
+                    <div class="sl-search-field">
+
+                        <i
+                            class="bi bi-search"
+                            aria-hidden="true"
+                        ></i>
+
+                        <input
+                            type="search"
+                            id="sl-search"
+                            name="q"
+                            value="{{ search_query }}"
+                            class="sl-input"
+                            placeholder="Assignment, student or course..."
+                            maxlength="100"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                </div>
+
+                <!-- STATUS -->
+
+                <div>
+
+                    <label for="sl-status" class="sl-label">
+                        Submission Status
+                    </label>
+
+                    <select
+                        id="sl-status"
+                        name="status"
+                        class="sl-select"
+                    >
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option
+                            value="SUBMITTED"
+                            {% if status_filter == "SUBMITTED" %}selected{% endif %}
+                        >
+                            Awaiting Grading
+                        </option>
+
+                        <option
+                            value="GRADED"
+                            {% if status_filter == "GRADED" %}selected{% endif %}
+                        >
+                            Graded
+                        </option>
+
+                        <option
+                            value="DRAFT"
+                            {% if status_filter == "DRAFT" %}selected{% endif %}
+                        >
+                            Draft
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- COURSE -->
+
+                <div>
+
+                    <label for="sl-course" class="sl-label">
+                        Course / Section
+                    </label>
+
+                    <select
+                        id="sl-course"
+                        name="course"
+                        class="sl-select"
+                    >
+
+                        <option value="">
+                            All Courses
+                        </option>
+
+                        {% for option in course_choices %}
+
+                        <option
+                            value="{{ option.id }}"
+                            {% if course_filter == option.id %}selected{% endif %}
+                        >
+                            {{ option.label }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <!-- SORT -->
+
+                <div>
+
+                    <label for="sl-sort" class="sl-label">
+                        Sort Records
+                    </label>
+
+                    <select
+                        id="sl-sort"
+                        name="sort"
+                        class="sl-select"
+                    >
+
+                        <option
+                            value="newest"
+                            {% if sort_filter == "newest" %}selected{% endif %}
+                        >
+                            Newest First
+                        </option>
+
+                        <option
+                            value="oldest"
+                            {% if sort_filter == "oldest" %}selected{% endif %}
+                        >
+                            Oldest First
+                        </option>
+
+                        <option
+                            value="assignment"
+                            {% if sort_filter == "assignment" %}selected{% endif %}
+                        >
+                            Assignment A–Z
+                        </option>
+
+                        {% if not is_student_user %}
+
+                        <option
+                            value="student"
+                            {% if sort_filter == "student" %}selected{% endif %}
+                        >
+                            Student A–Z
+                        </option>
+
+                        {% endif %}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="sl-filter-bottom">
+
+                <span class="sl-filter-hint">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    Automatic filtering enabled · 200ms debounce
+                </span>
+
+                <button
+                    type="button"
+                    class="sl-clear"
+                    id="sl-clear-filters"
+                >
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                    Clear Filters
+                </button>
+
+            </div>
+
+            <noscript>
+                <button
+                    type="submit"
+                    class="sl-btn sl-btn-primary mt-3"
+                >
+                    Apply Filters
+                </button>
+            </noscript>
+
+        </form>
+
+    </section>
+
+    <!-- AJAX RESULTS -->
+
+    <section
+        class="sl-panel"
+        id="sl-results"
+        aria-label="Submission records"
+        aria-busy="false"
+    >
+
+        <div class="sl-table-toolbar">
+
+            <h2 class="sl-toolbar-title">
+                Submission Records
+            </h2>
+
+            <div class="sl-toolbar-right">
+
+                <span
+                    class="sl-loading"
+                    id="sl-loading"
+                    hidden
+                >
+                    <span
+                        class="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                    ></span>
+                    Updating...
+                </span>
+
+                <span
+                    class="sl-count-badge"
+                    id="sl-result-count"
+                >
+                    {{ filtered_count }} matching records
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="sl-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ASSIGNMENT</th>
+
+                        {% if not is_student_user %}
+                        <th>STUDENT</th>
+                        {% endif %}
+
+                        <th>COURSE / SECTION</th>
+
+                        <th>STATUS</th>
+
+                        <th>SUBMITTED AT</th>
+
+                        <th>MARKS</th>
+
+                        <th class="text-end">ACTIONS</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for submission in submissions %}
+
+                    <tr>
+
+                        <!-- ASSIGNMENT -->
+
+                        <td>
+
+                            <span class="sl-primary">
+                                {{ submission.assignment.title|truncatechars:55 }}
+                            </span>
+
+                            <span class="sl-secondary">
+                                Total Marks:
+                                {{ submission.assignment.total_marks }}
+                            </span>
+
+                        </td>
+
+                        <!-- STUDENT -->
+
+                        {% if not is_student_user %}
+
+                        <td>
+
+                            <div class="sl-student-cell">
+
+                                <span class="sl-student-avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </span>
+
+                                <div>
+
+                                    <span class="sl-primary">
+                                        {{ submission.student.get_full_name|default:submission.student.username }}
+                                    </span>
+
+                                    <span class="sl-secondary">
+                                        {{ submission.student.username }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        {% endif %}
+
+                        <!-- COURSE / SECTION -->
+
+                        <td>
+
+                            {% if submission.assignment.course_offering %}
+
+                                <span class="sl-primary">
+                                    {{ submission.assignment.course_offering.course.code }}
+                                </span>
+
+                                <span class="sl-secondary">
+                                    {{ submission.assignment.course_offering.section.code }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="sl-secondary">
+                                    Not assigned
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- STATUS -->
+
+                        <td>
+
+                            {% if submission.status == "GRADED" %}
+
+                                <span class="sl-status sl-status-graded">
+                                    Graded
+                                </span>
+
+                            {% elif submission.status == "SUBMITTED" %}
+
+                                <span class="sl-status sl-status-submitted">
+                                    Awaiting Grading
+                                </span>
+
+                            {% else %}
+
+                                <span class="sl-status sl-status-draft">
+                                    Draft
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- SUBMITTED AT -->
+
+                        <td>
+
+                            {% if submission.submitted_at %}
+
+                                <span class="sl-primary">
+                                    {{ submission.submitted_at|date:"d M Y" }}
+                                </span>
+
+                                <span class="sl-secondary">
+                                    {{ submission.submitted_at|date:"h:i A" }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="sl-secondary">
+                                    Not submitted
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- MARKS -->
+
+                        <td>
+
+                            {% if is_student_user %}
+
+                                {% if submission.status == "DRAFT" %}
+
+                                    <span class="sl-secondary">
+                                        —
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="sl-secondary">
+                                        Pending release
+                                    </span>
+
+                                {% endif %}
+
+                            {% elif submission.status == "GRADED" and submission.marks != None %}
+
+                                <span class="sl-marks">
+                                    {{ submission.marks }}
+                                    <small>
+                                        / {{ submission.assignment.total_marks }}
+                                    </small>
+                                </span>
+
+                            {% else %}
+
+                                <span class="sl-secondary">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ACTIONS -->
+
+                        <td class="text-end">
+
+                            <div class="sl-row-actions">
+
+                                {% if can_review and submission.status != "DRAFT" %}
+
+                                    <a
+                                        href="{% url 'assignments:submission_review' submission.pk %}"
+                                        class="sl-row-button primary"
+                                        aria-label="Review submission"
+                                    >
+                                        <i class="bi bi-pencil-square"></i>
+
+                                        {% if submission.status == "GRADED" %}
+                                            Review
+                                        {% else %}
+                                            Grade
+                                        {% endif %}
+
+                                    </a>
+
+                                {% elif not is_student_user %}
+
+                                    <a
+                                        href="{% url 'assignments:detail' submission.assignment.pk %}"
+                                        class="sl-row-button"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        Assignment
+                                    </a>
+
+                                {% endif %}
+
+                                {% if submission.submission_file %}
+
+                                    <a
+                                        href="{% url 'assignments:submission_file' submission.pk %}"
+                                        class="sl-row-button"
+                                        title="Download submitted file"
+                                    >
+                                        <i class="bi bi-file-earmark-arrow-down"></i>
+                                        PDF
+                                    </a>
+
+                                {% endif %}
+
+                                {% if is_student_user and not submission.submission_file %}
+
+                                    <span class="sl-secondary">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="{% if is_student_user %}6{% else %}7{% endif %}">
+
+                            <div class="sl-empty">
+
+                                <div class="sl-empty-icon">
+                                    <i class="bi bi-inbox"></i>
+                                </div>
+
+                                <h3>
+                                    No Submissions Found
+                                </h3>
+
+                                <p>
+                                    No records match your current search
+                                    and filter selections.
+                                </p>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- PAGINATION -->
+
+        {% if page_obj.paginator.num_pages > 1 %}
+
+        <div class="sl-pagination">
+
+            <span class="sl-pagination-note">
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+                · {{ filtered_count }} records
+            </span>
+
+            <div class="d-flex gap-2">
+
+                {% if page_obj.has_previous %}
+
+                <a
+                    href="?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+                    class="sl-btn sl-page-link"
+                >
+                    <i class="bi bi-chevron-left"></i>
+                    Previous
+                </a>
 
                 {% endif %}
 
-            </tr>
+                {% if page_obj.has_next %}
 
-            {% endfor %}
+                <a
+                    href="?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+                    class="sl-btn sl-page-link"
+                >
+                    Next
+                    <i class="bi bi-chevron-right"></i>
+                </a>
 
-        </tbody>
+                {% endif %}
 
-    </table>
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <div
+        class="alert alert-danger mt-3"
+        id="sl-request-error"
+        role="alert"
+        hidden
+    >
+        Unable to update submissions.
+        Check your connection and try again.
+    </div>
+
+    <div
+        id="sl-announcement"
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
+    ></div>
 
 </div>
 
-{% else %}
+{% endblock %}
 
-<div class="alert alert-info">
-    No submissions available.
-</div>
+{% block extra_js %}
 
-{% endif %}
+<script>
+(function () {
+    "use strict";
+
+    const form = document.getElementById("sl-filter-form");
+    const results = document.getElementById("sl-results");
+    const exportLink = document.getElementById("sl-export-link");
+    const errorBox = document.getElementById("sl-request-error");
+    const announcement = document.getElementById("sl-announcement");
+
+    if (!form || !results) {
+        return;
+    }
+
+    const DEBOUNCE_MS = 200;
+
+    let debounceTimer = null;
+    let activeController = null;
+    let sequence = 0;
+
+    const baseURL = new URL(
+        form.action,
+        window.location.origin
+    );
+
+    function currentFilterURL() {
+        const url = new URL(baseURL.toString());
+
+        const data = new FormData(form);
+
+        for (const [name, value] of data.entries()) {
+            const cleaned = String(value).trim();
+
+            if (cleaned) {
+                url.searchParams.set(name, cleaned);
+            }
+        }
+
+        return url;
+    }
+
+    function setLoading(loading) {
+        results.setAttribute(
+            "aria-busy",
+            String(loading)
+        );
+
+        results.classList.toggle(
+            "sl-results-updating",
+            loading
+        );
+
+        const spinner = results.querySelector(
+            "#sl-loading"
+        );
+
+        if (spinner) {
+            spinner.hidden = !loading;
+        }
+    }
+
+    function updateExportURL(url) {
+        if (!exportLink) {
+            return;
+        }
+
+        const exportURL = new URL(baseURL.toString());
+
+        for (const [name, value] of url.searchParams.entries()) {
+            if (name !== "page" && name !== "export") {
+                exportURL.searchParams.set(name, value);
+            }
+        }
+
+        exportURL.searchParams.set("export", "csv");
+
+        exportLink.href = (
+            exportURL.pathname + exportURL.search
+        );
+    }
+
+    async function loadResults(url, requestId) {
+        const controller = new AbortController();
+
+        activeController = controller;
+
+        setLoading(true);
+        errorBox.hidden = true;
+
+        try {
+            const response = await fetch(url.toString(), {
+                method: "GET",
+                credentials: "same-origin",
+                signal: controller.signal,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    "HTTP " + response.status
+                );
+            }
+
+            const html = await response.text();
+
+            const parsed = new DOMParser().parseFromString(
+                html,
+                "text/html"
+            );
+
+            const nextResults = parsed.getElementById(
+                "sl-results"
+            );
+
+            if (!nextResults) {
+                throw new Error(
+                    "Results section not found."
+                );
+            }
+
+            if (requestId !== sequence) {
+                return;
+            }
+
+            results.innerHTML = nextResults.innerHTML;
+
+            const nextLocation = (
+                url.pathname + url.search
+            );
+
+            const currentLocation = (
+                window.location.pathname +
+                window.location.search
+            );
+
+            if (nextLocation !== currentLocation) {
+                window.history.pushState(
+                    {},
+                    "",
+                    nextLocation
+                );
+            }
+
+            updateExportURL(url);
+
+            const count = results.querySelector(
+                "#sl-result-count"
+            );
+
+            if (count) {
+                announcement.textContent = (
+                    "Submissions updated. " +
+                    count.textContent.trim()
+                );
+            }
+
+        } catch (error) {
+
+            if (error.name === "AbortError") {
+                return;
+            }
+
+            if (requestId === sequence) {
+                errorBox.hidden = false;
+
+                announcement.textContent = (
+                    "Unable to update submissions."
+                );
+            }
+
+        } finally {
+
+            if (requestId === sequence) {
+                setLoading(false);
+                activeController = null;
+            }
+
+        }
+    }
+
+    function startRequest(url) {
+        if (activeController) {
+            activeController.abort();
+        }
+
+        sequence += 1;
+
+        const requestId = sequence;
+
+        loadResults(url, requestId);
+    }
+
+    function scheduleSearch(delay) {
+        clearTimeout(debounceTimer);
+
+        if (activeController) {
+            activeController.abort();
+            activeController = null;
+        }
+
+        sequence += 1;
+
+        setLoading(false);
+
+        const url = currentFilterURL();
+
+        updateExportURL(url);
+
+        debounceTimer = setTimeout(function () {
+            startRequest(url);
+        }, delay);
+    }
+
+    // 200ms search debounce
+
+    const searchInput = form.elements.namedItem("q");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            scheduleSearch(DEBOUNCE_MS);
+        });
+    }
+
+    // Dropdown changes update immediately.
+
+    for (const name of ["status", "course", "sort"]) {
+        const field = form.elements.namedItem(name);
+
+        if (field) {
+            field.addEventListener("change", function () {
+                scheduleSearch(0);
+            });
+        }
+    }
+
+    // No manual submit required.
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        scheduleSearch(0);
+    });
+
+    // Clear all filters.
+
+    const clearButton = document.getElementById(
+        "sl-clear-filters"
+    );
+
+    if (clearButton) {
+        clearButton.addEventListener("click", function () {
+            form.reset();
+
+            if (searchInput) {
+                searchInput.value = "";
+            }
+
+            scheduleSearch(0);
+        });
+    }
+
+    // AJAX pagination
+
+    results.addEventListener("click", function (event) {
+        const link = event.target.closest(
+            ".sl-page-link"
+        );
+
+        if (!link) {
+            return;
+        }
+
+        if (
+            event.button !== 0 ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey ||
+            event.altKey
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        clearTimeout(debounceTimer);
+
+        const url = new URL(
+            link.href,
+            window.location.origin
+        );
+
+        startRequest(url);
+    });
+
+    // Browser Back/Forward
+
+    window.addEventListener("popstate", function () {
+        clearTimeout(debounceTimer);
+
+        const url = new URL(window.location.href);
+
+        for (const name of ["q", "status", "course", "sort"]) {
+            const field = form.elements.namedItem(name);
+
+            if (field) {
+                field.value = (
+                    url.searchParams.get(name) ||
+                    (name === "sort" ? "newest" : "")
+                );
+            }
+        }
+
+        updateExportURL(url);
+
+        startRequest(url);
+    });
+
+    updateExportURL(
+        new URL(window.location.href)
+    );
+
+})();
+</script>
 
 {% endblock %}

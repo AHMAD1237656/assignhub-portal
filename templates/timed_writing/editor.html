@@ -1,26 +1,14 @@
+
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Professional Writing | AssignHub
-{% endblock %}
+{% block title %}Professional Writing | AssignHub{% endblock %}
 
 {% block content %}
 
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css"
->
-
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css"
->
-
-<link
-    rel="stylesheet"
-    href="{% static 'css/rich_writing.css' %}"
->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css">
+<link rel="stylesheet" href="{% static 'css/rich_writing.css' %}">
 
 <div class="container py-4 ah-writing-page">
 
@@ -28,26 +16,33 @@ Professional Writing | AssignHub
         href="{% url 'assignments:detail' assignment.pk %}"
         class="btn btn-outline-secondary btn-sm mb-3"
     >
+        <i class="bi bi-arrow-left me-1"></i>
         Back to Assignment
     </a>
 
-    <h1 class="h3 mb-3">
+    <h1 class="h3 fw-bold mb-3">
         {{ assignment.title }}
     </h1>
 
-    <div class="card shadow-sm mb-3">
+    <!-- ASSIGNMENT INSTRUCTIONS -->
+
+    <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
 
-            <h2 class="h5">Instructions</h2>
+            <h2 class="h5 fw-semibold">Instructions</h2>
 
-            <div class="ah-instructions">{{ assignment.instructions }}</div>
+            <div class="ah-instructions">
+                {{ assignment.instructions }}
+            </div>
 
             {% if assignment.attachment %}
-            <p class="mt-3">
-                <a href="{% url 'assignments:attachment' assignment.pk %}">
-                    Download Instructions PDF
-                </a>
-            </p>
+            <a
+                class="btn btn-outline-primary btn-sm mt-3"
+                href="{% url 'assignments:attachment' assignment.pk %}"
+            >
+                <i class="bi bi-download me-1"></i>
+                Download Instructions PDF
+            </a>
             {% endif %}
 
             <hr>
@@ -60,6 +55,8 @@ Professional Writing | AssignHub
 
     {% if attempt and attempt.status == "ACTIVE" %}
 
+    <!-- ACTIVE WRITING ATTEMPT -->
+
     <section
         id="timed-writing"
         data-save-url="{% url 'timed_writing:save' assignment.pk %}"
@@ -71,11 +68,13 @@ Professional Writing | AssignHub
 
         <div class="ah-editor-shell">
 
+            <!-- TIMER AND SAVE STATUS -->
+
             <div class="ah-editor-topbar">
 
                 <div>
                     <span class="ah-topbar-label">
-                        Time Remaining
+                        Server-controlled time remaining
                     </span>
 
                     <strong
@@ -93,80 +92,147 @@ Professional Writing | AssignHub
                     aria-live="polite"
                     class="ah-save-status"
                 >
-                    Editor loading...
+                    Loading editor...
                 </div>
 
             </div>
 
-            <!-- Quill formatting toolbar -->
+            <!-- FORMATTING RIBBON -->
+
+            <div class="ah-ribbon-title">
+                <i class="bi bi-type me-2"></i>
+                Formatting
+            </div>
 
             <div id="writing-toolbar">
 
+                <!-- FONT, SIZE, HEADING -->
+
                 <span class="ql-formats">
 
-                    <select
-                        class="ql-header"
-                        aria-label="Heading style"
-                    >
+                    <select class="ql-font" aria-label="Font family">
+                        <option value="" selected>Default font</option>
+                        <option value="arial">Arial</option>
+                        <option value="serif">Serif</option>
+                        <option value="monospace">Monospace</option>
+                    </select>
+
+                    <select class="ql-size" aria-label="Font size">
+                        <option value="12px">12 px</option>
+                        <option value="14px">14 px</option>
+                        <option value="16px" selected>16 px</option>
+                        <option value="18px">18 px</option>
+                        <option value="24px">24 px</option>
+                        <option value="32px">32 px</option>
+                    </select>
+
+                    <select class="ql-header" aria-label="Heading style">
                         <option value="1">Heading 1</option>
                         <option value="2">Heading 2</option>
                         <option value="3">Heading 3</option>
-                        <option selected>Normal</option>
+                        <option selected>Normal text</option>
                     </select>
 
                 </span>
 
+                <!-- TEXT FORMATTING -->
+
                 <span class="ql-formats">
-
-                    <button class="ql-bold" aria-label="Bold"></button>
-                    <button class="ql-italic" aria-label="Italic"></button>
-                    <button class="ql-underline" aria-label="Underline"></button>
-                    <button class="ql-strike" aria-label="Strikethrough"></button>
-
+                    <button type="button" class="ql-bold" aria-label="Bold"></button>
+                    <button type="button" class="ql-italic" aria-label="Italic"></button>
+                    <button type="button" class="ql-underline" aria-label="Underline"></button>
+                    <button type="button" class="ql-strike" aria-label="Strikethrough"></button>
                 </span>
 
-                <span class="ql-formats">
+                <!-- COLORS AND SCRIPTS -->
 
+                <span class="ql-formats">
                     <select class="ql-color" aria-label="Text color"></select>
                     <select class="ql-background" aria-label="Highlight"></select>
 
+                    <button
+                        type="button"
+                        class="ql-script"
+                        value="super"
+                        aria-label="Superscript"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="ql-script"
+                        value="sub"
+                        aria-label="Subscript"
+                    ></button>
                 </span>
 
+                <!-- LISTS AND PARAGRAPHS -->
+
                 <span class="ql-formats">
+                    <button type="button" class="ql-list" value="ordered" aria-label="Numbered list"></button>
+                    <button type="button" class="ql-list" value="bullet" aria-label="Bullet list"></button>
+                    <button type="button" class="ql-blockquote" aria-label="Block quote"></button>
 
-                    <button class="ql-script" value="super" aria-label="Superscript"></button>
-                    <button class="ql-script" value="sub" aria-label="Subscript"></button>
+                    <select class="ql-align" aria-label="Text alignment"></select>
 
+                    <button type="button" class="ql-indent" value="-1" aria-label="Decrease indent"></button>
+                    <button type="button" class="ql-indent" value="+1" aria-label="Increase indent"></button>
                 </span>
 
-                <span class="ql-formats">
-
-                    <button class="ql-list" value="ordered" aria-label="Numbered list"></button>
-                    <button class="ql-list" value="bullet" aria-label="Bullet list"></button>
-                    <button class="ql-blockquote" aria-label="Quote"></button>
-
-                </span>
+                <!-- LINKS AND CLEAN FORMATTING -->
 
                 <span class="ql-formats">
-
-                    <select class="ql-align" aria-label="Alignment"></select>
-                    <button class="ql-indent" value="-1" aria-label="Decrease indent"></button>
-                    <button class="ql-indent" value="+1" aria-label="Increase indent"></button>
-
-                </span>
-
-                <span class="ql-formats">
-
-                    <button class="ql-link" aria-label="Insert link"></button>
-                    <button class="ql-clean" aria-label="Clear formatting"></button>
-
+                    <button type="button" class="ql-link" aria-label="Insert hyperlink"></button>
+                    <button type="button" class="ql-clean" aria-label="Clear formatting"></button>
                 </span>
 
             </div>
 
-            <!-- Academic tools -->
+            <!-- ADVANCED ACADEMIC TOOLS -->
 
-            <div class="ah-academic-toolbar">
+            <div
+                class="ah-academic-toolbar"
+                aria-label="Document tools"
+            >
+
+                <!-- LINE SPACING -->
+
+                <div class="ah-tool-group">
+
+                    <label for="ah-line-height">
+                        Line spacing
+                    </label>
+
+                    <select id="ah-line-height">
+                        <option value="normal">1.5 (normal)</option>
+                        <option value="single">1.0 (single)</option>
+                        <option value="relaxed">1.8 (relaxed)</option>
+                        <option value="double">2.0 (double)</option>
+                    </select>
+
+                </div>
+
+                <!-- EDITING CONTROLS -->
+
+                <div class="ah-tool-group">
+
+                    <button type="button" id="ah-undo">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Undo
+                    </button>
+
+                    <button type="button" id="ah-redo">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Redo
+                    </button>
+
+                    <button type="button" id="ah-clean-paste">
+                        <i class="bi bi-clipboard"></i>
+                        Paste as text
+                    </button>
+
+                </div>
+
+                <!-- SPECIAL SYMBOLS -->
 
                 <div class="ah-tool-group">
 
@@ -175,37 +241,36 @@ Professional Writing | AssignHub
                     </label>
 
                     <select id="math-symbol">
-                        <option value="">Select symbol</option>
-                        <option value="π">π — Pi</option>
-                        <option value="θ">θ — Theta</option>
-                        <option value="α">α — Alpha</option>
-                        <option value="β">β — Beta</option>
-                        <option value="Δ">Δ — Delta</option>
-                        <option value="Σ">Σ — Sigma</option>
-                        <option value="∞">∞ — Infinity</option>
-                        <option value="√">√ — Square Root</option>
-                        <option value="∫">∫ — Integral</option>
-                        <option value="∑">∑ — Summation</option>
-                        <option value="∂">∂ — Partial Derivative</option>
-                        <option value="±">± — Plus/Minus</option>
-                        <option value="≠">≠ — Not Equal</option>
-                        <option value="≤">≤ — Less/Equal</option>
-                        <option value="≥">≥ — Greater/Equal</option>
-                        <option value="≈">≈ — Approximately</option>
-                        <option value="×">× — Multiplication</option>
-                        <option value="÷">÷ — Division</option>
-                        <option value="∈">∈ — Element Of</option>
-                        <option value="∴">∴ — Therefore</option>
+                        <option value="">Choose symbol</option>
+                        <option value="π">π Pi</option>
+                        <option value="θ">θ Theta</option>
+                        <option value="α">α Alpha</option>
+                        <option value="β">β Beta</option>
+                        <option value="Δ">Δ Delta</option>
+                        <option value="Σ">Σ Sigma</option>
+                        <option value="∞">∞ Infinity</option>
+                        <option value="√">√ Root</option>
+                        <option value="∫">∫ Integral</option>
+                        <option value="∑">∑ Sum</option>
+                        <option value="∂">∂ Derivative</option>
+                        <option value="±">± Plus/minus</option>
+                        <option value="≠">≠ Not equal</option>
+                        <option value="≤">≤ Less/equal</option>
+                        <option value="≥">≥ Greater/equal</option>
+                        <option value="≈">≈ Approx.</option>
+                        <option value="×">× Multiply</option>
+                        <option value="÷">÷ Divide</option>
+                        <option value="∈">∈ Element of</option>
+                        <option value="∴">∴ Therefore</option>
                     </select>
 
-                    <button
-                        type="button"
-                        id="insert-symbol"
-                    >
+                    <button type="button" id="insert-symbol">
                         Insert
                     </button>
 
                 </div>
+
+                <!-- MATHEMATICAL EQUATIONS -->
 
                 <div class="ah-tool-group">
 
@@ -214,47 +279,50 @@ Professional Writing | AssignHub
                     </label>
 
                     <select id="math-preset">
-                        <option value="">
-                            Select equation
-                        </option>
+
+                        <option value="">Choose equation</option>
+
                         <option value="\frac{a}{b}">
                             Fraction
                         </option>
+
                         <option value="x^{2}">
                             Power
                         </option>
+
                         <option value="\sqrt{x}">
-                            Square Root
+                            Square root
                         </option>
+
                         <option value="\sum_{i=1}^{n} i">
                             Summation
                         </option>
+
                         <option value="\int_{a}^{b} f(x)\,dx">
                             Integral
                         </option>
+
                         <option value="\frac{dy}{dx}">
                             Derivative
                         </option>
+
                         <option value="\begin{bmatrix}a&amp;b\\c&amp;d\end{bmatrix}">
                             Matrix
                         </option>
+
                     </select>
 
-                    <button
-                        type="button"
-                        id="insert-equation"
-                    >
-                        Insert Equation
+                    <button type="button" id="insert-equation">
+                        Insert
                     </button>
 
-                    <button
-                        type="button"
-                        id="custom-equation"
-                    >
+                    <button type="button" id="custom-equation">
                         Custom LaTeX
                     </button>
 
                 </div>
+
+                <!-- SHAPES -->
 
                 <div class="ah-tool-group">
 
@@ -265,31 +333,107 @@ Professional Writing | AssignHub
                     <select id="shape-kind">
                         <option value="rectangle">Rectangle</option>
                         <option value="circle">Circle</option>
-                        <option value="diamond">Decision Diamond</option>
+                        <option value="diamond">Decision</option>
                         <option value="arrow">Arrow</option>
                         <option value="line">Line</option>
                     </select>
 
-                    <button
-                        type="button"
-                        id="insert-shape"
-                    >
+                    <button type="button" id="insert-shape">
                         Insert Shape
+                    </button>
+
+                </div>
+
+                <!-- TABLES AND TOOLS -->
+
+                <div class="ah-tool-group">
+
+                    <button type="button" id="ah-insert-table">
+                        <i class="bi bi-table"></i>
+                        Insert Table
+                    </button>
+
+                    <button type="button" id="ah-insert-rule">
+                        <i class="bi bi-dash-lg"></i>
+                        Horizontal Rule
+                    </button>
+
+                    <button type="button" id="ah-toggle-find">
+                        <i class="bi bi-search"></i>
+                        Find / Replace
                     </button>
 
                 </div>
 
             </div>
 
+            <!-- FIND / REPLACE -->
+
+            <div
+                id="ah-find-panel"
+                class="ah-find-panel"
+                hidden
+            >
+
+                <label for="ah-find-text">Find</label>
+
+                <input
+                    id="ah-find-text"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Search this answer"
+                >
+
+                <label for="ah-replace-text">Replace</label>
+
+                <input
+                    id="ah-replace-text"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Replacement text"
+                >
+
+                <button type="button" id="ah-find-next">
+                    Next
+                </button>
+
+                <button type="button" id="ah-replace-one">
+                    Replace
+                </button>
+
+                <button type="button" id="ah-replace-all">
+                    Replace All
+                </button>
+
+                <span id="ah-find-info" aria-live="polite"></span>
+
+                <button
+                    type="button"
+                    id="ah-close-find"
+                    aria-label="Close find panel"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <!-- QUILL EDITOR -->
+
             <div
                 id="writing-editor"
                 aria-label="Assignment answer editor"
             ></div>
 
+            <!-- EDITOR FOOTER -->
+
             <div class="ah-editor-bottom">
 
                 <span id="writing-help">
-                    Autosave every 4 seconds
+                    Auto-saves every 4 seconds · Plain-text paste only
+                </span>
+
+                <span id="ah-document-stats">
+                    0 words · 0 characters
                 </span>
 
                 <span>
@@ -299,6 +443,8 @@ Professional Writing | AssignHub
             </div>
 
         </div>
+
+        <!-- SAVE / SUBMIT BUTTONS -->
 
         <div class="ah-submit-actions">
 
@@ -322,43 +468,28 @@ Professional Writing | AssignHub
 
         </div>
 
+        <!-- CSRF TOKEN AND INITIAL DOCUMENT -->
+
         <form id="writing-csrf" hidden>
             {% csrf_token %}
         </form>
 
         {{ attempt.rich_delta|json_script:"initial-rich-delta" }}
+
         {{ attempt.submission.text_content|json_script:"initial-plain-answer" }}
 
     </section>
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js"
-        defer
-    ></script>
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"
-        defer
-    ></script>
-
-    <script
-        src="{% static 'js/rich_shapes.js' %}"
-        defer
-    ></script>
-
-    <script
-        src="{% static 'js/rich_writing.js' %}"
-        defer
-    ></script>
-
     {% elif attempt and attempt.status == "SUBMITTED" %}
 
     <div class="alert alert-success">
+
         Your assignment has been submitted successfully.
 
         {% if attempt.auto_submitted %}
-        It was automatically finalized when the timer expired.
+            It was automatically finalized when the timer expired.
         {% endif %}
+
     </div>
 
     {% include "timed_writing/viewer.html" %}
@@ -393,7 +524,7 @@ Professional Writing | AssignHub
             <p>
                 You will have
                 <strong>{{ config.duration_minutes }} minutes</strong>.
-                The timer cannot be paused or reset.
+                The server-controlled timer cannot be reset.
             </p>
 
             <form
@@ -402,12 +533,10 @@ Professional Writing | AssignHub
             >
                 {% csrf_token %}
 
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
+                <button type="submit" class="btn btn-primary">
                     Start Assignment
                 </button>
+
             </form>
 
         </div>
@@ -416,6 +545,121 @@ Professional Writing | AssignHub
     {% endif %}
 
 </div>
+
+<!-- MODALS FOR ACTIVE ATTEMPTS ONLY -->
+
+{% if attempt and attempt.status == "ACTIVE" %}
+
+<!-- INSERT / EDIT TABLE MODAL -->
+
+<div
+    class="modal fade"
+    id="ahTableModal"
+    tabindex="-1"
+    aria-labelledby="ahTableModalLabel"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5
+                    class="modal-title fw-bold"
+                    id="ahTableModalLabel"
+                >
+                    Insert / Edit Table
+                </h5>
+
+                <button
+                    class="btn-close"
+                    type="button"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <p class="small text-muted">
+                    Edit cells below. First row is a header.
+                    Up to 10 rows × 8 columns;
+                    each cell up to 400 characters.
+                </p>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+
+                    <button
+                        type="button"
+                        id="ah-table-row-add"
+                        class="btn btn-outline-primary btn-sm"
+                    >
+                        + Row
+                    </button>
+
+                    <button
+                        type="button"
+                        id="ah-table-row-remove"
+                        class="btn btn-outline-secondary btn-sm"
+                    >
+                        − Row
+                    </button>
+
+                    <button
+                        type="button"
+                        id="ah-table-col-add"
+                        class="btn btn-outline-primary btn-sm"
+                    >
+                        + Column
+                    </button>
+
+                    <button
+                        type="button"
+                        id="ah-table-col-remove"
+                        class="btn btn-outline-secondary btn-sm"
+                    >
+                        − Column
+                    </button>
+
+                </div>
+
+                <div
+                    id="ah-table-grid"
+                    class="ah-table-grid"
+                    aria-label="Editable table cells"
+                ></div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-light"
+                    type="button"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="btn btn-primary"
+                    id="ah-table-apply"
+                    type="button"
+                >
+                    Save Table
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- FINAL SUBMISSION CONFIRMATION -->
+
 <div
     class="modal fade"
     id="finalSubmitModal"
@@ -423,28 +667,19 @@ Professional Writing | AssignHub
     aria-labelledby="finalSubmitModalLabel"
     aria-hidden="true"
 >
+
     <div class="modal-dialog modal-dialog-centered">
+
         <div class="modal-content submit-confirm-modal border-0 shadow-lg">
 
             <div class="modal-header border-0 pb-0">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="submit-confirm-icon">
-                        <i class="bi bi-exclamation-lg"></i>
-                    </div>
 
-                    <div>
-                        <h5
-                            class="modal-title fw-bold mb-1"
-                            id="finalSubmitModalLabel"
-                        >
-                            Final Submission
-                        </h5>
-
-                        <p class="text-muted small mb-0">
-                            Please confirm before submitting your final answer.
-                        </p>
-                    </div>
-                </div>
+                <h5
+                    class="modal-title fw-bold"
+                    id="finalSubmitModalLabel"
+                >
+                    Final Submission
+                </h5>
 
                 <button
                     type="button"
@@ -452,41 +687,70 @@ Professional Writing | AssignHub
                     data-bs-dismiss="modal"
                     aria-label="Close"
                 ></button>
+
             </div>
 
-            <div class="modal-body pt-3">
-                <div class="submit-confirm-alert">
-                    <strong>Important:</strong>
-                    After final submission, you will not be able to edit your answer.
+            <div class="modal-body">
+
+                <div class="alert alert-warning small">
+                    After final submission,
+                    your answer cannot be edited.
                 </div>
 
-                <p class="mb-0 mt-3 text-dark">
-                    Are you sure you want to submit your final answer?
+                <p class="mb-0">
+                    Are you sure you want to submit?
                 </p>
+
             </div>
 
-            <div class="modal-footer border-0 pt-0">
+            <div class="modal-footer border-0">
+
                 <button
                     type="button"
-                    class="btn btn-light px-4"
+                    class="btn btn-light"
                     data-bs-dismiss="modal"
-                    id="finalSubmitCancelBtn"
                 >
                     Cancel
                 </button>
 
                 <button
                     type="button"
-                    class="btn btn-primary px-4"
+                    class="btn btn-primary"
                     id="finalSubmitConfirmBtn"
                 >
                     Yes, Submit
                 </button>
+
             </div>
 
         </div>
-    </div>
-</div>
-{% endblock %}
 
-<script src="{% static 'js/timed_writing.js' %}" defer></script>
+    </div>
+
+</div>
+
+<!-- EDITOR LIBRARIES -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js"
+    defer
+></script>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"
+    defer
+></script>
+
+<script
+    src="{% static 'js/rich_shapes.js' %}"
+    defer
+></script>
+
+<script
+    src="{% static 'js/rich_writing.js' %}"
+    defer
+></script>
+
+{% endif %}
+
+{% endblock %}

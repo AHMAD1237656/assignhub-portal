@@ -1,5 +1,7 @@
+
 import json
 import re
+
 from urllib.parse import urlsplit
 
 from django.core.exceptions import ValidationError
@@ -9,6 +11,7 @@ MAX_DOCUMENT_BYTES = 400_000
 MAX_TEXT_LENGTH = 100_000
 MAX_OPERATIONS = 3000
 
+
 ALLOWED_SHAPES = {
     "rectangle",
     "circle",
@@ -17,6 +20,7 @@ ALLOWED_SHAPES = {
     "line",
 }
 
+
 BOOLEAN_FORMATS = {
     "bold",
     "italic",
@@ -24,6 +28,7 @@ BOOLEAN_FORMATS = {
     "strike",
     "blockquote",
 }
+
 
 ALLOWED_FORMATS = BOOLEAN_FORMATS | {
     "header",
@@ -34,29 +39,75 @@ ALLOWED_FORMATS = BOOLEAN_FORMATS | {
     "background",
     "link",
     "indent",
+    "font",
+    "size",
+    "lineheight",
 }
+
 
 COLOR_RE = re.compile(
     r"^#[0-9a-fA-F]{6}$"
 )
 
 
+ALLOWED_FONTS = {
+    "arial",
+    "serif",
+    "monospace",
+}
+
+
+ALLOWED_SIZES = {
+    "12px",
+    "14px",
+    "16px",
+    "18px",
+    "24px",
+    "32px",
+}
+
+
+ALLOWED_LINE_HEIGHTS = {
+    "single",
+    "normal",
+    "relaxed",
+    "double",
+}
+
+
+BAD_TEX = re.compile(
+    r"\\(?:href|url|html\w*|includegraphics)\b",
+    re.I,
+)
+
+
+# ==========================================
+# FORMAT ATTRIBUTE VALIDATION
+# ==========================================
+
 def validate_format(name, value):
 
     if name in BOOLEAN_FORMATS:
+
         if value is not True:
             raise ValidationError(
                 "Invalid text formatting."
             )
+
         return True
 
     if name == "header":
-        if type(value) is not int or value not in (1, 2, 3):
+
+        if (
+            type(value) is not int
+            or value not in (1, 2, 3)
+        ):
             raise ValidationError(
                 "Invalid heading level."
             )
 
     elif name == "align":
+
         if value not in (
             "center",
             "right",
@@ -67,6 +118,7 @@ def validate_format(name, value):
             )
 
     elif name == "list":
+
         if value not in (
             "ordered",
             "bullet",
@@ -76,18 +128,30 @@ def validate_format(name, value):
             )
 
     elif name == "script":
-        if value not in ("sub", "super"):
+
+        if value not in (
+            "sub",
+            "super",
+        ):
             raise ValidationError(
                 "Invalid script formatting."
             )
 
     elif name == "indent":
-        if type(value) is not int or value not in range(1, 5):
+
+        if (
+            type(value) is not int
+            or value not in range(1, 5)
+        ):
             raise ValidationError(
                 "Invalid indentation."
             )
 
-    elif name in ("color", "background"):
+    elif name in (
+        "color",
+        "background",
+    ):
+
         if (
             not isinstance(value, str)
             or not COLOR_RE.fullmatch(value)
@@ -96,18 +160,64 @@ def validate_format(name, value):
                 "Invalid text color."
             )
 
+    elif name == "font":
+
+        if (
+            not isinstance(value, str)
+            or value not in ALLOWED_FONTS
+        ):
+            raise ValidationError(
+                "Invalid font."
+            )
+
+    elif name == "size":
+
+        if (
+            not isinstance(value, str)
+            or value not in ALLOWED_SIZES
+        ):
+            raise ValidationError(
+                "Invalid font size."
+            )
+
+    elif name == "lineheight":
+
+        if (
+            not isinstance(value, str)
+            or value not in ALLOWED_LINE_HEIGHTS
+        ):
+            raise ValidationError(
+                "Invalid line spacing."
+            )
+
     elif name == "link":
-        if not isinstance(value, str) or len(value) > 500:
+
+        if (
+            not isinstance(value, str)
+            or len(value) > 500
+        ):
             raise ValidationError(
                 "Invalid hyperlink."
             )
 
-        parsed = urlsplit(value)
+        try:
+            parsed = urlsplit(value)
+
+        except ValueError as exc:
+            raise ValidationError(
+                "Invalid hyperlink."
+            ) from exc
 
         if (
-            parsed.scheme not in ("https", "http")
+            parsed.scheme not in (
+                "https",
+                "http",
+            )
             or not parsed.netloc
-            or any(ord(c) < 33 for c in value)
+            or any(
+                ord(c) < 33
+                for c in value
+            )
         ):
             raise ValidationError(
                 "Only safe HTTP/HTTPS links are allowed."
@@ -121,25 +231,33 @@ def validate_format(name, value):
     return value
 
 
+# ==========================================
+# QUILL DOCUMENT NORMALIZATION
+# ==========================================
+
 def normalize_delta(document):
     """
-    Validate Quill Delta JSON.
-
-    No raw HTML, images, video or executable
-    content is accepted from the browser.
+    Validate a Quill 2 document without
+    accepting untrusted raw HTML.
 
     Returns:
-        (normalized_delta, plain_text)
-    """
 
-    if not isinstance(document, dict):
-        raise ValidationError(
-            "Invalid rich document."
+        (
+            cleaned_delta,
+            readable_plain_text,
         )
 
-    if set(document.keys()) != {"ops"}:
+    Plain text remains in Submission.text_content
+    for the existing grading, search and
+    timed-writing service logic.
+    """
+
+    if (
+        not isinstance(document, dict)
+        or set(document) != {"ops"}
+    ):
         raise ValidationError(
-            "Invalid document structure."
+            "Invalid rich document."
         )
 
     ops = document["ops"]
@@ -154,18 +272,25 @@ def normalize_delta(document):
         )
 
     try:
-        document_bytes = len(
+
+        size = len(
             json.dumps(
                 document,
                 ensure_ascii=False,
             ).encode("utf-8")
         )
-    except (TypeError, ValueError):
+
+    except (
+        ValueError,
+        TypeError,
+        UnicodeError,
+    ) as exc:
+
         raise ValidationError(
             "Invalid document JSON."
-        )
+        ) from exc
 
-    if document_bytes > MAX_DOCUMENT_BYTES:
+    if size > MAX_DOCUMENT_BYTES:
         raise ValidationError(
             "Document exceeds allowed size."
         )
@@ -173,6 +298,10 @@ def normalize_delta(document):
     cleaned_ops = []
     plain_parts = []
     plain_length = 0
+
+    # --------------------------------------
+    # VALIDATE EACH DELTA OPERATION
+    # --------------------------------------
 
     for operation in ops:
 
@@ -189,13 +318,23 @@ def normalize_delta(document):
             )
 
         inserted = operation["insert"]
-        cleaned = {}
+
+        # ----------------------------------
+        # NORMAL TEXT
+        # ----------------------------------
 
         if isinstance(inserted, str):
-            cleaned["insert"] = inserted
+
+            cleaned_insert = inserted
             readable = inserted
 
+        # ----------------------------------
+        # CUSTOM EMBEDS
+        # ----------------------------------
+
         elif isinstance(inserted, dict):
+
+            # MATHEMATICAL FORMULA
 
             if set(inserted) == {"formula"}:
 
@@ -205,28 +344,23 @@ def normalize_delta(document):
                     not isinstance(formula, str)
                     or not formula.strip()
                     or len(formula) > 2000
+                    or BAD_TEX.search(formula)
                 ):
                     raise ValidationError(
                         "Invalid mathematical formula."
                     )
 
-                # Disallow HTML-capable LaTeX commands.
-                if re.search(
-                    r"\\(?:href|url|html\w*|includegraphics)\b",
-                    formula,
-                    re.IGNORECASE,
-                ):
-                    raise ValidationError(
-                        "Unsupported formula command."
-                    )
-
-                cleaned["insert"] = {
+                cleaned_insert = {
                     "formula": formula
                 }
 
                 readable = (
-                    "[Formula: " + formula + "]"
+                    "[Formula: "
+                    + formula
+                    + "]"
                 )
+
+            # SHAPE EMBED
 
             elif set(inserted) == {"shape"}:
 
@@ -247,7 +381,8 @@ def normalize_delta(document):
                 label = shape["label"]
 
                 if (
-                    kind not in ALLOWED_SHAPES
+                    not isinstance(kind, str)
+                    or kind not in ALLOWED_SHAPES
                     or not isinstance(label, str)
                     or len(label) > 80
                 ):
@@ -255,7 +390,7 @@ def normalize_delta(document):
                         "Invalid shape properties."
                     )
 
-                cleaned["insert"] = {
+                cleaned_insert = {
                     "shape": {
                         "kind": kind,
                         "label": label,
@@ -270,27 +405,139 @@ def normalize_delta(document):
                     + "]"
                 )
 
-            else:
-                raise ValidationError(
-                    "Unsupported embedded content."
+            # TABLE EMBED
+
+           
+           
+
+            elif set(inserted) in (
+                {"ahTable"},
+                {"table"},
+            ):
+
+                table = inserted.get(
+                    "ahTable",
+                    inserted.get("table"),
                 )
 
-        else:
-            raise ValidationError(
-                "Invalid document content."
-            )
+                if (
+                    not isinstance(table, dict)
+                    or set(table) != {"rows"}
+                ):
+                    raise ValidationError(
+                        "Invalid table structure."
+                    )
+
+                rows = table["rows"]
+
+                if (
+                    not isinstance(rows, list)
+                    or not 1 <= len(rows) <= 10
+                ):
+                    raise ValidationError(
+                        "Table must contain 1–10 rows."
+                    )
+
+                if not isinstance(rows[0], list):
+                    raise ValidationError(
+                        "Invalid table row."
+                    )
+
+                width = len(rows[0])
+
+                if not 1 <= width <= 8:
+                    raise ValidationError(
+                        "Table must contain 1–8 columns."
+                    )
+
+                clean_rows = []
+
+                for row in rows:
+
+                    if (
+                        not isinstance(row, list)
+                        or len(row) != width
+                    ):
+                        raise ValidationError(
+                            "Table must be rectangular."
+                        )
+
+                    clean_row = []
+
+                    for cell in row:
+
+                        if (
+                            not isinstance(cell, str)
+                            or len(cell) > 400
+                            or "\x00" in cell
+                        ):
+                            raise ValidationError(
+                                "Invalid table cell."
+                            )
+
+                        clean_row.append(cell)
+
+                    clean_rows.append(clean_row)
+
+                cleaned_insert = {
+                    "ahTable": {
+                        "rows": clean_rows
+                    }
+                }
+
+                readable = (
+                    "[Table: "
+                    + "; ".join(
+                        " | ".join(row)
+                        for row in clean_rows
+                    )
+                    + "]"
+                )
+
+            # ==================================
+            # ASSIGNHUB HORIZONTAL RULE
+            # New: ahRule
+            # Legacy: rule
+            # ==================================
+
+            elif (
+                set(inserted) in (
+                    {"ahRule"},
+                    {"rule"},
+                )
+                and (
+                    inserted.get(
+                        "ahRule",
+                        inserted.get("rule"),
+                    )
+                    is True
+                )
+            ):
+
+                cleaned_insert = {
+                    "ahRule": True
+                }
+
+                readable = "\n"
+
+        # ----------------------------------
+        # VALIDATE FORMATTING ATTRIBUTES
+        # ----------------------------------
 
         attributes = operation.get(
             "attributes",
             {},
         )
 
-        if not isinstance(attributes, dict):
+        if not isinstance(
+            attributes,
+            dict,
+        ):
             raise ValidationError(
                 "Invalid formatting attributes."
             )
 
-        validated_attributes = {}
+        validated = {}
 
         for name, value in attributes.items():
 
@@ -299,16 +546,27 @@ def normalize_delta(document):
                     "Unsupported formatting attribute."
                 )
 
-            validated_attributes[name] = (
-                validate_format(name, value)
+            validated[name] = validate_format(
+                name,
+                value,
             )
 
-        if validated_attributes:
-            cleaned["attributes"] = (
-                validated_attributes
-            )
+        # ----------------------------------
+        # BUILD CLEAN DELTA
+        # ----------------------------------
+
+        cleaned = {
+            "insert": cleaned_insert
+        }
+
+        if validated:
+            cleaned["attributes"] = validated
 
         cleaned_ops.append(cleaned)
+
+        # ----------------------------------
+        # PLAIN TEXT SIZE CHECK
+        # ----------------------------------
 
         plain_length += len(readable)
 
@@ -319,8 +577,7 @@ def normalize_delta(document):
 
         plain_parts.append(readable)
 
-    plain_text = "".join(plain_parts)
-
-    return {
-        "ops": cleaned_ops
-    }, plain_text
+    return (
+        {"ops": cleaned_ops},
+        "".join(plain_parts),
+    )
