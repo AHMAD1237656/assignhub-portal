@@ -317,11 +317,42 @@ def allocate_students(
         )
     )
 
-    occupied_ids = allocated_ids | enrolled_ids
+
+    # Reserve seats for imported students who have
+    # not completed their email activation yet.
+    reserved_ids = set()
+
+    if apps.is_installed("student_onboarding"):
+
+        StudentIdentity = apps.get_model(
+            "student_onboarding",
+            "StudentIdentity",
+        )
+
+        reserved_ids = set(
+            StudentIdentity.objects.filter(
+                section=section,
+                academic_year=academic_year,
+                term=term,
+                status="PENDING",
+            ).values_list(
+                "user_id",
+                flat=True,
+            )
+        )
+
+    # A student counts only once even if they appear
+    # in allocation, enrollment, and reservation data.
+    occupied_ids = (
+        allocated_ids
+        | enrolled_ids
+        | reserved_ids
+    )
 
     new_occupants = (
         set(student_ids) - occupied_ids
     )
+
 
     total_after = (
         len(occupied_ids)

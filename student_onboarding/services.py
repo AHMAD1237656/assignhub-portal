@@ -3,7 +3,7 @@ import secrets
 from django.urls import reverse
 from dataclasses import dataclass
 from datetime import timedelta
-
+from semesters.models import Section
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import signing
@@ -46,8 +46,26 @@ def activation_max_age():
     )
 
 
+
 def validate_section_capacity(batch, new_count):
-    section = batch.section
+    """
+    Count active allocations, active enrollments,
+    and pending activation reservations.
+
+    Call inside transaction.atomic() when modifying
+    capacity reservations.
+    """
+
+    section = (
+        Section.objects
+        .select_for_update()
+        .select_related(
+            "semester",
+            "semester__program",
+            "semester__program__department",
+        )
+        .get(pk=batch.section_id)
+    )
 
     validate_section(section)
 
@@ -57,7 +75,10 @@ def validate_section_capacity(batch, new_count):
             academic_year=batch.academic_year,
             term=batch.term,
             status=StudentClassAllocation.Status.ACTIVE,
-        ).values_list("student_id", flat=True)
+        ).values_list(
+            "student_id",
+            flat=True,
+        )
     )
 
     enrolled_ids = set(
@@ -66,7 +87,10 @@ def validate_section_capacity(batch, new_count):
             offering__academic_year=batch.academic_year,
             offering__term=batch.term,
             status=CourseEnrollment.Status.ACTIVE,
-        ).values_list("student_id", flat=True)
+        ).values_list(
+            "student_id",
+            flat=True,
+        )
     )
 
     pending_ids = set(
@@ -75,22 +99,28 @@ def validate_section_capacity(batch, new_count):
             academic_year=batch.academic_year,
             term=batch.term,
             status=StudentIdentity.Status.PENDING,
-        ).values_list("user_id", flat=True)
+        ).values_list(
+            "user_id",
+            flat=True,
+        )
     )
 
     occupied_ids = (
-        allocated_ids | enrolled_ids | pending_ids
+        allocated_ids
+        | enrolled_ids
+        | pending_ids
     )
 
-    free_seats = max(
+    available = max(
         0,
         section.capacity - len(occupied_ids),
     )
 
-    if new_count > free_seats:
+    if new_count > available:
         raise ValidationError(
-            f"Only {free_seats} seats are available "
-            "in this section for the selected academic period."
+            f"Section capacity exceeded. "
+            f"Only {available} seat(s) are available "
+            "after accounting for pending students."
         )
 
 

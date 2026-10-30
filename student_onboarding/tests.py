@@ -5,7 +5,24 @@ from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
+from class_allocations.services import allocate_students
+
+from student_onboarding.admin_services import (
+    cancel_pending_student,
+    correct_pending_student,
+    resend_individual_activation,
+    restore_cancelled_student,
+)
+
+from student_onboarding.models import (
+    StudentOnboardingEvent,
+)
+
+from student_onboarding.services import (
+    get_identity_from_token,
+)
 from accounts.models import UserProfile
 from class_allocations.models import StudentClassAllocation
 from courses.models import (
@@ -482,3 +499,416 @@ class StudentOnboardingTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+    
+    def test_admin_can_open_student_directory(self):
+        batch = self.provision_two_students()
+
+        response = self.client.get(
+            reverse(
+                "student_onboarding:student_directory"
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "2026-SE-001")
+        self.assertContains(response, "2026-SE-002")
+
+    def test_student_directory_search(self):
+        self.provision_two_students()
+
+        response = self.client.get(
+            reverse(
+                "student_onboarding:student_directory"
+            ),
+            {"q": "2026-SE-001"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(
+            response,
+            "2026-SE-001",
+        )
+
+        self.assertNotContains(
+            response,
+            "2026-SE-002",
+        )
+
+    def test_pending_student_correction(self):
+        self.provision_two_students()
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        old_token = make_activation_token(identity)
+
+        response = self.client.post(
+            reverse(
+                "student_onboarding:student_edit",
+                args=[identity.pk],
+            ),
+            {
+                "first_name": "Muhammad",
+                "last_name": "Ali",
+                "email": "muhammad.ali@uni.edu",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        identity.refresh_from_db()
+        identity.user.refresh_from_db()
+
+        self.assertEqual(
+            identity.user.first_name,
+            "Muhammad",
+        )
+
+        self.assertEqual(
+            identity.institutional_email,
+            "muhammad.ali@uni.edu",
+        )
+
+        self.assertEqual(
+            identity.email_status,
+            StudentIdentity.EmailStatus.QUEUED,
+        )
+
+        self.assertIsNone(
+            get_identity_from_token(old_token)
+        )
+
+        self.assertTrue(
+            StudentOnboardingEvent.objects.filter(
+                identity=identity,
+                action=(
+                    StudentOnboardingEvent.Action.CORRECTED
+                ),
+            ).exists()
+        )
+
+    def test_duplicate_email_correction_rejected(self):
+        self.provision_two_students()
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        response = self.client.post(
+            reverse(
+                "student_onboarding:student_edit",
+                args=[identity.pk],
+            ),
+            {
+                "first_name": "Ali",
+                "last_name": "Ahmed",
+                "email": "hassan@uni.edu",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        identity.refresh_from_db()
+
+        self.assertEqual(
+            identity.institutional_email,
+            "ali@uni.edu",
+        )
+
+    def test_cancel_pending_account(self):
+        self.provision_two_students()
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        old_token = make_activation_token(identity)
+
+        response = self.client.post(
+            reverse(
+                "student_onboarding:student_cancel",
+                args=[identity.pk],
+            ),
+            {
+                "reason": "Incorrect admission record",
+                "confirm": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        identity.refresh_from_db()
+        identity.user.refresh_from_db()
+
+        self.assertEqual(
+            identity.status,
+            StudentIdentity.Status.CANCELLED,
+        )
+
+        self.assertFalse(identity.user.is_active)
+
+        self.assertFalse(
+            identity.user.has_usable_password()
+        )
+
+        self.assertIsNone(
+            get_identity_from_token(old_token)
+        )
+
+        self.assertTrue(
+            StudentOnboardingEvent.objects.filter(
+                identity=identity,
+                action=(
+                    StudentOnboardingEvent.Action.CANCELLED
+                ),
+            ).exists()
+        )
+
+    def test_restore_cancelled_account(self):
+        self.provision_two_students()
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        cancel_pending_student(
+            identity.pk,
+            reason="Incorrect imported record",
+            actor=self.admin,
+        )
+
+        response = self.client.post(
+            reverse(
+                "student_onboarding:student_restore",
+                args=[identity.pk],
+            ),
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        identity.refresh_from_db()
+
+        self.assertEqual(
+            identity.status,
+            StudentIdentity.Status.PENDING,
+        )
+
+        self.assertEqual(
+            identity.email_status,
+            StudentIdentity.EmailStatus.QUEUED,
+        )
+
+        self.assertIsNotNone(
+            get_identity_from_token(
+                make_activation_token(identity)
+            )
+        )
+
+    def test_individual_activation_resend(self):
+        self.provision_two_students()
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        old_token = make_activation_token(identity)
+
+        response = self.client.post(
+            reverse(
+                "student_onboarding:student_resend",
+                args=[identity.pk],
+            )
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        identity.refresh_from_db()
+
+        self.assertEqual(
+            identity.email_status,
+            StudentIdentity.EmailStatus.SENT,
+        )
+
+        self.assertIsNone(
+            get_identity_from_token(old_token)
+        )
+
+        self.assertEqual(
+            len(mail.outbox),
+            1,
+        )
+
+        self.assertTrue(
+            StudentOnboardingEvent.objects.filter(
+                identity=identity,
+                action=(
+                    StudentOnboardingEvent.Action.EMAIL_RESENT
+                ),
+            ).exists()
+        )
+
+    def test_cancelled_student_cannot_receive_invitation(self):
+        self.provision_two_students()
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        cancel_pending_student(
+            identity.pk,
+            reason="Incorrect imported record",
+            actor=self.admin,
+        )
+
+        with self.assertRaises(ValidationError):
+            resend_individual_activation(
+                identity.pk,
+                actor=self.admin,
+            )
+
+    def test_pending_reservations_block_extra_allocation(self):
+        self.provision_two_students()
+
+        # Two pending students occupy both seats.
+        self.section.capacity = 2
+        self.section.save(
+            update_fields=["capacity"]
+        )
+
+        with self.assertRaises(ValidationError):
+            allocate_students(
+                students=[self.student],
+                section=self.section,
+                academic_year="2026-2027",
+                term=CourseOffering.Term.FALL,
+                assigned_by=self.admin,
+            )
+
+    def test_cancelled_reservation_releases_seat(self):
+        self.provision_two_students()
+
+        self.section.capacity = 2
+        self.section.save(
+            update_fields=["capacity"]
+        )
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        cancel_pending_student(
+            identity.pk,
+            reason="Incorrect imported record",
+            actor=self.admin,
+        )
+
+        result = allocate_students(
+            students=[self.student],
+            section=self.section,
+            academic_year="2026-2027",
+            term=CourseOffering.Term.FALL,
+            assigned_by=self.admin,
+        )
+
+        self.assertEqual(
+            result.created,
+            1,
+        )
+
+    def test_restore_checks_capacity(self):
+        self.provision_two_students()
+
+        self.section.capacity = 2
+        self.section.save(
+            update_fields=["capacity"]
+        )
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        cancel_pending_student(
+            identity.pk,
+            reason="Incorrect imported record",
+            actor=self.admin,
+        )
+
+        allocate_students(
+            students=[self.student],
+            section=self.section,
+            academic_year="2026-2027",
+            term=CourseOffering.Term.FALL,
+            assigned_by=self.admin,
+        )
+
+        with self.assertRaises(ValidationError):
+            restore_cancelled_student(
+                identity.pk,
+                actor=self.admin,
+            )
+
+    def test_admin_can_export_student_report(self):
+        self.provision_two_students()
+
+        response = self.client.get(
+            reverse(
+                "student_onboarding:student_export"
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        content = response.content.decode("utf-8-sig")
+
+        self.assertIn(
+            "2026-SE-001",
+            content,
+        )
+
+        self.assertIn(
+            "2026-SE-002",
+            content,
+        )
+
+    def test_student_cannot_export_report(self):
+        self.client.force_login(self.student)
+
+        response = self.client.get(
+            reverse(
+                "student_onboarding:student_export"
+            )
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_teacher_cannot_edit_student(self):
+        self.provision_two_students()
+
+        identity = StudentIdentity.objects.get(
+            roll_number="2026-SE-001"
+        )
+
+        self.client.force_login(self.teacher)
+
+        response = self.client.post(
+            reverse(
+                "student_onboarding:student_edit",
+                args=[identity.pk],
+            ),
+            {
+                "first_name": "Unauthorized",
+                "last_name": "Change",
+                "email": "unauthorized@uni.edu",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        identity.user.refresh_from_db()
+
+        self.assertEqual(
+            identity.user.first_name,
+            "Ali",
+        )

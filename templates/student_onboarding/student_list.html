@@ -1,0 +1,1028 @@
+
+{% extends "base.html" %}
+
+{% block title %}Student Directory | AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ========================================
+       ASSIGNHUB STUDENT DIRECTORY
+       Theme: Navy / Blue / White
+    ======================================== */
+
+    .sd-page {
+        --sd-navy: #101c32;
+        --sd-blue: #4669ed;
+        --sd-border: #e7ebf2;
+        --sd-muted: #75849a;
+
+        max-width: 1600px;
+        margin: 0 auto;
+        padding-bottom: 32px;
+    }
+
+    .sd-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .sd-eyebrow {
+        color: #5670c8;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        margin-bottom: 9px;
+    }
+
+    .sd-title {
+        color: var(--sd-navy);
+        font-size: clamp(25px, 3vw, 33px);
+        font-weight: 800;
+        letter-spacing: -.7px;
+        margin-bottom: 7px;
+    }
+
+    .sd-subtitle {
+        color: var(--sd-muted);
+        font-size: 13px;
+        margin-bottom: 0;
+    }
+
+    .sd-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .sd-panel {
+        background: #fff;
+        border: 1px solid var(--sd-border);
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(16, 28, 50, .04);
+        overflow: hidden;
+    }
+
+    .sd-filters {
+        padding: 23px;
+        margin-bottom: 22px;
+    }
+
+    .sd-filter-title {
+        color: #22334e;
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .sd-filter-note {
+        color: #8996a8;
+        font-size: 11.5px;
+        margin-bottom: 20px;
+    }
+
+    .sd-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(155px, 1fr));
+        gap: 14px;
+        align-items: end;
+    }
+
+    .sd-label {
+        display: block;
+        color: #40516b;
+        font-size: 11.5px;
+        font-weight: 750;
+        margin-bottom: 8px;
+    }
+
+    .sd-page .form-control,
+    .sd-page .form-select {
+        min-height: 43px;
+        border-color: #dce3ed;
+        border-radius: 10px;
+        font-size: 12.5px;
+        box-shadow: none;
+    }
+
+    .sd-page .form-control:focus,
+    .sd-page .form-select:focus {
+        border-color: #6884ef;
+        box-shadow: 0 0 0 3px rgba(70,105,237,.11);
+    }
+
+    .sd-search-control {
+        position: relative;
+    }
+
+    .sd-search-control > i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #90a0b7;
+        font-size: 16px;
+        pointer-events: none;
+    }
+
+    .sd-search-control .form-control {
+        padding-left: 41px;
+    }
+
+    .sd-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 19px 23px;
+        border-bottom: 1px solid var(--sd-border);
+    }
+
+    .sd-toolbar-title {
+        color: #253653;
+        font-size: 16px;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .sd-toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .sd-count {
+        padding: 7px 11px;
+        border-radius: 9px;
+        background: #eef2ff;
+        color: #4460c7;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .sd-loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #5770cb;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .sd-loading[hidden] {
+        display: none !important;
+    }
+
+    .sd-table {
+        margin: 0;
+        width: 100%;
+    }
+
+    .sd-table thead th {
+        background: #f8faff;
+        color: #73839a;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: .3px;
+        padding: 15px 18px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--sd-border);
+    }
+
+    .sd-table tbody td {
+        padding: 16px 18px;
+        font-size: 12px;
+        color: #40516b;
+        vertical-align: middle;
+        border-color: #eef1f6;
+    }
+
+    .sd-table tbody tr:hover {
+        background: #fafbff;
+    }
+
+    .sd-roll {
+        color: #263b5a;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .sd-student-name {
+        color: #2e405a;
+        font-weight: 700;
+    }
+
+    .sd-email {
+        color: #78869b;
+        font-size: 11.5px;
+    }
+
+    .sd-section {
+        min-width: 160px;
+        color: #5a6b85;
+        font-size: 11.5px;
+    }
+
+    .sd-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 10.5px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .sd-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .sd-status-active {
+        color: #15855b;
+        background: #e5f6ed;
+    }
+
+    .sd-status-pending {
+        color: #a87520;
+        background: #fff3dd;
+    }
+
+    .sd-status-cancelled {
+        color: #6d7989;
+        background: #eef1f4;
+    }
+
+    .sd-status-failed {
+        color: #bc4242;
+        background: #fdeaea;
+    }
+
+    .sd-status-sending {
+        color: #3167ab;
+        background: #e7f1ff;
+    }
+
+    .sd-manage-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: 1px solid #d7e1fa;
+        border-radius: 9px;
+        color: #4262d4;
+        background: #fff;
+        text-decoration: none;
+        font-size: 11.5px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .sd-manage-btn:hover {
+        background: #edf2ff;
+        color: #294dbf;
+    }
+
+    .sd-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 18px 23px;
+        border-top: 1px solid var(--sd-border);
+    }
+
+    .sd-pagination-label {
+        color: #8290a3;
+        font-size: 11.5px;
+    }
+
+    .sd-empty {
+        padding: 48px 20px;
+        text-align: center;
+        color: #8290a3;
+    }
+
+    .sd-empty i {
+        display: block;
+        margin-bottom: 13px;
+        font-size: 33px;
+        color: #9aace1;
+    }
+
+    .sd-empty strong {
+        display: block;
+        color: #344660;
+        font-size: 14px;
+        margin-bottom: 7px;
+    }
+
+    .sd-error {
+        margin: 0 23px 17px;
+    }
+
+    .sd-results-refreshing {
+        opacity: .6;
+        transition: opacity 150ms ease;
+    }
+
+    @media (max-width: 1199.98px) {
+        .sd-filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .sd-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sd-filters,
+        .sd-toolbar {
+            padding: 17px;
+        }
+
+        .sd-header-actions {
+            width: 100%;
+        }
+
+        .sd-header-actions .btn {
+            flex: 1;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sd-page *,
+        .sd-page *::before,
+        .sd-page *::after {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="sd-page" id="student-directory">
+
+    <!-- HEADER -->
+
+    <div class="sd-header">
+
+        <div>
+            <div class="sd-eyebrow">
+                STUDENT ONBOARDING / DIRECTORY
+            </div>
+
+            <h1 class="sd-title">
+                Student Directory
+            </h1>
+
+            <p class="sd-subtitle">
+                Search and manage imported student accounts.
+            </p>
+        </div>
+
+        <div class="sd-header-actions">
+            <a
+                href="{% url 'student_onboarding:dashboard' %}"
+                class="btn btn-outline-secondary"
+            >
+                <i class="bi bi-arrow-left me-1"></i>
+                Dashboard
+            </a>
+
+            <a
+                href="{% url 'student_onboarding:student_export' %}{% if querystring %}?{{ querystring }}{% endif %}"
+                id="sd-export-link"
+                class="btn btn-outline-success"
+            >
+                <i class="bi bi-file-earmark-arrow-down me-1"></i>
+                Export CSV
+            </a>
+
+            <a
+                href="{% url 'student_onboarding:upload' %}"
+                class="btn btn-primary"
+            >
+                <i class="bi bi-person-plus me-1"></i>
+                Import Students
+            </a>
+        </div>
+
+    </div>
+
+    <!-- AUTOMATIC FILTERS -->
+
+    <section class="sd-panel sd-filters">
+
+        <h2 class="sd-filter-title">
+            Search & Filter Students
+        </h2>
+
+        <p class="sd-filter-note">
+            Results update automatically.
+            Search begins 200ms after you stop typing.
+        </p>
+
+        <form
+            method="get"
+            id="sd-filter-form"
+            action="{% url 'student_onboarding:student_directory' %}"
+            role="search"
+        >
+
+            <div class="sd-filter-grid">
+
+                <div>
+                    <label
+                        for="{{ filter_form.q.id_for_label }}"
+                        class="sd-label"
+                    >
+                        Search Students
+                    </label>
+
+                    <div class="sd-search-control">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        {{ filter_form.q }}
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        for="{{ filter_form.status.id_for_label }}"
+                        class="sd-label"
+                    >
+                        Account Status
+                    </label>
+
+                    {{ filter_form.status }}
+                </div>
+
+                <div>
+                    <label
+                        for="{{ filter_form.email_status.id_for_label }}"
+                        class="sd-label"
+                    >
+                        Email Status
+                    </label>
+
+                    {{ filter_form.email_status }}
+                </div>
+
+                <div>
+                    <label
+                        for="{{ filter_form.section.id_for_label }}"
+                        class="sd-label"
+                    >
+                        Academic Section
+                    </label>
+
+                    {{ filter_form.section }}
+                </div>
+
+            </div>
+
+            <!-- Fallback for browsers without JavaScript -->
+            <noscript>
+                <button
+                    type="submit"
+                    class="btn btn-primary mt-3"
+                >
+                    Apply Filters
+                </button>
+            </noscript>
+
+        </form>
+
+    </section>
+
+    <!-- AJAX-UPDATED RESULTS -->
+    <section
+        id="sd-results"
+        class="sd-panel"
+        aria-label="Student search results"
+        aria-busy="false"
+    >
+
+        <div class="sd-toolbar">
+
+            <h2 class="sd-toolbar-title">
+                Student Records
+            </h2>
+
+            <div class="sd-toolbar-right">
+
+                <span
+                    class="sd-count"
+                    id="sd-result-count"
+                >
+                    {{ student_count }} students
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table sd-table align-middle">
+
+                <thead>
+                    <tr>
+                        <th>ROLL NUMBER</th>
+                        <th>STUDENT</th>
+                        <th>EMAIL</th>
+                        <th>SECTION</th>
+                        <th>ACCOUNT</th>
+                        <th>EMAIL DELIVERY</th>
+                        <th class="text-end">ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for identity in page_obj %}
+
+                    <tr>
+
+                        <td>
+                            <span class="sd-roll">
+                                {{ identity.roll_number }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="sd-student-name">
+                                {{ identity.user.get_full_name }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="sd-email">
+                                {{ identity.institutional_email }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="sd-section">
+                                {{ identity.section }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if identity.status == "ACTIVE" %}
+                                <span class="sd-status sd-status-active">
+                                    Activated
+                                </span>
+                            {% elif identity.status == "CANCELLED" %}
+                                <span class="sd-status sd-status-cancelled">
+                                    Cancelled
+                                </span>
+                            {% else %}
+                                <span class="sd-status sd-status-pending">
+                                    Pending
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if identity.email_status == "SENT" %}
+                                <span class="sd-status sd-status-active">
+                                    Sent
+                                </span>
+                            {% elif identity.email_status == "FAILED" %}
+                                <span class="sd-status sd-status-failed">
+                                    Failed
+                                </span>
+                            {% elif identity.email_status == "SENDING" %}
+                                <span class="sd-status sd-status-sending">
+                                    Sending
+                                </span>
+                            {% else %}
+                                <span class="sd-status sd-status-cancelled">
+                                    Queued
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'student_onboarding:student_detail' identity.pk %}"
+                                class="sd-manage-btn"
+                            >
+                                Manage
+                                <i class="bi bi-arrow-up-right"></i>
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="7">
+                            <div class="sd-empty">
+                                <i class="bi bi-search"></i>
+                                <strong>No Students Found</strong>
+                                Try another search term or filter.
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- AJAX PAGINATION -->
+
+        {% if page_obj.paginator.num_pages > 1 %}
+
+        <div class="sd-pagination">
+
+            <span class="sd-pagination-label">
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            <div class="d-flex gap-2">
+
+                {% if page_obj.has_previous %}
+                    <a
+                        href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+                        class="btn btn-outline-secondary btn-sm sd-page-link"
+                    >
+                        <i class="bi bi-chevron-left"></i>
+                        Previous
+                    </a>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                    <a
+                        href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+                        class="btn btn-outline-secondary btn-sm sd-page-link"
+                    >
+                        Next
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <div
+        id="sd-fetch-error"
+        class="alert alert-danger mt-3"
+        role="alert"
+        hidden
+    >
+        Search results could not be loaded.
+        Please check your connection and try again.
+    </div>
+
+    <div
+        id="sd-announcement"
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
+    ></div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+(function () {
+    "use strict";
+
+    const form = document.getElementById("sd-filter-form");
+    const results = document.getElementById("sd-results");
+    const exportLink = document.getElementById("sd-export-link");
+    const errorMessage = document.getElementById("sd-fetch-error");
+    const announcement = document.getElementById("sd-announcement");
+
+    if (!form || !results || !exportLink) {
+        return;
+    }
+
+    const DEBOUNCE_MS = 200;
+
+    const directoryURL = form.action;
+    const exportBaseURL = exportLink.href.split("?")[0];
+
+    let debounceTimer = null;
+    let activeController = null;
+    let requestNumber = 0;
+
+    /*
+       Build a URL from the existing form.
+       Empty filter values are omitted.
+    */
+    function buildFilterURL() {
+        const url = new URL(directoryURL, window.location.origin);
+        const data = new FormData(form);
+
+        for (const [name, value] of data.entries()) {
+            const cleaned = String(value).trim();
+
+            if (cleaned) {
+                url.searchParams.set(name, cleaned);
+            }
+        }
+
+        return url;
+    }
+
+    /*
+       Update the CSV export link so it always
+       follows the selected filters.
+    */
+    function updateExportURL(url) {
+        const exportURL = new URL(
+            exportBaseURL,
+            window.location.origin
+        );
+
+        for (const [name, value] of url.searchParams.entries()) {
+            if (name !== "page") {
+                exportURL.searchParams.set(name, value);
+            }
+        }
+
+        exportLink.href = exportURL.pathname + exportURL.search;
+    }
+
+    function setLoading(loading) {
+        results.setAttribute(
+            "aria-busy",
+            loading ? "true" : "false"
+        );
+
+        results.classList.toggle(
+            "sd-results-refreshing",
+            loading
+        );
+    }
+
+    /*
+       Fetch a normal Django-rendered page, but
+       replace ONLY the results section.
+       The search input retains focus.
+    */
+    async function fetchResults(url, historyMode = "push") {
+        if (activeController) {
+            activeController.abort();
+        }
+
+        const controller = new AbortController();
+        activeController = controller;
+
+        const currentRequest = ++requestNumber;
+
+        setLoading(true);
+        errorMessage.hidden = true;
+
+        try {
+            const response = await fetch(url.toString(), {
+                method: "GET",
+                credentials: "same-origin",
+                signal: controller.signal,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    "Request failed: " + response.status
+                );
+            }
+
+            const html = await response.text();
+
+            const parser = new DOMParser();
+
+            const documentResult = parser.parseFromString(
+                html,
+                "text/html"
+            );
+
+            const newResults = documentResult.getElementById(
+                "sd-results"
+            );
+
+            if (!newResults) {
+                throw new Error(
+                    "Student results container missing."
+                );
+            }
+
+            if (currentRequest !== requestNumber) {
+                return;
+            }
+
+            results.innerHTML = newResults.innerHTML;
+
+            if (historyMode === "push") {
+                const newLocation = url.pathname + url.search;
+                const oldLocation = (
+                    window.location.pathname +
+                    window.location.search
+                );
+
+                if (newLocation !== oldLocation) {
+                    window.history.pushState(
+                        {},
+                        "",
+                        newLocation
+                    );
+                }
+            }
+
+            updateExportURL(url);
+
+            const count = results.querySelector(
+                "#sd-result-count"
+            );
+
+            if (announcement && count) {
+                announcement.textContent = (
+                    "Search updated. " +
+                    count.textContent.trim()
+                );
+            }
+
+        } catch (error) {
+
+            if (error.name === "AbortError") {
+                return;
+            }
+
+            if (currentRequest === requestNumber) {
+                errorMessage.hidden = false;
+
+                if (announcement) {
+                    announcement.textContent = (
+                        "Unable to update student results."
+                    );
+                }
+            }
+
+        } finally {
+            if (currentRequest === requestNumber) {
+                setLoading(false);
+                activeController = null;
+            }
+        }
+    }
+
+    /*
+       Called when any filter changes.
+
+       Typing in search waits 200ms.
+       Dropdown changes update immediately.
+    */
+    function scheduleFilter(delay) {
+        clearTimeout(debounceTimer);
+
+        // Cancel outdated requests as soon as
+        // the user changes a filter.
+        if (activeController) {
+            activeController.abort();
+        }
+
+        // Invalidate old results even while
+        // the next request is debouncing.
+        requestNumber++;
+
+        const url = buildFilterURL();
+
+        updateExportURL(url);
+
+        debounceTimer = setTimeout(function () {
+            fetchResults(url, "push");
+        }, delay);
+    }
+
+    const searchInput = form.querySelector(
+        'input[name="q"]'
+    );
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            scheduleFilter(DEBOUNCE_MS);
+        });
+    }
+
+    for (const fieldName of [
+        "status",
+        "email_status",
+        "section"
+    ]) {
+        const field = form.elements.namedItem(fieldName);
+
+        if (field) {
+            field.addEventListener("change", function () {
+                scheduleFilter(0);
+            });
+        }
+    }
+
+    /*
+       Prevent accidental full-page form submission
+       when the user presses Enter.
+    */
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        scheduleFilter(0);
+    });
+
+    /*
+       Pagination uses AJAX.
+       Event delegation works after results
+       have been replaced with new HTML.
+    */
+    results.addEventListener("click", function (event) {
+        const link = event.target.closest(".sd-page-link");
+
+        if (!link) {
+            return;
+        }
+
+        if (
+            event.button !== 0 ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey ||
+            event.altKey
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        clearTimeout(debounceTimer);
+
+        const url = new URL(
+            link.href,
+            window.location.origin
+        );
+
+        fetchResults(url, "push");
+    });
+
+    /*
+       Browser Back / Forward restores filters
+       and loads the corresponding results.
+    */
+    window.addEventListener("popstate", function () {
+        clearTimeout(debounceTimer);
+
+        const url = new URL(window.location.href);
+
+        for (const name of [
+            "q",
+            "status",
+            "email_status",
+            "section"
+        ]) {
+            const field = form.elements.namedItem(name);
+
+            if (field) {
+                field.value = url.searchParams.get(name) || "";
+            }
+        }
+
+        updateExportURL(url);
+        fetchResults(url, "none");
+    });
+
+    updateExportURL(new URL(window.location.href));
+
+})();
+</script>
+
+{% endblock %}

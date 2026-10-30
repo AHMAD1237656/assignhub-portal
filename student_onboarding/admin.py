@@ -3,6 +3,8 @@ from django.contrib import admin
 from .models import (
     StudentIdentity,
     StudentImportBatch,
+    StudentOnboardingEvent,
+
 )
 
 
@@ -102,5 +104,36 @@ class StudentIdentityAdmin(
         "email_claimed_at",
         "email_sent_at",
         "activated_at",
+        "created_at",
+    )
+
+@admin.register(StudentOnboardingEvent)
+class StudentOnboardingEventAdmin(
+    ReadOnlyImportAdmin,
+    admin.ModelAdmin,
+):
+    list_display = (
+        "identity",
+        "action",
+        "actor",
+        "created_at",
+    )
+
+    list_filter = (
+        "action",
+        "created_at",
+    )
+
+    search_fields = (
+        "identity__roll_number",
+        "identity__institutional_email",
+        "actor__username",
+    )
+
+    readonly_fields = (
+        "identity",
+        "actor",
+        "action",
+        "details",
         "created_at",
     )

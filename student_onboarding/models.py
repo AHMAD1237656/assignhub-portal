@@ -1,3 +1,4 @@
+
 import secrets
 from datetime import timedelta
 
@@ -30,9 +31,7 @@ class StudentImportBatch(models.Model):
         related_name="student_import_batches",
     )
 
-    filename = models.CharField(
-        max_length=255,
-    )
+    filename = models.CharField(max_length=255)
 
     section = models.ForeignKey(
         Section,
@@ -56,24 +55,15 @@ class StudentImportBatch(models.Model):
         default=Status.PREVIEW,
     )
 
-    # Temporary preview data.
-    # Cleared after successful confirmation.
     rows = models.JSONField(
         default=list,
         blank=True,
     )
 
-    row_count = models.PositiveIntegerField(
-        default=0,
-    )
+    row_count = models.PositiveIntegerField(default=0)
+    created_count = models.PositiveIntegerField(default=0)
 
-    created_count = models.PositiveIntegerField(
-        default=0,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     confirmed_at = models.DateTimeField(
         null=True,
@@ -115,6 +105,7 @@ class StudentIdentity(models.Model):
     class Status(models.TextChoices):
         PENDING = "PENDING", "Pending Activation"
         ACTIVE = "ACTIVE", "Activated"
+        CANCELLED = "CANCELLED", "Cancelled"
 
     class EmailStatus(models.TextChoices):
         QUEUED = "QUEUED", "Queued"
@@ -134,9 +125,7 @@ class StudentIdentity(models.Model):
         related_name="identities",
     )
 
-    roll_number = models.CharField(
-        max_length=40,
-    )
+    roll_number = models.CharField(max_length=40)
 
     institutional_email = models.EmailField()
 
@@ -188,6 +177,25 @@ class StudentIdentity(models.Model):
         blank=True,
     )
 
+    # Phase 8.1: cancellation details
+    cancelled_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    cancelled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="student_onboarding_cancellations",
+    )
+
+    cancellation_reason = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -217,4 +225,51 @@ class StudentIdentity(models.Model):
         return (
             f"{self.roll_number} - "
             f"{self.user.username}"
+        )
+
+
+class StudentOnboardingEvent(models.Model):
+
+    class Action(models.TextChoices):
+        CORRECTED = "CORRECTED", "Record Corrected"
+        CANCELLED = "CANCELLED", "Account Cancelled"
+        RESTORED = "RESTORED", "Account Restored"
+        EMAIL_RESENT = "EMAIL_RESENT", "Email Resent"
+        EMAIL_FAILED = "EMAIL_FAILED", "Email Failed"
+
+    identity = models.ForeignKey(
+        StudentIdentity,
+        on_delete=models.PROTECT,
+        related_name="events",
+    )
+
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="student_onboarding_events",
+    )
+
+    action = models.CharField(
+        max_length=20,
+        choices=Action.choices,
+    )
+
+    details = models.CharField(
+        max_length=300,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+
+    def __str__(self):
+        return (
+            f"{self.identity.roll_number} - "
+            f"{self.get_action_display()}"
         )

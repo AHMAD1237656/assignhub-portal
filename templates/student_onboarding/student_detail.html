@@ -1,0 +1,508 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+Manage Student | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-2 px-lg-3 py-3">
+
+    <!-- HEADER -->
+
+    <div class="mb-4">
+
+        <a
+            href="{% url 'student_onboarding:student_directory' %}"
+            class="btn btn-outline-secondary btn-sm mb-3"
+        >
+            Back to Students
+        </a>
+
+        <h1 class="fw-bold mb-1">
+            {{ identity.user.get_full_name }}
+        </h1>
+
+        <p class="text-muted mb-0">
+            {{ identity.roll_number }}
+            —
+            {{ identity.section }}
+        </p>
+
+    </div>
+
+    <!-- SUMMARY -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body p-4">
+
+                    <div class="small text-muted mb-2">
+                        Account Status
+                    </div>
+
+                    {% if identity.status == "ACTIVE" %}
+
+                    <span class="badge bg-success fs-6">
+                        Activated
+                    </span>
+
+                    {% elif identity.status == "CANCELLED" %}
+
+                    <span class="badge bg-secondary fs-6">
+                        Cancelled
+                    </span>
+
+                    {% else %}
+
+                    <span class="badge bg-warning text-dark fs-6">
+                        Pending Activation
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body p-4">
+
+                    <div class="small text-muted mb-2">
+                        Email Delivery
+                    </div>
+
+                    <strong>
+                        {{ identity.get_email_status_display }}
+                    </strong>
+
+                    {% if identity.email_sent_at %}
+                    <div class="small text-muted mt-2">
+                        Last sent:
+                        {{ identity.email_sent_at|date:"d M Y, h:i A" }}
+                    </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body p-4">
+
+                    <div class="small text-muted mb-2">
+                        Import Batch
+                    </div>
+
+                    <a
+                        href="{% url 'student_onboarding:batch_detail' identity.import_batch_id %}"
+                        class="fw-bold text-decoration-none"
+                    >
+                        #{{ identity.import_batch_id }}
+                    </a>
+
+                    <div class="small text-muted mt-2">
+                        {{ identity.created_at|date:"d M Y, h:i A" }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT COLUMN -->
+
+        <div class="col-12 col-xl-7">
+
+            <!-- STUDENT INFORMATION -->
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-3">
+                        Student Information
+                    </h2>
+
+                    <div class="table-responsive">
+
+                        <table class="table align-middle mb-0">
+
+                            <tbody>
+
+                                <tr>
+                                    <th>Roll Number / Username</th>
+                                    <td>{{ identity.roll_number }}</td>
+                                </tr>
+
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ identity.user.get_full_name }}</td>
+                                </tr>
+
+                                <tr>
+                                    <th>University Email</th>
+                                    <td>{{ identity.institutional_email }}</td>
+                                </tr>
+
+                                <tr>
+                                    <th>Section</th>
+                                    <td>{{ identity.section }}</td>
+                                </tr>
+
+                                <tr>
+                                    <th>Academic Year</th>
+                                    <td>{{ identity.academic_year }}</td>
+                                </tr>
+
+                                <tr>
+                                    <th>Term</th>
+                                    <td>{{ identity.get_term_display }}</td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% if identity.status == "PENDING" %}
+
+            <!-- EDIT PENDING STUDENT -->
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Correct Student Details
+                    </h2>
+
+                    <p class="small text-muted">
+                        Only inactive, pending accounts can be
+                        corrected. Changing these details
+                        invalidates previously issued activation
+                        links.
+                    </p>
+
+                    <form
+                        method="post"
+                        action="{% url 'student_onboarding:student_edit' identity.pk %}"
+                        novalidate
+                    >
+                        {% csrf_token %}
+
+                        <div class="row g-3 mb-3">
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    First Name
+                                </label>
+
+                                {{ edit_form.first_name }}
+
+                            </div>
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Last Name
+                                </label>
+
+                                {{ edit_form.last_name }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                University Email
+                            </label>
+
+                            {{ edit_form.email }}
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Save Corrections
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            <!-- CANCEL PENDING STUDENT -->
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold text-danger mb-2">
+                        Cancel Pending Account
+                    </h2>
+
+                    <p class="small text-muted">
+                        Cancellation invalidates activation
+                        links and releases the student's
+                        pending section reservation.
+                        The account and audit history are
+                        preserved.
+                    </p>
+
+                    <form
+                        method="post"
+                        action="{% url 'student_onboarding:student_cancel' identity.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Cancellation Reason
+                            </label>
+
+                            {{ cancel_form.reason }}
+
+                        </div>
+
+                        <div class="form-check mb-3">
+
+                            <input
+                                type="checkbox"
+                                name="confirm"
+                                id="confirm-cancellation"
+                                class="form-check-input"
+                                required
+                            >
+
+                            <label
+                                for="confirm-cancellation"
+                                class="form-check-label"
+                            >
+                                I confirm this cancellation.
+                            </label>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-outline-danger"
+                            onclick="return confirm('Cancel this pending student account?');"
+                        >
+                            Cancel Account
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% elif identity.status == "CANCELLED" %}
+
+            <!-- RESTORE CANCELLED STUDENT -->
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-3">
+                        Restore Student Account
+                    </h2>
+
+                    <p class="text-muted">
+                        This account is cancelled and cannot
+                        be activated using old invitation links.
+                    </p>
+
+                    {% if identity.cancellation_reason %}
+
+                    <div class="alert alert-warning">
+
+                        <strong>Cancellation reason:</strong>
+
+                        {{ identity.cancellation_reason }}
+
+                    </div>
+
+                    {% endif %}
+
+                    <form
+                        method="post"
+                        action="{% url 'student_onboarding:student_restore' identity.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Restore to Pending Activation
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <!-- ACTIVE ACCOUNT -->
+
+            <div class="alert alert-success">
+
+                <strong>Student account is active.</strong>
+
+                Name and email correction through the
+                onboarding workflow is disabled after
+                activation. Existing class allocations
+                and submissions remain protected.
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+
+        <div class="col-12 col-xl-5">
+
+            <!-- EMAIL ACTION -->
+
+            {% if identity.status == "PENDING" %}
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-3">
+                        Activation Email
+                    </h2>
+
+                    <p class="small text-muted">
+                        Send a fresh activation link
+                        to this student. Older links
+                        will stop working.
+                    </p>
+
+                    <form
+                        method="post"
+                        action="{% url 'student_onboarding:student_resend' identity.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            <i class="bi bi-envelope-arrow-up me-1"></i>
+                            Send New Activation Email
+                        </button>
+
+                    </form>
+
+                    <div class="small text-muted mt-3">
+                        Recipient:
+                        {{ identity.institutional_email }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+            <!-- AUDIT HISTORY -->
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-3">
+                        Admin Activity History
+                    </h2>
+
+                    {% for event in events %}
+
+                    <div class="border-bottom py-3">
+
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+
+                            <strong class="small">
+                                {{ event.get_action_display }}
+                            </strong>
+
+                            <span class="small text-muted">
+                                {{ event.created_at|date:"d M Y, h:i A" }}
+                            </span>
+
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            By:
+                            {{ event.actor.username|default:"System" }}
+                        </div>
+
+                        {% if event.details %}
+
+                        <div class="small mt-2">
+                            {{ event.details }}
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    {% empty %}
+
+                    <p class="small text-muted mb-0">
+                        No Admin activity has been recorded.
+                    </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

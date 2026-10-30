@@ -1,197 +1,1479 @@
+
 {% extends "base.html" %}
 
-{% block title %}
-Student Onboarding | AssignHub
+{% block title %}Student Onboarding | AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================
+       ASSIGNHUB - STUDENT ONBOARDING DASHBOARD
+       Scoped styles - existing theme preserved
+    ========================================= */
+
+    .so-dashboard {
+        --so-navy: #101c32;
+        --so-blue: #4669ed;
+        --so-blue-dark: #3457d4;
+        --so-text: #1c2940;
+        --so-muted: #718096;
+        --so-border: #e7ebf2;
+        --so-bg: #f6f8fc;
+        --so-white: #ffffff;
+
+        color: var(--so-text);
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 5px 0 35px;
+    }
+
+    .so-dashboard a {
+        text-decoration: none;
+    }
+
+    /* HEADER */
+
+    .so-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 27px;
+    }
+
+    .so-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: #526cc2;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    .so-eyebrow-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #4669ed;
+        box-shadow: 0 0 0 4px rgba(70,105,237,.1);
+    }
+
+    .so-page-title {
+        margin: 0 0 9px;
+        color: var(--so-navy);
+        font-size: clamp(26px, 3vw, 34px);
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .so-page-subtitle {
+        margin: 0;
+        color: var(--so-muted);
+        font-size: 13.5px;
+        line-height: 1.8;
+    }
+
+    .so-header-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 5px;
+    }
+
+    .so-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 43px;
+        padding: 10px 17px;
+        border-radius: 11px;
+        font-size: 12.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        transition:
+            transform .2s ease,
+            background .2s ease,
+            box-shadow .2s ease;
+    }
+
+    .so-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .so-btn-primary {
+        color: #ffffff;
+        background: var(--so-blue);
+        border: 1px solid var(--so-blue);
+        box-shadow: 0 6px 15px rgba(70,105,237,.18);
+    }
+
+    .so-btn-primary:hover {
+        color: #ffffff;
+        background: var(--so-blue-dark);
+        border-color: var(--so-blue-dark);
+    }
+
+    .so-btn-outline {
+        color: #344a70;
+        background: #ffffff;
+        border: 1px solid #dce3ef;
+    }
+
+    .so-btn-outline:hover {
+        color: var(--so-blue-dark);
+        border-color: #becbf1;
+        background: #f8faff;
+    }
+
+    /* HERO */
+
+    .so-hero {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        min-height: 190px;
+        padding: 31px 35px;
+        overflow: hidden;
+        border-radius: 19px;
+        background: linear-gradient(
+            112deg,
+            #101c32 0%,
+            #233d70 64%,
+            #3555ab 100%
+        );
+        box-shadow: 0 12px 28px rgba(16,28,50,.12);
+        margin-bottom: 25px;
+    }
+
+    .so-hero::after {
+        content: "";
+        position: absolute;
+        width: 340px;
+        height: 340px;
+        top: -185px;
+        right: -95px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,.14);
+        box-shadow:
+            0 0 0 46px rgba(255,255,255,.035),
+            0 0 0 100px rgba(255,255,255,.025);
+        pointer-events: none;
+    }
+
+    .so-hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 610px;
+    }
+
+    .so-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 11px;
+        color: #c8d6ff;
+        background: rgba(255,255,255,.09);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 30px;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+
+    .so-hero-title {
+        margin: 0 0 11px;
+        color: #ffffff;
+        font-size: clamp(21px, 2.5vw, 29px);
+        font-weight: 800;
+        line-height: 1.3;
+        letter-spacing: -.6px;
+    }
+
+    .so-hero-text {
+        margin: 0;
+        color: #c9d5ec;
+        font-size: 13px;
+        line-height: 1.9;
+    }
+
+    .so-hero-symbol {
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 115px;
+        height: 115px;
+        color: #dce6ff;
+        background: rgba(255,255,255,.09);
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 30px;
+        transform: rotate(-8deg);
+    }
+
+    .so-hero-symbol i {
+        font-size: 54px;
+        transform: rotate(8deg);
+    }
+
+    /* KPI CARDS */
+
+    .so-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 17px;
+        margin-bottom: 25px;
+    }
+
+    .so-stat-card {
+        position: relative;
+        min-width: 0;
+        padding: 22px;
+        background: var(--so-white);
+        border: 1px solid var(--so-border);
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(16,28,50,.035);
+        transition:
+            transform .25s ease,
+            box-shadow .25s ease,
+            border-color .25s ease;
+    }
+
+    .so-stat-card:hover {
+        transform: translateY(-4px);
+        border-color: #d5def4;
+        box-shadow: 0 12px 27px rgba(16,28,50,.075);
+    }
+
+    .so-stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .so-stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        font-size: 21px;
+    }
+
+    .so-stat-blue .so-stat-icon {
+        color: #4263e6;
+        background: #edf1ff;
+    }
+
+    .so-stat-orange .so-stat-icon {
+        color: #bd791d;
+        background: #fff3df;
+    }
+
+    .so-stat-green .so-stat-icon {
+        color: #14865d;
+        background: #e6f7ee;
+    }
+
+    .so-stat-gray .so-stat-icon {
+        color: #66768c;
+        background: #eef1f5;
+    }
+
+    .so-stat-label {
+        color: #77869a;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .so-stat-number {
+        margin: 6px 0 0;
+        color: #17263f;
+        font-size: clamp(27px, 3vw, 35px);
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -1.3px;
+    }
+
+    .so-stat-footer {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 13px;
+        color: #94a0b0;
+        font-size: 10.5px;
+        font-weight: 600;
+    }
+
+    /* SECONDARY GRID */
+
+    .so-content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(290px, 1fr);
+        align-items: stretch;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .so-panel {
+        min-width: 0;
+        background: #ffffff;
+        border: 1px solid var(--so-border);
+        border-radius: 17px;
+        box-shadow: 0 5px 20px rgba(16,28,50,.035);
+    }
+
+    .so-panel-padding {
+        padding: 23px 25px;
+    }
+
+    .so-panel-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .so-panel-title {
+        margin: 0 0 6px;
+        color: #21324c;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .so-panel-subtitle {
+        margin: 0;
+        color: #8190a2;
+        font-size: 11.5px;
+        line-height: 1.7;
+    }
+
+    /* PROGRESS */
+
+    .so-progress-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .so-progress-big {
+        color: #243752;
+        font-size: 33px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        line-height: 1;
+    }
+
+    .so-progress-big small {
+        margin-left: 4px;
+        color: #8998aa;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0;
+    }
+
+    .so-progress-caption {
+        margin-top: 7px;
+        color: #8090a3;
+        font-size: 11.5px;
+    }
+
+    .so-progress-percentage {
+        padding: 8px 12px;
+        border-radius: 9px;
+        color: #3658c8;
+        background: #eef2ff;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .so-progress-track {
+        width: 100%;
+        height: 11px;
+        overflow: hidden;
+        border-radius: 30px;
+        background: #edf1f7;
+    }
+
+    .so-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(
+            90deg,
+            #4568ec,
+            #7891ff
+        );
+        transition: width .6s ease;
+    }
+
+    .so-progress-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 17px;
+    }
+
+    .so-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #728198;
+        font-size: 11.5px;
+        font-weight: 600;
+    }
+
+    .so-legend-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+    }
+
+    .so-legend-dot.active {
+        background: #4e71ed;
+    }
+
+    .so-legend-dot.pending {
+        background: #efba68;
+    }
+
+    .so-legend-dot.cancelled {
+        background: #a6afbd;
+    }
+
+    /* QUICK ACTIONS */
+
+    .so-quick-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+
+    .so-action-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 12px;
+        border: 1px solid #edf0f5;
+        border-radius: 11px;
+        color: #293b55;
+        background: #fbfcff;
+        transition:
+            border-color .2s ease,
+            background .2s ease,
+            transform .2s ease;
+    }
+
+    .so-action-link:hover {
+        border-color: #d6e0fb;
+        background: #f5f8ff;
+        color: #2748b9;
+        transform: translateX(3px);
+    }
+
+    .so-action-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        color: #4669ed;
+        background: #eef2ff;
+        font-size: 17px;
+    }
+
+    .so-action-body {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .so-action-body strong {
+        color: #30405b;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .so-action-body small {
+        margin-top: 3px;
+        color: #8a98a9;
+        font-size: 10.5px;
+        line-height: 1.5;
+    }
+
+    .so-action-arrow {
+        color: #9caac2;
+        font-size: 15px;
+    }
+
+    /* IMPORT HISTORY */
+
+    .so-history-panel {
+        overflow: hidden;
+    }
+
+    .so-history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 25px 26px 19px;
+    }
+
+    .so-history-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 6px;
+        color: #23334d;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .so-history-title i {
+        color: #4f6ee8;
+        font-size: 19px;
+    }
+
+    .so-history-table {
+        width: 100%;
+        margin-bottom: 0;
+        border-collapse: collapse;
+    }
+
+    .so-history-table thead {
+        background: #f8faff;
+    }
+
+    .so-history-table thead th {
+        padding: 14px 19px;
+        border-top: 1px solid #edf0f5;
+        border-bottom: 1px solid #edf0f5;
+        color: #74849b;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .4px;
+        white-space: nowrap;
+    }
+
+    .so-history-table tbody td {
+        padding: 17px 19px;
+        border-bottom: 1px solid #edf0f5;
+        color: #3b4c65;
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .so-history-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .so-history-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .so-batch-id {
+        color: #263854;
+        font-size: 12.5px;
+        font-weight: 800;
+    }
+
+    .so-batch-file {
+        max-width: 200px;
+        margin-top: 5px;
+        overflow: hidden;
+        color: #8491a5;
+        font-size: 10.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .so-class-name {
+        color: #30425d;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .so-class-period {
+        display: block;
+        margin-top: 5px;
+        color: #8896a9;
+        font-size: 10.5px;
+    }
+
+    .so-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        min-height: 30px;
+        padding: 5px 9px;
+        border-radius: 8px;
+        color: #4059a6;
+        background: #eef2ff;
+        font-weight: 800;
+        font-size: 12px;
+    }
+
+    .so-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 30px;
+        font-size: 10.5px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .so-status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .so-status-confirmed {
+        color: #13845b;
+        background: #e5f6ed;
+    }
+
+    .so-status-preview {
+        color: #a67621;
+        background: #fff3db;
+    }
+
+    .so-table-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 12px;
+        border: 1px solid #dce4f5;
+        border-radius: 9px;
+        color: #3e5ed2;
+        background: #ffffff;
+        font-size: 11.5px;
+        font-weight: 750;
+        white-space: nowrap;
+        transition: background .2s ease, border-color .2s ease;
+    }
+
+    .so-table-action:hover {
+        color: #234ac5;
+        background: #eef2ff;
+        border-color: #c6d3ff;
+    }
+
+    /* EMPTY STATE */
+
+    .so-empty-state {
+        padding: 55px 25px;
+        text-align: center;
+    }
+
+    .so-empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 66px;
+        height: 66px;
+        margin: 0 auto 17px;
+        border-radius: 17px;
+        background: #edf2ff;
+        color: #5472e5;
+        font-size: 30px;
+    }
+
+    .so-empty-state h3 {
+        color: #253752;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .so-empty-state p {
+        color: #8a97aa;
+        font-size: 12px;
+    }
+
+    /* FOOTER NOTE */
+
+    .so-dashboard-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        margin-top: 19px;
+        padding: 15px 19px;
+        border: 1px solid #dce6fb;
+        border-radius: 12px;
+        color: #667a9c;
+        background: #f0f5ff;
+        font-size: 11.5px;
+        line-height: 1.8;
+    }
+
+    .so-dashboard-note i {
+        color: #4c6be6;
+        font-size: 17px;
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 1199.98px) {
+        .so-stats-grid {
+            grid-template-columns: repeat(2, minmax(0,1fr));
+        }
+
+        .so-content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .so-dashboard {
+            padding-top: 0;
+        }
+
+        .so-page-header {
+            margin-bottom: 20px;
+        }
+
+        .so-page-title {
+            font-size: 27px;
+        }
+
+        .so-header-actions {
+            width: 100%;
+        }
+
+        .so-header-actions .so-btn {
+            flex: 1;
+        }
+
+        .so-hero {
+            min-height: auto;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .so-hero-symbol {
+            display: none;
+        }
+
+        .so-stats-grid {
+            gap: 12px;
+        }
+
+        .so-stat-card {
+            padding: 17px;
+        }
+
+        .so-stat-number {
+            font-size: 29px;
+        }
+
+        .so-panel-padding {
+            padding: 20px;
+        }
+
+        .so-history-header {
+            padding: 21px;
+        }
+    }
+
+    @media (max-width: 430px) {
+        .so-stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+        }
+
+        .so-stat-card {
+            padding: 14px;
+        }
+
+        .so-stat-icon {
+            width: 39px;
+            height: 39px;
+            font-size: 18px;
+        }
+
+        .so-stat-label {
+            font-size: 10.5px;
+        }
+
+        .so-stat-number {
+            font-size: 26px;
+        }
+
+        .so-stat-footer {
+            font-size: 9px;
+        }
+
+        .so-header-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .so-header-actions .so-btn {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .so-dashboard *,
+        .so-dashboard *::before,
+        .so-dashboard *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="container-fluid px-4 py-4">
+<div class="so-dashboard">
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <!-- =====================================
+         PAGE HEADER
+    ====================================== -->
+
+    <div class="so-page-header">
 
         <div>
-            <h1 class="fw-bold mb-1">
+
+            <div class="so-eyebrow">
+                <span class="so-eyebrow-dot"></span>
+                ADMINISTRATION / STUDENT MANAGEMENT
+            </div>
+
+            <h1 class="so-page-title">
                 Student Onboarding
             </h1>
-            <p class="text-muted mb-0">
-                Create and activate student accounts
-                using official university records.
+
+            <p class="so-page-subtitle">
+                Manage student account provisioning,
+                activation and university enrollment.
             </p>
+
         </div>
 
-        <div class="d-flex flex-wrap gap-2">
+        <div class="so-header-actions">
+
             <a
-                href="{% url 'student_onboarding:sample' %}"
-                class="btn btn-outline-primary"
+                href="{% url 'student_onboarding:student_directory' %}"
+                class="so-btn so-btn-outline"
             >
-                <i class="bi bi-download me-1"></i>
-                Sample CSV
+                <i class="bi bi-people"></i>
+                Manage Students
             </a>
 
             <a
                 href="{% url 'student_onboarding:upload' %}"
-                class="btn btn-primary"
+                class="so-btn so-btn-primary"
             >
-                <i class="bi bi-file-earmark-arrow-up me-1"></i>
+                <i class="bi bi-plus-lg"></i>
                 Import Students
             </a>
+
         </div>
 
     </div>
 
-    <div class="row g-3 mb-4">
+    <!-- =====================================
+         HERO BANNER
+    ====================================== -->
 
-        <div class="col-12 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <p class="text-muted small mb-2">
-                        Imported Students
-                    </p>
-                    <h2 class="fw-bold mb-0">
-                        {{ total_students }}
-                    </h2>
-                </div>
+    <section class="so-hero">
+
+        <div class="so-hero-content">
+
+            <div class="so-hero-tag">
+                <i class="bi bi-shield-check"></i>
+                STUDENT PROVISIONING SYSTEM
             </div>
-        </div>
 
-        <div class="col-12 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <p class="text-muted small mb-2">
-                        Pending Activation
-                    </p>
-                    <h2 class="fw-bold mb-0">
-                        {{ pending_students }}
-                    </h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <p class="text-muted small mb-2">
-                        Activated Students
-                    </p>
-                    <h2 class="fw-bold mb-0">
-                        {{ activated_students }}
-                    </h2>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="card border-0 shadow-sm rounded-4">
-
-        <div class="card-header bg-white border-0 p-4">
-            <h2 class="h5 fw-bold mb-0">
-                Import History
+            <h2 class="so-hero-title">
+                One workspace. Every student.
             </h2>
+
+            <p class="so-hero-text">
+                Import university student records in bulk,
+                manage activation invitations and monitor
+                account readiness from a single secure dashboard.
+            </p>
+
         </div>
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
+        <div class="so-hero-symbol" aria-hidden="true">
+            <i class="bi bi-mortarboard-fill"></i>
+        </div>
 
-                <table class="table table-hover align-middle mb-0">
+    </section>
 
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Batch</th>
-                            <th>Academic Class</th>
-                            <th>Records</th>
-                            <th>Status</th>
-                            <th>Imported By</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+    <!-- =====================================
+         STATISTICS CARDS
+    ====================================== -->
 
-                    <tbody>
+    <div class="so-stats-grid">
 
-                        {% for batch in batches %}
+        <!-- TOTAL IMPORTED -->
 
-                        <tr>
-                            <td class="ps-4">
-                                <strong>
-                                    #{{ batch.pk }}
-                                </strong>
+        <div class="so-stat-card so-stat-blue">
 
-                                <div class="small text-muted">
-                                    {{ batch.filename }}
-                                </div>
+            <div class="so-stat-top">
+                <span class="so-stat-icon">
+                    <i class="bi bi-people-fill"></i>
+                </span>
+                <i class="bi bi-arrow-up-right text-muted"></i>
+            </div>
 
-                                <div class="small text-muted">
-                                    {{ batch.created_at|date:"d M Y, h:i A" }}
-                                </div>
-                            </td>
+            <div class="so-stat-label">
+                Total Imported Students
+            </div>
 
-                            <td>
-                                {{ batch.section }}
-                                <div class="small text-muted">
-                                    {{ batch.get_term_display }}
-                                    {{ batch.academic_year }}
-                                </div>
-                            </td>
+            <div class="so-stat-number">
+                {{ total_students|default:0 }}
+            </div>
 
-                            <td>
-                                {{ batch.row_count }}
-                            </td>
+            <div class="so-stat-footer">
+                <i class="bi bi-database-check"></i>
+                Registered through bulk import
+            </div>
 
-                            <td>
-                                {% if batch.status == "CONFIRMED" %}
-                                    <span class="badge bg-success">
-                                        Confirmed
-                                    </span>
-                                {% else %}
-                                    <span class="badge bg-warning text-dark">
-                                        Preview
-                                    </span>
-                                {% endif %}
-                            </td>
+        </div>
 
-                            <td>
-                                {{ batch.created_by.username|default:"System" }}
-                            </td>
+        <!-- PENDING -->
 
-                            <td>
-                                {% if batch.status == "CONFIRMED" %}
-                                <a
-                                    href="{% url 'student_onboarding:batch_detail' batch.pk %}"
-                                    class="btn btn-outline-primary btn-sm"
-                                >
-                                    View Batch
-                                </a>
-                                {% else %}
-                                <a
-                                    href="{% url 'student_onboarding:preview' batch.pk %}"
-                                    class="btn btn-outline-primary btn-sm"
-                                >
-                                    View Preview
-                                </a>
-                                {% endif %}
-                            </td>
-                        </tr>
+        <div class="so-stat-card so-stat-orange">
 
-                        {% empty %}
+            <div class="so-stat-top">
+                <span class="so-stat-icon">
+                    <i class="bi bi-hourglass-split"></i>
+                </span>
+                <i class="bi bi-clock-history text-muted"></i>
+            </div>
 
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-5">
-                                No student imports available.
-                            </td>
-                        </tr>
+            <div class="so-stat-label">
+                Pending Activation
+            </div>
 
-                        {% endfor %}
+            <div class="so-stat-number">
+                {{ pending_students|default:0 }}
+            </div>
 
-                    </tbody>
+            <div class="so-stat-footer">
+                <i class="bi bi-envelope"></i>
+                Awaiting student password setup
+            </div>
 
-                </table>
+        </div>
+
+        <!-- ACTIVATED -->
+
+        <div class="so-stat-card so-stat-green">
+
+            <div class="so-stat-top">
+                <span class="so-stat-icon">
+                    <i class="bi bi-person-check-fill"></i>
+                </span>
+                <i class="bi bi-check-circle text-muted"></i>
+            </div>
+
+            <div class="so-stat-label">
+                Activated Students
+            </div>
+
+            <div class="so-stat-number">
+                {{ activated_students|default:0 }}
+            </div>
+
+            <div class="so-stat-footer">
+                <i class="bi bi-shield-check"></i>
+                Account activation completed
+            </div>
+
+        </div>
+
+        <!-- CANCELLED -->
+
+        <div class="so-stat-card so-stat-gray">
+
+            <div class="so-stat-top">
+                <span class="so-stat-icon">
+                    <i class="bi bi-person-x-fill"></i>
+                </span>
+                <i class="bi bi-dash-circle text-muted"></i>
+            </div>
+
+            <div class="so-stat-label">
+                Cancelled Accounts
+            </div>
+
+            <div class="so-stat-number">
+                {{ cancelled_students|default:0 }}
+            </div>
+
+            <div class="so-stat-footer">
+                <i class="bi bi-archive"></i>
+                Cancelled onboarding records
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================
+         PROGRESS & QUICK ACTIONS
+    ====================================== -->
+
+    <div class="so-content-grid">
+
+        <!-- ACTIVATION PROGRESS -->
+
+        <section class="so-panel so-panel-padding">
+
+            <div class="so-panel-header">
+
+                <div>
+                    <h2 class="so-panel-title">
+                        Activation Overview
+                    </h2>
+
+                    <p class="so-panel-subtitle">
+                        Overall progress of imported student
+                        account activations.
+                    </p>
+                </div>
+
+                <i
+                    class="bi bi-graph-up-arrow text-primary"
+                    style="font-size: 20px;"
+                ></i>
 
             </div>
+
+            <div class="so-progress-summary">
+
+                <div>
+                    <div class="so-progress-big">
+                        {{ activated_students|default:0 }}
+                        <small>
+                            / {{ total_students|default:0 }}
+                        </small>
+                    </div>
+
+                    <div class="so-progress-caption">
+                        Accounts successfully activated
+                    </div>
+                </div>
+
+                <div class="so-progress-percentage" id="so-activation-percent">
+                    0%
+                </div>
+
+            </div>
+
+            <div
+                class="so-progress-track"
+                role="progressbar"
+                id="so-activation-progress"
+                aria-label="Student activation progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+            >
+                <div
+                    class="so-progress-fill"
+                    id="so-activation-fill"
+                    style="width: 0%;"
+                ></div>
+            </div>
+
+            <div class="so-progress-legend">
+
+                <span class="so-legend-item">
+                    <span class="so-legend-dot active"></span>
+                    Activated: {{ activated_students|default:0 }}
+                </span>
+
+                <span class="so-legend-item">
+                    <span class="so-legend-dot pending"></span>
+                    Pending: {{ pending_students|default:0 }}
+                </span>
+
+                <span class="so-legend-item">
+                    <span class="so-legend-dot cancelled"></span>
+                    Cancelled: {{ cancelled_students|default:0 }}
+                </span>
+
+            </div>
+
+        </section>
+
+        <!-- QUICK ACTIONS -->
+
+        <section class="so-panel so-panel-padding">
+
+            <div class="so-panel-header">
+
+                <div>
+                    <h2 class="so-panel-title">
+                        Quick Actions
+                    </h2>
+
+                    <p class="so-panel-subtitle">
+                        Frequently used student administration tools.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="so-quick-actions">
+
+                <a
+                    href="{% url 'student_onboarding:upload' %}"
+                    class="so-action-link"
+                >
+
+                    <span class="so-action-icon">
+                        <i class="bi bi-file-earmark-arrow-up"></i>
+                    </span>
+
+                    <span class="so-action-body">
+                        <strong>Import Student Accounts</strong>
+                        <small>Upload CSV or Excel student records</small>
+                    </span>
+
+                    <i class="bi bi-chevron-right so-action-arrow"></i>
+
+                </a>
+
+                <a
+                    href="{% url 'student_onboarding:student_directory' %}"
+                    class="so-action-link"
+                >
+
+                    <span class="so-action-icon">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </span>
+
+                    <span class="so-action-body">
+                        <strong>Student Directory</strong>
+                        <small>Search, correct and manage student accounts</small>
+                    </span>
+
+                    <i class="bi bi-chevron-right so-action-arrow"></i>
+
+                </a>
+
+                <a
+                    href="{% url 'student_onboarding:sample' %}"
+                    class="so-action-link"
+                >
+
+                    <span class="so-action-icon">
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                    </span>
+
+                    <span class="so-action-body">
+                        <strong>Download Import Template</strong>
+                        <small>Get the official CSV column format</small>
+                    </span>
+
+                    <i class="bi bi-chevron-right so-action-arrow"></i>
+
+                </a>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- =====================================
+         RECENT IMPORT HISTORY
+    ====================================== -->
+
+    <section class="so-panel so-history-panel">
+
+        <div class="so-history-header">
+
+            <div>
+
+                <h2 class="so-history-title">
+                    <i class="bi bi-clock-history"></i>
+                    Recent Import Batches
+                </h2>
+
+                <p class="so-panel-subtitle">
+                    Review imported files and
+                    manage activation email delivery.
+                </p>
+
+            </div>
+
+            <a
+                href="{% url 'student_onboarding:student_directory' %}"
+                class="so-btn so-btn-outline"
+            >
+                <i class="bi bi-people"></i>
+                View All Students
+            </a>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="so-history-table">
+
+                <thead>
+                    <tr>
+                        <th>IMPORT BATCH</th>
+                        <th>ACADEMIC CLASS</th>
+                        <th>RECORDS</th>
+                        <th>STATUS</th>
+                        <th>IMPORTED BY</th>
+                        <th class="text-end">ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for batch in batches %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="so-batch-id">
+                                Import #{{ batch.pk }}
+                            </div>
+
+                            <div
+                                class="so-batch-file"
+                                title="{{ batch.filename }}"
+                            >
+                                <i class="bi bi-file-earmark-excel me-1"></i>
+                                {{ batch.filename }}
+                            </div>
+
+                            <span class="so-class-period">
+                                {{ batch.created_at|date:"d M Y, h:i A" }}
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="so-class-name">
+                                {{ batch.section }}
+                            </div>
+
+                            <span class="so-class-period">
+                                {{ batch.get_term_display }}
+                                {{ batch.academic_year }}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            <span class="so-count">
+                                {{ batch.row_count }}
+                            </span>
+                        </td>
+
+                        <td>
+
+                            {% if batch.status == "CONFIRMED" %}
+
+                            <span class="so-status so-status-confirmed">
+                                Confirmed
+                            </span>
+
+                            {% else %}
+
+                            <span class="so-status so-status-preview">
+                                Preview
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            <div class="so-class-name">
+                                {{ batch.created_by.username|default:"System" }}
+                            </div>
+                        </td>
+
+                        <td class="text-end">
+
+                            {% if batch.status == "CONFIRMED" %}
+
+                            <a
+                                href="{% url 'student_onboarding:batch_detail' batch.pk %}"
+                                class="so-table-action"
+                            >
+                                View Batch
+                                <i class="bi bi-arrow-up-right"></i>
+                            </a>
+
+                            {% else %}
+
+                            <a
+                                href="{% url 'student_onboarding:preview' batch.pk %}"
+                                class="so-table-action"
+                            >
+                                Review Import
+                                <i class="bi bi-arrow-up-right"></i>
+                            </a>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="6">
+
+                            <div class="so-empty-state">
+
+                                <div class="so-empty-icon">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                </div>
+
+                                <h3>
+                                    No Student Imports Yet
+                                </h3>
+
+                                <p>
+                                    Start by uploading your university
+                                    student records through CSV or Excel.
+                                </p>
+
+                                <a
+                                    href="{% url 'student_onboarding:upload' %}"
+                                    class="so-btn so-btn-primary mt-2"
+                                >
+                                    <i class="bi bi-plus-lg"></i>
+                                    Import Students
+                                </a>
+
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- =====================================
+         INFORMATION NOTE
+    ====================================== -->
+
+    <div class="so-dashboard-note">
+
+        <i class="bi bi-info-circle-fill"></i>
+
+        <div>
+            <strong>Secure Student Onboarding:</strong>
+            Imported accounts remain inactive until students
+            set their passwords using secure activation links.
+            Academic class allocations are synchronized
+            through the existing AssignHub enrollment system.
         </div>
 
     </div>
 
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        "use strict";
+
+        const total = Number(
+            "{{ total_students|default:0 }}"
+        ) || 0;
+
+        const activated = Number(
+            "{{ activated_students|default:0 }}"
+        ) || 0;
+
+        const percent = total > 0
+            ? Math.min(
+                100,
+                Math.max(
+                    0,
+                    (activated / total) * 100
+                )
+            )
+            : 0;
+
+        const rounded = Math.round(percent);
+
+        const label = document.getElementById(
+            "so-activation-percent"
+        );
+
+        const progress = document.getElementById(
+            "so-activation-progress"
+        );
+
+        const fill = document.getElementById(
+            "so-activation-fill"
+        );
+
+        if (label) {
+            label.textContent = rounded + "%";
+        }
+
+        if (progress) {
+            progress.setAttribute(
+                "aria-valuenow",
+                String(rounded)
+            );
+        }
+
+        if (fill) {
+            fill.style.width = percent + "%";
+        }
+    });
+</script>
 {% endblock %}

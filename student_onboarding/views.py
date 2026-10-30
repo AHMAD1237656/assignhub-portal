@@ -85,6 +85,9 @@ def dashboard(request):
         "activated_students": StudentIdentity.objects.filter(
             status=StudentIdentity.Status.ACTIVE
         ).count(),
+        "cancelled_students": StudentIdentity.objects.filter(
+    status=StudentIdentity.Status.CANCELLED
+).count(),
     }
 
     return render(
@@ -254,6 +257,9 @@ def batch_detail(request, batch_id):
         "failed": identities.filter(
             email_status=StudentIdentity.EmailStatus.FAILED
         ).count(),
+        "cancelled": identities.filter(
+    status=StudentIdentity.Status.CANCELLED
+).count(),
     }
 
     return render(
