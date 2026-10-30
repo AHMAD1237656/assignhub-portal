@@ -1,7 +1,11 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
-
+from .views import (
+    my_profile,
+    edit_my_profile,
+    my_profile_password,
+)
 app_name = "accounts"
 
 urlpatterns = [
@@ -43,5 +47,27 @@ urlpatterns = [
             template_name="accounts/password_reset_complete.html"
         ),
         name="password_reset_complete",
+ 
     ),
+    
+
+path(
+    "profile/",
+    my_profile,
+    name="my_profile",
+),
+
+path(
+    "profile/edit/",
+    edit_my_profile,
+    name="edit_my_profile",
+),
+
+path(
+    "profile/password/",
+    my_profile_password,
+    name="profile_password",
+),
+
+    
 ]

@@ -1,3 +1,4 @@
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -5,26 +6,379 @@
 
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <meta name="theme-color" content="#101c32">
 
     <title>{% block title %}AssignHub{% endblock %}</title>
 
     <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
 
-    <!-- Application CSS -->
+    <!-- Existing Application Styles -->
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
-
-    <!-- Sidebar / Shared UI CSS -->
     <link rel="stylesheet" href="{% static 'css/assignhub-navbar.css' %}">
 
     {% block extra_css %}{% endblock %}
+
+    <!-- ==========================================
+         PROFILE MODULE - PHASE 9.1
+         Uses existing AssignHub theme
+    =========================================== -->
+
+    <style>
+        .ah-profile-page {
+            --ahp-navy: #111e36;
+            --ahp-blue: #4669ed;
+            --ahp-border: #e5eaf2;
+            --ahp-muted: #7b8aa0;
+
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 8px 0 36px;
+        }
+
+        .ah-profile-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .ah-profile-eyebrow {
+            margin-bottom: 9px;
+            color: #5371c9;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .ah-profile-title {
+            margin: 0 0 8px;
+            color: var(--ahp-navy);
+            font-size: clamp(25px, 3vw, 33px);
+            font-weight: 800;
+            letter-spacing: -.7px;
+        }
+
+        .ah-profile-subtitle {
+            margin: 0;
+            color: var(--ahp-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .ah-profile-hero {
+            position: relative;
+            padding: 30px;
+            margin-bottom: 23px;
+            overflow: hidden;
+            border-radius: 19px;
+            color: #fff;
+            background: linear-gradient(
+                115deg,
+                #111e36 0%,
+                #233e72 65%,
+                #3555a6 100%
+            );
+            box-shadow: 0 12px 28px rgba(16, 28, 50, .11);
+        }
+
+        .ah-profile-hero::after {
+            content: "";
+            position: absolute;
+            top: -150px;
+            right: -75px;
+            width: 270px;
+            height: 270px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .ah-profile-hero-row {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 22px;
+        }
+
+        .ah-profile-avatar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            width: 84px;
+            height: 84px;
+            border: 1px solid rgba(255, 255, 255, .19);
+            border-radius: 23px;
+            background: rgba(255, 255, 255, .12);
+            font-size: 34px;
+            font-weight: 800;
+        }
+
+        .ah-profile-hero-name {
+            margin: 0 0 7px;
+            color: #fff;
+            font-size: clamp(21px, 3vw, 29px);
+            font-weight: 800;
+        }
+
+        .ah-profile-hero-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 9px;
+            color: #d1dcf5;
+            font-size: 12px;
+        }
+
+        .ah-profile-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 11px;
+            border: 1px solid rgba(255, 255, 255, .17);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, .12);
+            font-weight: 700;
+        }
+
+        .ah-profile-grid {
+            display: grid;
+            grid-template-columns:
+                minmax(0, 1.5fr)
+                minmax(290px, 1fr);
+            gap: 20px;
+        }
+
+        .ah-profile-card {
+            min-width: 0;
+            padding: 26px;
+            border: 1px solid var(--ahp-border);
+            border-radius: 17px;
+            background: #fff;
+            box-shadow: 0 5px 20px rgba(16, 28, 50, .04);
+        }
+
+        .ah-profile-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 19px;
+            color: #253752;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .ah-profile-card-title i {
+            color: var(--ahp-blue);
+            font-size: 19px;
+        }
+
+        .ah-profile-field {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 15px 0;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .ah-profile-field:last-child {
+            border-bottom: 0;
+        }
+
+        .ah-profile-field-label {
+            color: #8492a7;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .ah-profile-field-value {
+            text-align: right;
+            color: #263954;
+            font-size: 12.5px;
+            font-weight: 750;
+            overflow-wrap: anywhere;
+        }
+
+        .ah-profile-action {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 15px;
+            margin-bottom: 11px;
+            border: 1px solid #e6ebf4;
+            border-radius: 12px;
+            background: #fbfcff;
+            color: #324760;
+            text-decoration: none;
+            transition:
+                background .2s ease,
+                border-color .2s ease,
+                transform .2s ease;
+        }
+
+        .ah-profile-action:hover {
+            color: #365ad8;
+            background: #f0f4ff;
+            border-color: #d1dcff;
+            transform: translateX(2px);
+        }
+
+        .ah-profile-action-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 41px;
+            height: 41px;
+            border-radius: 11px;
+            background: #edf2ff;
+            color: var(--ahp-blue);
+            font-size: 18px;
+        }
+
+        .ah-profile-action-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ah-profile-action-text strong {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 800;
+        }
+
+        .ah-profile-action-text small {
+            display: block;
+            margin-top: 4px;
+            color: #8795aa;
+            font-size: 11px;
+        }
+
+        .ah-profile-edit-card {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .ah-profile-form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #40526d;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .ah-profile-page .form-control {
+            min-height: 45px;
+            border: 1px solid #dce3ed;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        .ah-profile-page .form-control:focus {
+            border-color: #6c86ec;
+            box-shadow: 0 0 0 3px rgba(70, 105, 237, .11);
+        }
+
+        .ah-profile-page .form-control:disabled {
+            color: #78879d;
+            background: #f4f6fa;
+        }
+
+        .ah-profile-security-note {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #dce6ff;
+            border-radius: 11px;
+            background: #f0f5ff;
+            color: #60759b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .ah-profile-security-note i {
+            color: var(--ahp-blue);
+            font-size: 18px;
+        }
+
+        .ah-profile-error {
+            margin-top: 5px;
+            color: #dc3545;
+            font-size: 11.5px;
+        }
+
+        .ah-profile-page .btn-primary {
+            background-color: var(--ahp-blue);
+            border-color: var(--ahp-blue);
+        }
+
+        .ah-profile-page .btn-primary:hover {
+            background-color: #3658d5;
+            border-color: #3658d5;
+        }
+
+        @media (max-width: 900px) {
+            .ah-profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .ah-profile-hero {
+                padding: 23px;
+            }
+
+            .ah-profile-avatar {
+                width: 66px;
+                height: 66px;
+                font-size: 27px;
+            }
+
+            .ah-profile-card {
+                padding: 20px;
+            }
+
+            .ah-profile-field {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .ah-profile-field-value {
+                text-align: left;
+            }
+
+            .ah-profile-heading .btn {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ah-profile-page *,
+            .ah-profile-page *::before,
+            .ah-profile-page *::after {
+                transition: none !important;
+            }
+        }
+    </style>
+
 </head>
 
 <body class="assignhub-body">
@@ -35,23 +389,38 @@
          MOBILE SIDEBAR OVERLAY
     ====================================== -->
 
-    <div id="ah-sidebar-overlay" class="ah-sidebar-overlay" aria-hidden="true"></div>
+    <div
+        id="ah-sidebar-overlay"
+        class="ah-sidebar-overlay"
+        aria-hidden="true"
+    ></div>
 
     <!-- =====================================
          LEFT SIDEBAR
     ====================================== -->
 
-    <aside class="ah-sidebar" id="ah-sidebar" aria-label="Main navigation">
+    <aside
+        class="ah-sidebar"
+        id="ah-sidebar"
+        aria-label="Main navigation"
+    >
 
         <!-- SIDEBAR HEADER -->
 
         <div class="ah-sidebar-header">
 
-            <a href="{% url 'home' %}" class="ah-sidebar-brand" aria-label="AssignHub Dashboard"
-                title="AssignHub Dashboard">
+            <a
+                href="{% url 'home' %}"
+                class="ah-sidebar-brand"
+                aria-label="AssignHub Dashboard"
+                title="AssignHub Dashboard"
+            >
 
                 <span class="assignhub-brand-icon">
-                    <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                    <i
+                        class="bi bi-mortarboard-fill"
+                        aria-hidden="true"
+                    ></i>
                 </span>
 
                 <span class="ah-sidebar-brand-text">
@@ -68,9 +437,12 @@
 
             </a>
 
-            <!-- MOBILE CLOSE BUTTON -->
-
-            <button type="button" id="ah-sidebar-close" class="ah-sidebar-close" aria-label="Close navigation">
+            <button
+                type="button"
+                id="ah-sidebar-close"
+                class="ah-sidebar-close"
+                aria-label="Close navigation"
+            >
                 <i class="bi bi-x-lg" aria-hidden="true"></i>
             </button>
 
@@ -80,10 +452,14 @@
              SIDEBAR NAVIGATION
         ====================================== -->
 
-        <nav class="ah-sidebar-navigation" aria-label="AssignHub modules">
+        <nav
+            class="ah-sidebar-navigation"
+            aria-label="AssignHub modules"
+        >
 
             <!-- =================================
                  COMMON WORKSPACE
+                 ALL AUTHENTICATED USERS
             ================================== -->
 
             <div class="ah-sidebar-section">
@@ -94,12 +470,20 @@
 
                 <!-- DASHBOARD -->
 
-                <a href="{% url 'home' %}"
+                <a
+                    href="{% url 'home' %}"
                     class="ah-sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
-                    title="Dashboard" {% if request.resolver_match.url_name == 'home' %} aria-current="page" {% endif %}>
+                    title="Dashboard"
+                    {% if request.resolver_match.url_name == 'home' %}
+                    aria-current="page"
+                    {% endif %}
+                >
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-grid-1x2-fill"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
@@ -110,16 +494,48 @@
 
                 <!-- ASSIGNMENTS -->
 
-                <a href="{% url 'assignments:list' %}"
+                <a
+                    href="{% url 'assignments:list' %}"
                     class="ah-sidebar-link {% if request.resolver_match.namespace == 'assignments' or request.resolver_match.namespace == 'timed_writing' %}active{% endif %}"
-                    title="Assignments">
+                    title="Assignments"
+                >
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-journal-text" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-journal-text"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
                         Assignments
+                    </span>
+
+                </a>
+
+                <!-- =================================
+                     MY PROFILE - PHASE 9.1
+                     ADMIN / TEACHER / STUDENT
+                ================================== -->
+
+                <a
+                    href="{% url 'accounts:my_profile' %}"
+                    class="ah-sidebar-link {% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'edit_my_profile' or request.resolver_match.url_name == 'profile_password' %}active{% endif %}"
+                    title="My Profile"
+                    {% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'edit_my_profile' or request.resolver_match.url_name == 'profile_password' %}
+                    aria-current="page"
+                    {% endif %}
+                >
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-person-circle"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        My Profile
                     </span>
 
                 </a>
@@ -138,17 +554,20 @@
                     ACADEMIC MANAGEMENT
                 </div>
 
-                <!-- =================================
-                     ACADEMIC STRUCTURE
-                ================================== -->
+                <!-- ACADEMIC STRUCTURE -->
 
                 <div class="ah-sidebar-group">
 
-                    <div class="ah-sidebar-group-heading {% if request.resolver_match.namespace == 'departments' or request.resolver_match.namespace == 'semesters' %}active{% endif %}"
-                        title="Academic Structure">
+                    <div
+                        class="ah-sidebar-group-heading {% if request.resolver_match.namespace == 'departments' or request.resolver_match.namespace == 'semesters' %}active{% endif %}"
+                        title="Academic Structure"
+                    >
 
                         <span class="ah-sidebar-link-icon">
-                            <i class="bi bi-buildings-fill" aria-hidden="true"></i>
+                            <i
+                                class="bi bi-buildings-fill"
+                                aria-hidden="true"
+                            ></i>
                         </span>
 
                         <span class="ah-sidebar-link-label">
@@ -157,61 +576,90 @@
 
                     </div>
 
-                    <!-- ACADEMICS SUBMENU -->
-
                     <div class="ah-sidebar-submenu">
 
                         <!-- DEPARTMENTS -->
 
-                        <a href="{% url 'departments:department_list' %}"
-                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'department_list' %}active{% endif %}">
-                            <i class="bi bi-building" aria-hidden="true"></i>
+                        <a
+                            href="{% url 'departments:department_list' %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'department_list' %}active{% endif %}"
+                        >
+
+                            <i
+                                class="bi bi-building"
+                                aria-hidden="true"
+                            ></i>
 
                             Departments
+
                         </a>
 
                         <!-- PROGRAMS -->
 
-                        <a href="{% url 'departments:program_list' %}"
-                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'program_list' %}active{% endif %}">
-                            <i class="bi bi-diagram-3" aria-hidden="true"></i>
+                        <a
+                            href="{% url 'departments:program_list' %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'program_list' %}active{% endif %}"
+                        >
+
+                            <i
+                                class="bi bi-diagram-3"
+                                aria-hidden="true"
+                            ></i>
 
                             Programs
+
                         </a>
 
                         <!-- SEMESTERS -->
 
-                        <a href="{% url 'semesters:semester_list' %}"
-                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'semester_list' %}active{% endif %}">
-                            <i class="bi bi-calendar3" aria-hidden="true"></i>
+                        <a
+                            href="{% url 'semesters:semester_list' %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'semester_list' %}active{% endif %}"
+                        >
+
+                            <i
+                                class="bi bi-calendar3"
+                                aria-hidden="true"
+                            ></i>
 
                             Semesters
+
                         </a>
 
                         <!-- SECTIONS -->
 
-                        <a href="{% url 'semesters:section_list' %}"
-                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}">
-                            <i class="bi bi-people" aria-hidden="true"></i>
+                        <a
+                            href="{% url 'semesters:section_list' %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}"
+                        >
+
+                            <i
+                                class="bi bi-people"
+                                aria-hidden="true"
+                            ></i>
 
                             Sections
+
                         </a>
 
                     </div>
 
                 </div>
 
-                <!-- =================================
-                     COURSE MANAGEMENT
-                ================================== -->
+                <!-- COURSE MANAGEMENT -->
 
                 <div class="ah-sidebar-group">
 
-                    <div class="ah-sidebar-group-heading {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
-                        title="Course Management">
+                    <div
+                        class="ah-sidebar-group-heading {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
+                        title="Course Management"
+                    >
 
                         <span class="ah-sidebar-link-icon">
-                            <i class="bi bi-collection-fill" aria-hidden="true"></i>
+                            <i
+                                class="bi bi-collection-fill"
+                                aria-hidden="true"
+                            ></i>
                         </span>
 
                         <span class="ah-sidebar-link-label">
@@ -220,51 +668,73 @@
 
                     </div>
 
-                    <!-- COURSES SUBMENU -->
-
                     <div class="ah-sidebar-submenu">
 
                         <!-- COURSE CATALOG -->
 
-                        <a href="{% url 'courses:course_list' %}"
-                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}">
-                            <i class="bi bi-book" aria-hidden="true"></i>
+                        <a
+                            href="{% url 'courses:course_list' %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}"
+                        >
+
+                            <i
+                                class="bi bi-book"
+                                aria-hidden="true"
+                            ></i>
 
                             Course Catalog
+
                         </a>
 
                         <!-- COURSE OFFERINGS -->
 
-                        <a href="{% url 'courses:offering_list' %}"
-                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'offering_list' %}active{% endif %}">
-                            <i class="bi bi-person-workspace" aria-hidden="true"></i>
+                        <a
+                            href="{% url 'courses:offering_list' %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'offering_list' %}active{% endif %}"
+                        >
+
+                            <i
+                                class="bi bi-person-workspace"
+                                aria-hidden="true"
+                            ></i>
 
                             Course Offerings
+
                         </a>
 
                         <!-- STUDENT ENROLLMENTS -->
 
-                        <a href="{% url 'courses:enrollment_list' %}"
-                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'enrollment_list' %}active{% endif %}">
-                            <i class="bi bi-person-check" aria-hidden="true"></i>
+                        <a
+                            href="{% url 'courses:enrollment_list' %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'enrollment_list' %}active{% endif %}"
+                        >
+
+                            <i
+                                class="bi bi-person-check"
+                                aria-hidden="true"
+                            ></i>
 
                             Student Enrollments
+
                         </a>
 
                     </div>
 
                 </div>
 
-                <!-- =================================
-                     CLASS ALLOCATION
-                ================================== -->
+                <!-- CLASS ALLOCATION -->
 
-                <a href="{% url 'class_allocations:dashboard' %}"
+                <a
+                    href="{% url 'class_allocations:dashboard' %}"
                     class="ah-sidebar-link {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
-                    title="Class Allocation">
+                    title="Class Allocation"
+                >
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-people-fill" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-people-fill"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
@@ -273,16 +743,19 @@
 
                 </a>
 
-                <!-- =================================
-                     STUDENT ONBOARDING
-                ================================== -->
+                <!-- STUDENT ONBOARDING -->
 
-                <a href="{% url 'student_onboarding:dashboard' %}"
-                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'student_onboarding' %}active{% endif %}"
-                    title="Student Onboarding">
+                <a
+                    href="{% url 'student_onboarding:dashboard' %}"
+                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'student_onboarding' and request.resolver_match.url_name != 'student_directory' and request.resolver_match.url_name != 'student_detail' and request.resolver_match.url_name != 'student_edit' and request.resolver_match.url_name != 'student_export' and request.resolver_match.url_name != 'student_cancel' and request.resolver_match.url_name != 'student_restore' and request.resolver_match.url_name != 'student_resend' %}active{% endif %}"
+                    title="Student Onboarding"
+                >
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-person-plus-fill"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
@@ -291,20 +764,29 @@
 
                 </a>
 
+                <!-- MANAGE STUDENTS -->
+
+                <a
+                    href="{% url 'student_onboarding:student_directory' %}"
+                    class="ah-sidebar-link {% if request.resolver_match.url_name == 'student_directory' or request.resolver_match.url_name == 'student_detail' or request.resolver_match.url_name == 'student_edit' or request.resolver_match.url_name == 'student_export' or request.resolver_match.url_name == 'student_cancel' or request.resolver_match.url_name == 'student_restore' or request.resolver_match.url_name == 'student_resend' %}active{% endif %}"
+                    title="Manage Students"
+                >
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-person-vcard-fill"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        Manage Students
+                    </span>
+
+                </a>
+
             </div>
-            <!-- STUDENT DIRECTORY -->
 
-            <a href="{% url 'student_onboarding:student_directory' %}"
-                class="ah-sidebar-link {% if request.resolver_match.url_name == 'student_directory' or request.resolver_match.url_name == 'student_detail' %}active{% endif %}"
-                title="Manage Students">
-                <span class="ah-sidebar-link-icon">
-                    <i class="bi bi-person-vcard-fill" aria-hidden="true"></i>
-                </span>
-
-                <span class="ah-sidebar-link-label">
-                    Manage Students
-                </span>
-            </a>
             <!-- =================================
                  TEACHER NAVIGATION
             ================================== -->
@@ -319,12 +801,17 @@
 
                 <!-- MY COURSES -->
 
-                <a href="{% url 'courses:offering_list' %}"
+                <a
+                    href="{% url 'courses:offering_list' %}"
                     class="ah-sidebar-link {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
-                    title="My Courses">
+                    title="My Courses"
+                >
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-book-half" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-book-half"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
@@ -335,12 +822,17 @@
 
                 <!-- MY CLASSES -->
 
-                <a href="{% url 'class_allocations:my_classes' %}"
+                <a
+                    href="{% url 'class_allocations:my_classes' %}"
                     class="ah-sidebar-link {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
-                    title="My Classes">
+                    title="My Classes"
+                >
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-person-lines-fill" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-person-lines-fill"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
@@ -366,7 +858,10 @@
                 <div class="ah-sidebar-info">
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-mortarboard"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
@@ -391,10 +886,17 @@
                     SYSTEM
                 </div>
 
-                <a href="{% url 'admin:index' %}" class="ah-sidebar-link" title="Django Administration">
+                <a
+                    href="{% url 'admin:index' %}"
+                    class="ah-sidebar-link"
+                    title="Django Administration"
+                >
 
                     <span class="ah-sidebar-link-icon">
-                        <i class="bi bi-gear-fill" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-gear-fill"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span class="ah-sidebar-link-label">
@@ -418,7 +920,10 @@
             <div class="ah-sidebar-account">
 
                 <span class="ah-sidebar-link-icon">
-                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <i
+                        class="bi bi-person-circle"
+                        aria-hidden="true"
+                    ></i>
                 </span>
 
                 <span class="ah-sidebar-account-text">
@@ -429,13 +934,13 @@
 
                     <small>
                         {% if nav_is_admin %}
-                        Administrator
+                            Administrator
                         {% elif nav_is_teacher %}
-                        Teacher
+                            Teacher
                         {% elif nav_is_student %}
-                        Student
+                            Student
                         {% else %}
-                        User
+                            User
                         {% endif %}
                     </small>
 
@@ -467,10 +972,19 @@
 
                 <!-- MOBILE MENU TOGGLE -->
 
-                <button type="button" id="ah-sidebar-toggle" class="ah-mobile-menu-button" aria-controls="ah-sidebar"
-                    aria-expanded="false" aria-label="Open navigation">
+                <button
+                    type="button"
+                    id="ah-sidebar-toggle"
+                    class="ah-mobile-menu-button"
+                    aria-controls="ah-sidebar"
+                    aria-expanded="false"
+                    aria-label="Open navigation"
+                >
 
-                    <i class="bi bi-list" aria-hidden="true"></i>
+                    <i
+                        class="bi bi-list"
+                        aria-hidden="true"
+                    ></i>
 
                 </button>
 
@@ -478,10 +992,16 @@
 
                 <!-- GUEST BRAND -->
 
-                <a href="{% url 'home' %}" class="ah-guest-brand">
+                <a
+                    href="{% url 'home' %}"
+                    class="ah-guest-brand"
+                >
 
                     <span class="assignhub-brand-icon">
-                        <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-mortarboard-fill"
+                            aria-hidden="true"
+                        ></i>
                     </span>
 
                     <span>
@@ -502,9 +1022,9 @@
 
                     <strong>
                         {% if user.is_authenticated %}
-                        Academic Workspace
+                            Academic Workspace
                         {% else %}
-                        AssignHub
+                            AssignHub
                         {% endif %}
                     </strong>
 
@@ -522,11 +1042,19 @@
 
                 <div class="dropdown">
 
-                    <button type="button" class="btn ah-topbar-user dropdown-toggle" id="userDropdown"
-                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <button
+                        type="button"
+                        class="btn ah-topbar-user dropdown-toggle"
+                        id="userDropdown"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                    >
 
                         <span class="ah-topbar-avatar">
-                            <i class="bi bi-person-fill" aria-hidden="true"></i>
+                            <i
+                                class="bi bi-person-fill"
+                                aria-hidden="true"
+                            ></i>
                         </span>
 
                         <span class="ah-topbar-user-details">
@@ -537,13 +1065,13 @@
 
                             <small>
                                 {% if nav_is_admin %}
-                                Administrator
+                                    Administrator
                                 {% elif nav_is_teacher %}
-                                Teacher
+                                    Teacher
                                 {% elif nav_is_student %}
-                                Student
+                                    Student
                                 {% else %}
-                                User
+                                    User
                                 {% endif %}
                             </small>
 
@@ -553,8 +1081,12 @@
 
                     <!-- USER DROPDOWN -->
 
-                    <ul class="dropdown-menu dropdown-menu-end assignhub-dropdown ah-topbar-dropdown"
-                        aria-labelledby="userDropdown">
+                    <ul
+                        class="dropdown-menu dropdown-menu-end assignhub-dropdown ah-topbar-dropdown"
+                        aria-labelledby="userDropdown"
+                    >
+
+                        <!-- USER INFORMATION -->
 
                         <li class="px-3 py-2">
 
@@ -576,11 +1108,79 @@
 
                         <li>
 
-                            <a href="{% url 'home' %}" class="dropdown-item">
+                            <a
+                                href="{% url 'home' %}"
+                                class="dropdown-item"
+                            >
 
-                                <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                                <i
+                                    class="bi bi-speedometer2"
+                                    aria-hidden="true"
+                                ></i>
 
                                 Dashboard
+
+                            </a>
+
+                        </li>
+
+                        <!-- =================================
+                             MY PROFILE - PHASE 9.1
+                        ================================== -->
+
+                        <li>
+
+                            <a
+                                href="{% url 'accounts:my_profile' %}"
+                                class="dropdown-item"
+                            >
+
+                                <i
+                                    class="bi bi-person-circle"
+                                    aria-hidden="true"
+                                ></i>
+
+                                My Profile
+
+                            </a>
+
+                        </li>
+
+                        <!-- EDIT PROFILE -->
+
+                        <li>
+
+                            <a
+                                href="{% url 'accounts:edit_my_profile' %}"
+                                class="dropdown-item"
+                            >
+
+                                <i
+                                    class="bi bi-pencil-square"
+                                    aria-hidden="true"
+                                ></i>
+
+                                Edit Profile
+
+                            </a>
+
+                        </li>
+
+                        <!-- CHANGE PASSWORD -->
+
+                        <li>
+
+                            <a
+                                href="{% url 'accounts:profile_password' %}"
+                                class="dropdown-item"
+                            >
+
+                                <i
+                                    class="bi bi-shield-lock"
+                                    aria-hidden="true"
+                                ></i>
+
+                                Change Password
 
                             </a>
 
@@ -591,10 +1191,20 @@
                         {% if nav_is_admin and user.is_superuser %}
 
                         <li>
+                            <hr class="dropdown-divider">
+                        </li>
 
-                            <a href="{% url 'admin:index' %}" class="dropdown-item">
+                        <li>
 
-                                <i class="bi bi-gear" aria-hidden="true"></i>
+                            <a
+                                href="{% url 'admin:index' %}"
+                                class="dropdown-item"
+                            >
+
+                                <i
+                                    class="bi bi-gear"
+                                    aria-hidden="true"
+                                ></i>
 
                                 Django Admin
 
@@ -612,13 +1222,22 @@
 
                         <li>
 
-                            <form method="post" action="{% url 'accounts:logout' %}">
+                            <form
+                                method="post"
+                                action="{% url 'accounts:logout' %}"
+                            >
 
                                 {% csrf_token %}
 
-                                <button type="submit" class="dropdown-item assignhub-logout">
+                                <button
+                                    type="submit"
+                                    class="dropdown-item assignhub-logout"
+                                >
 
-                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                    <i
+                                        class="bi bi-box-arrow-right"
+                                        aria-hidden="true"
+                                    ></i>
 
                                     Sign Out
 
@@ -636,9 +1255,15 @@
 
                 <!-- GUEST LOGIN -->
 
-                <a href="{% url 'accounts:login' %}" class="btn btn-primary ah-guest-login">
+                <a
+                    href="{% url 'accounts:login' %}"
+                    class="btn btn-primary ah-guest-login"
+                >
 
-                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                    <i
+                        class="bi bi-box-arrow-in-right"
+                        aria-hidden="true"
+                    ></i>
 
                     Sign In
 
@@ -662,16 +1287,24 @@
 
                 {% if messages %}
 
-                <div class="assignhub-messages" aria-live="polite">
+                <div
+                    class="assignhub-messages"
+                    aria-live="polite"
+                >
 
                     {% for message in messages %}
 
-                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show assignhub-alert"
-                        role="alert">
+                    <div
+                        class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show assignhub-alert"
+                        role="alert"
+                    >
 
                         <div class="d-flex align-items-center gap-2">
 
-                            <i class="bi bi-info-circle" aria-hidden="true"></i>
+                            <i
+                                class="bi bi-info-circle"
+                                aria-hidden="true"
+                            ></i>
 
                             <div>
                                 {{ message }}
@@ -679,7 +1312,12 @@
 
                         </div>
 
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"
+                        ></button>
 
                     </div>
 
@@ -689,9 +1327,755 @@
 
                 {% endif %}
 
-                <!-- PAGE SPECIFIC CONTENT -->
+                <!-- =================================
+                     PAGE-SPECIFIC CONTENT BLOCK
+                     Existing templates preserved
+                ================================== -->
 
-                {% block content %}{% endblock %}
+                {% block content %}
+
+                {% if assignhub_profile_page %}
+
+                <div class="ah-profile-page">
+
+                    <!-- =============================
+                         PROFILE PAGE HEADER
+                    ============================== -->
+
+                    <div class="ah-profile-heading">
+
+                        <div>
+
+                            <div class="ah-profile-eyebrow">
+                                ACCOUNT / PROFILE MANAGEMENT
+                            </div>
+
+                            {% if assignhub_profile_page == "edit" %}
+
+                            <h1 class="ah-profile-title">
+                                Edit Profile
+                            </h1>
+
+                            <p class="ah-profile-subtitle">
+                                Update your personal account information.
+                            </p>
+
+                            {% elif assignhub_profile_page == "password" %}
+
+                            <h1 class="ah-profile-title">
+                                Change Password
+                            </h1>
+
+                            <p class="ah-profile-subtitle">
+                                Keep your university account secure.
+                            </p>
+
+                            {% else %}
+
+                            <h1 class="ah-profile-title">
+                                My Profile
+                            </h1>
+
+                            <p class="ah-profile-subtitle">
+                                Manage your AssignHub account information.
+                            </p>
+
+                            {% endif %}
+
+                        </div>
+
+                        {% if assignhub_profile_page == "view" %}
+
+                        <a
+                            href="{% url 'accounts:edit_my_profile' %}"
+                            class="btn btn-primary"
+                        >
+
+                            <i class="bi bi-pencil-square me-1"></i>
+
+                            Edit Profile
+
+                        </a>
+
+                        {% else %}
+
+                        <a
+                            href="{% url 'accounts:my_profile' %}"
+                            class="btn btn-outline-secondary"
+                        >
+
+                            <i class="bi bi-arrow-left me-1"></i>
+
+                            Back to Profile
+
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+
+                    <!-- =============================
+                         VIEW PROFILE
+                    ============================== -->
+
+                    {% if assignhub_profile_page == "view" %}
+
+                    <!-- PROFILE HERO -->
+
+                    <section class="ah-profile-hero">
+
+                        <div class="ah-profile-hero-row">
+
+                            <div class="ah-profile-avatar">
+
+                                {{ request.user.first_name|first|upper|default:"U" }}
+
+                            </div>
+
+                            <div>
+
+                                <h2 class="ah-profile-hero-name">
+
+                                    {{ request.user.get_full_name|default:request.user.username }}
+
+                                </h2>
+
+                                <div class="ah-profile-hero-meta">
+
+                                    <span class="ah-profile-role-badge">
+
+                                        <i class="bi bi-person-badge"></i>
+
+                                        {% if profile_role %}
+                                            {{ profile_role.get_role_display }}
+                                        {% elif request.user.is_superuser %}
+                                            Administrator
+                                        {% else %}
+                                            University User
+                                        {% endif %}
+
+                                    </span>
+
+                                    <span>
+
+                                        <i class="bi bi-person-circle me-1"></i>
+
+                                        {{ request.user.username }}
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <div class="ah-profile-grid">
+
+                        <!-- PERSONAL INFORMATION -->
+
+                        <section class="ah-profile-card">
+
+                            <h2 class="ah-profile-card-title">
+
+                                <i class="bi bi-person-vcard"></i>
+
+                                Personal Information
+
+                            </h2>
+
+                            <!-- FIRST NAME -->
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    First Name
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ request.user.first_name|default:"Not provided" }}
+                                </span>
+
+                            </div>
+
+                            <!-- LAST NAME -->
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Last Name
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ request.user.last_name|default:"Not provided" }}
+                                </span>
+
+                            </div>
+
+                            <!-- USERNAME -->
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Username
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ request.user.username }}
+                                </span>
+
+                            </div>
+
+                            <!-- EMAIL -->
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Email Address
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ request.user.email|default:"Not provided" }}
+                                </span>
+
+                            </div>
+
+                            <!-- ACCOUNT ROLE -->
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Account Role
+                                </span>
+
+                                <span class="ah-profile-field-value">
+
+                                    {% if profile_role %}
+                                        {{ profile_role.get_role_display }}
+                                    {% elif request.user.is_superuser %}
+                                        Administrator
+                                    {% else %}
+                                        Not assigned
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                            <!-- STUDENT ACADEMIC INFORMATION -->
+
+                            {% if student_identity %}
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Student Roll Number
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ student_identity.roll_number }}
+                                </span>
+
+                            </div>
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Academic Section
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ student_identity.section }}
+                                </span>
+
+                            </div>
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Academic Year
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ student_identity.academic_year }}
+                                </span>
+
+                            </div>
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Academic Term
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ student_identity.get_term_display }}
+                                </span>
+
+                            </div>
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Student Account Status
+                                </span>
+
+                                <span class="ah-profile-field-value">
+
+                                    {% if student_identity.status == "ACTIVE" %}
+
+                                    <span class="badge text-bg-success">
+                                        Activated
+                                    </span>
+
+                                    {% elif student_identity.status == "PENDING" %}
+
+                                    <span class="badge text-bg-warning">
+                                        Pending
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="badge text-bg-secondary">
+                                        {{ student_identity.get_status_display }}
+                                    </span>
+
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                            {% endif %}
+
+                            <!-- ACCOUNT CREATED -->
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Account Created
+                                </span>
+
+                                <span class="ah-profile-field-value">
+                                    {{ request.user.date_joined|date:"d M Y" }}
+                                </span>
+
+                            </div>
+
+                            <!-- LAST LOGIN -->
+
+                            <div class="ah-profile-field">
+
+                                <span class="ah-profile-field-label">
+                                    Last Login
+                                </span>
+
+                                <span class="ah-profile-field-value">
+
+                                    {% if request.user.last_login %}
+                                        {{ request.user.last_login|date:"d M Y, h:i A" }}
+                                    {% else %}
+                                        Not recorded
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </section>
+
+                        <!-- ACCOUNT SETTINGS -->
+
+                        <section class="ah-profile-card">
+
+                            <h2 class="ah-profile-card-title">
+
+                                <i class="bi bi-gear"></i>
+
+                                Account Settings
+
+                            </h2>
+
+                            <!-- EDIT PROFILE LINK -->
+
+                            <a
+                                href="{% url 'accounts:edit_my_profile' %}"
+                                class="ah-profile-action"
+                            >
+
+                                <span class="ah-profile-action-icon">
+                                    <i class="bi bi-pencil-square"></i>
+                                </span>
+
+                                <span class="ah-profile-action-text">
+
+                                    <strong>
+                                        Edit Personal Information
+                                    </strong>
+
+                                    <small>
+                                        Update your name and allowed account details
+                                    </small>
+
+                                </span>
+
+                                <i class="bi bi-chevron-right"></i>
+
+                            </a>
+
+                            <!-- CHANGE PASSWORD LINK -->
+
+                            <a
+                                href="{% url 'accounts:profile_password' %}"
+                                class="ah-profile-action"
+                            >
+
+                                <span class="ah-profile-action-icon">
+                                    <i class="bi bi-shield-lock"></i>
+                                </span>
+
+                                <span class="ah-profile-action-text">
+
+                                    <strong>
+                                        Change Password
+                                    </strong>
+
+                                    <small>
+                                        Set a new secure login password
+                                    </small>
+
+                                </span>
+
+                                <i class="bi bi-chevron-right"></i>
+
+                            </a>
+
+                            <!-- ACCOUNT SECURITY INFORMATION -->
+
+                            <div class="ah-profile-security-note">
+
+                                <i class="bi bi-info-circle-fill"></i>
+
+                                <div>
+
+                                    <strong>
+                                        Account Security
+                                    </strong>
+
+                                    <div>
+                                        Your username and account role are
+                                        controlled by university administration.
+                                        Academic enrollments cannot be edited
+                                        from this page.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- STUDENT RESTRICTIONS -->
+
+                            {% if profile_email_locked %}
+
+                            <div class="ah-profile-security-note">
+
+                                <i class="bi bi-mortarboard"></i>
+
+                                <div>
+
+                                    <strong>
+                                        Student Account
+                                    </strong>
+
+                                    <div>
+                                        Your university email and academic
+                                        information are managed by the
+                                        university administrator.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            {% endif %}
+
+                        </section>
+
+                    </div>
+
+                    <!-- =============================
+                         EDIT PROFILE
+                    ============================== -->
+
+                    {% elif assignhub_profile_page == "edit" %}
+
+                    <section class="ah-profile-card ah-profile-edit-card">
+
+                        <h2 class="ah-profile-card-title">
+
+                            <i class="bi bi-pencil-square"></i>
+
+                            Edit Personal Information
+
+                        </h2>
+
+                        <form method="post" novalidate>
+
+                            {% csrf_token %}
+
+                            <!-- GENERAL FORM ERRORS -->
+
+                            {% if profile_form.non_field_errors %}
+
+                            <div class="alert alert-danger">
+                                {{ profile_form.non_field_errors }}
+                            </div>
+
+                            {% endif %}
+
+                            <div class="row g-3">
+
+                                <!-- FIRST NAME -->
+
+                                <div class="col-12 col-md-6">
+
+                                    <label
+                                        for="{{ profile_form.first_name.id_for_label }}"
+                                        class="ah-profile-form-label"
+                                    >
+                                        First Name
+                                    </label>
+
+                                    {{ profile_form.first_name }}
+
+                                    {% for error in profile_form.first_name.errors %}
+
+                                    <div class="ah-profile-error">
+                                        {{ error }}
+                                    </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <!-- LAST NAME -->
+
+                                <div class="col-12 col-md-6">
+
+                                    <label
+                                        for="{{ profile_form.last_name.id_for_label }}"
+                                        class="ah-profile-form-label"
+                                    >
+                                        Last Name
+                                    </label>
+
+                                    {{ profile_form.last_name }}
+
+                                    {% for error in profile_form.last_name.errors %}
+
+                                    <div class="ah-profile-error">
+                                        {{ error }}
+                                    </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                <!-- EMAIL -->
+
+                                <div class="col-12">
+
+                                    <label
+                                        for="{{ profile_form.email.id_for_label }}"
+                                        class="ah-profile-form-label"
+                                    >
+                                        Email Address
+                                    </label>
+
+                                    {{ profile_form.email }}
+
+                                    {% if profile_form.email.help_text %}
+
+                                    <div class="form-text">
+                                        {{ profile_form.email.help_text }}
+                                    </div>
+
+                                    {% endif %}
+
+                                    {% for error in profile_form.email.errors %}
+
+                                    <div class="ah-profile-error">
+                                        {{ error }}
+                                    </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                            <!-- EDIT RESTRICTIONS -->
+
+                            <div class="ah-profile-security-note">
+
+                                <i class="bi bi-shield-check"></i>
+
+                                <div>
+                                    Username, account role and academic
+                                    allocations cannot be changed here.
+                                </div>
+
+                            </div>
+
+                            <!-- FORM ACTIONS -->
+
+                            <div class="d-flex gap-2 flex-wrap mt-4">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary px-4"
+                                >
+
+                                    <i class="bi bi-check2-circle me-1"></i>
+
+                                    Save Changes
+
+                                </button>
+
+                                <a
+                                    href="{% url 'accounts:my_profile' %}"
+                                    class="btn btn-outline-secondary px-4"
+                                >
+                                    Cancel
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    </section>
+
+                    <!-- =============================
+                         CHANGE PASSWORD
+                    ============================== -->
+
+                    {% elif assignhub_profile_page == "password" %}
+
+                    <section class="ah-profile-card ah-profile-edit-card">
+
+                        <h2 class="ah-profile-card-title">
+
+                            <i class="bi bi-shield-lock"></i>
+
+                            Update Account Password
+
+                        </h2>
+
+                        <p class="text-muted small mb-4">
+                            Enter your current password and choose
+                            a secure new password.
+                        </p>
+
+                        <form method="post" novalidate>
+
+                            {% csrf_token %}
+
+                            <!-- GENERAL ERRORS -->
+
+                            {% if profile_form.non_field_errors %}
+
+                            <div class="alert alert-danger">
+                                {{ profile_form.non_field_errors }}
+                            </div>
+
+                            {% endif %}
+
+                            <!-- PASSWORD FIELDS -->
+
+                            {% for field in profile_form %}
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="{{ field.id_for_label }}"
+                                    class="ah-profile-form-label"
+                                >
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% for error in field.errors %}
+
+                                <div class="ah-profile-error">
+                                    {{ error }}
+                                </div>
+
+                                {% endfor %}
+
+                                {% if field.help_text %}
+
+                                <div class="form-text small">
+                                    {{ field.help_text|safe }}
+                                </div>
+
+                                {% endif %}
+
+                            </div>
+
+                            {% endfor %}
+
+                            <!-- PASSWORD SECURITY NOTE -->
+
+                            <div class="ah-profile-security-note">
+
+                                <i class="bi bi-lock-fill"></i>
+
+                                <div>
+                                    Your new password must satisfy the
+                                    configured Django password validators.
+                                    Your current session will remain active.
+                                </div>
+
+                            </div>
+
+                            <!-- PASSWORD FORM ACTIONS -->
+
+                            <div class="d-flex gap-2 flex-wrap mt-4">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary px-4"
+                                >
+
+                                    <i class="bi bi-shield-check me-1"></i>
+
+                                    Update Password
+
+                                </button>
+
+                                <a
+                                    href="{% url 'accounts:my_profile' %}"
+                                    class="btn btn-outline-secondary px-4"
+                                >
+                                    Cancel
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    </section>
+
+                    {% endif %}
+
+                </div>
+
+                {% endif %}
+
+                {% endblock %}
 
             </div>
 
@@ -705,11 +2089,16 @@
 
             <div class="container-fluid px-3 px-lg-4">
 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2"
+                >
 
                     <div class="assignhub-footer-brand">
 
-                        <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                        <i
+                            class="bi bi-mortarboard-fill"
+                            aria-hidden="true"
+                        ></i>
 
                         <span>
                             AssignHub
@@ -722,8 +2111,10 @@
                     </div>
 
                     <div class="assignhub-footer-copy">
+
                         © {% now "Y" %} AssignHub.
                         All rights reserved.
+
                     </div>
 
                 </div>
@@ -738,7 +2129,9 @@
          BOOTSTRAP JAVASCRIPT
     ====================================== -->
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    ></script>
 
     <!-- EXISTING APPLICATION JS -->
 
@@ -779,6 +2172,7 @@
             );
 
             function setOpen(open) {
+
                 if (open) {
                     previousFocus = document.activeElement;
                 }
@@ -813,21 +2207,25 @@
             toggle.addEventListener(
                 "click",
                 function () {
+
                     setOpen(
                         !document.body.classList.contains(
                             "ah-sidebar-open"
                         )
                     );
+
                 }
             );
 
             if (closeButton) {
+
                 closeButton.addEventListener(
                     "click",
                     function () {
                         setOpen(false);
                     }
                 );
+
             }
 
             overlay.addEventListener(
@@ -840,6 +2238,7 @@
             document.addEventListener(
                 "keydown",
                 function (event) {
+
                     if (
                         event.key === "Escape" &&
                         document.body.classList.contains(
@@ -848,17 +2247,21 @@
                     ) {
                         setOpen(false);
                     }
+
                 }
             );
 
             mobileBreakpoint.addEventListener(
                 "change",
                 function () {
+
                     if (!mobileBreakpoint.matches) {
                         setOpen(false);
                     }
+
                 }
             );
+
         })();
     </script>
 
