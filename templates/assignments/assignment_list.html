@@ -1,94 +1,425 @@
+
 {% extends "base.html" %}
 
-{% block title %}Assignments - AssignHub{% endblock %}
+{% block title %}
+Assignments | AssignHub
+{% endblock %}
 
 {% block content %}
 
-<div class="d-flex justify-content-between
-            align-items-center mb-4">
+<style>
+    /* Assignment submission progress */
 
-    <div>
-        <h2 class="fw-bold">Assignments</h2>
-        <p class="text-muted">
-            View and manage assignments.
-        </p>
+    .ah-submission-progress {
+        display: block;
+        width: 100%;
+        height: 8px;
+        appearance: none;
+        -webkit-appearance: none;
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #e9ecef;
+    }
+
+    .ah-submission-progress::-webkit-progress-bar {
+        background-color: #e9ecef;
+        border-radius: 8px;
+    }
+
+    .ah-submission-progress::-webkit-progress-value {
+        background-color: #0d6efd;
+        border-radius: 8px;
+    }
+
+    .ah-submission-progress::-moz-progress-bar {
+        background-color: #0d6efd;
+        border-radius: 8px;
+    }
+</style>
+
+<main class="container-fluid px-4 py-4">
+
+    <!-- ====================================== -->
+    <!-- PAGE HEADER -->
+    <!-- ====================================== -->
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+            <h1 class="fw-bold mb-1">
+                Assignments
+            </h1>
+
+            <p class="text-muted mb-0">
+                View and manage course assignments.
+            </p>
+        </div>
+
+        {% if can_create %}
+
+        <a
+            href="{% url 'assignments:create' %}"
+            class="btn btn-primary"
+        >
+            Create Assignment
+        </a>
+
+        {% endif %}
+
     </div>
 
-{% if can_create %}
-<a href="{% url 'assignments:create' %}"
-   class="btn btn-primary">
-    Create Assignment
-</a>
-{% endif %}
+    <!-- ====================================== -->
+    <!-- ASSIGNMENT LIST -->
+    <!-- ====================================== -->
 
-</div>
+    <div class="row g-4">
 
-{% if assignments %}
+        {% for assignment in assignments %}
 
-<div class="row g-4">
+        <div class="col-12 col-lg-6 col-xxl-4">
 
-    {% for assignment in assignments %}
+            <article class="card h-100 shadow-sm border-0 rounded-4">
 
-    <div class="col-md-6 col-lg-4">
+                <!-- ========================== -->
+                <!-- ASSIGNMENT INFORMATION -->
+                <!-- ========================== -->
 
-        <div class="card shadow-sm h-100">
+                <div class="card-body p-4">
 
-            <div class="card-body">
+                    <!-- TITLE AND STATUS -->
 
-                <h5 class="card-title fw-bold">
-                    {{ assignment.title }}
-                </h5>
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
 
-                <p class="text-muted">
-                    {{ assignment.instructions|truncatewords:20 }}
-                </p>
+                        <div>
 
-                <p>
-                    <strong>Deadline:</strong>
-                    {{ assignment.deadline|date:"d M Y, h:i A" }}
-                </p>
+                            <h2 class="h5 fw-bold mb-1">
+                                {{ assignment.title }}
+                            </h2>
 
-                <p>
-                    <strong>Total Marks:</strong>
-                    {{ assignment.total_marks }}
-                </p>
+                            {% if assignment.course_offering %}
 
-                <span class="badge bg-secondary">
-                    {{ assignment.get_status_display }}
-                </span>
+                            <div class="text-muted small">
 
-            </div>
+                                {{ assignment.course_offering.course.code }}
 
-            <div class="card-footer bg-white">
+                                —
 
-                <a href="{% url 'assignments:detail' assignment.pk %}"
-                   class="btn btn-outline-dark btn-sm">
-                    View Details
-                </a>
+                                {{ assignment.course_offering.course.title }}
 
-                {% if can_create and user == assignment.created_by %}
-                    <a href="{% url 'assignments:edit' assignment.pk %}"
-                       class="btn btn-outline-primary btn-sm">
-                        Edit
-                    </a>
-                {% endif %}
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                        <!-- ASSIGNMENT STATUS -->
+
+                        {% if assignment.status == "PUBLISHED" %}
+
+                        <span class="badge bg-success">
+                            Published
+                        </span>
+
+                        {% elif assignment.status == "DRAFT" %}
+
+                        <span class="badge bg-secondary">
+                            Draft
+                        </span>
+
+                        {% elif assignment.status == "CLOSED" %}
+
+                        <span class="badge bg-dark">
+                            Closed
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <!-- ========================== -->
+                    <!-- ACADEMIC INFORMATION -->
+                    <!-- ========================== -->
+
+                    {% if assignment.course_offering %}
+
+                    <div class="row g-2 mb-3">
+
+                        <!-- PROGRAM -->
+
+                        <div class="col-6">
+
+                            <div class="bg-light rounded-3 p-3 h-100">
+
+                                <div class="small text-muted">
+                                    Program
+                                </div>
+
+                                <strong class="small">
+
+                                    {{ assignment.course_offering.section.semester.program.name }}
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <!-- SEMESTER AND SECTION -->
+
+                        <div class="col-6">
+
+                            <div class="bg-light rounded-3 p-3 h-100">
+
+                                <div class="small text-muted">
+                                    Semester / Section
+                                </div>
+
+                                <strong class="small">
+
+                                    {{ assignment.course_offering.section.semester.number }}
+
+                                    /
+
+                                    {{ assignment.course_offering.section.code }}
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <!-- ACADEMIC YEAR -->
+
+                        <div class="col-6">
+
+                            <div class="bg-light rounded-3 p-3 h-100">
+
+                                <div class="small text-muted">
+                                    Academic Year
+                                </div>
+
+                                <strong class="small">
+
+                                    {{ assignment.course_offering.academic_year }}
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <!-- TERM -->
+
+                        <div class="col-6">
+
+                            <div class="bg-light rounded-3 p-3 h-100">
+
+                                <div class="small text-muted">
+                                    Term
+                                </div>
+
+                                <strong class="small">
+
+                                    {{ assignment.course_offering.get_term_display }}
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="alert alert-warning py-2 small">
+                        No Course Offering assigned.
+                    </div>
+
+                    {% endif %}
+
+                    <!-- ========================== -->
+                    <!-- DEADLINE -->
+                    <!-- ========================== -->
+
+                    <div class="mb-2">
+
+                        <span class="text-muted">
+                            Deadline:
+                        </span>
+
+                        <strong>
+
+                            {{ assignment.deadline|date:"d M Y, h:i A" }}
+
+                        </strong>
+
+                    </div>
+
+                    <!-- ========================== -->
+                    <!-- TOTAL MARKS -->
+                    <!-- ========================== -->
+
+                    <div class="mb-3">
+
+                        <span class="text-muted">
+                            Total Marks:
+                        </span>
+
+                        <strong>
+                            {{ assignment.total_marks }}
+                        </strong>
+
+                    </div>
+
+                    <!-- ========================== -->
+                    <!-- SUBMISSION PROGRESS -->
+                    <!-- TEACHER / ADMIN ONLY -->
+                    <!-- ========================== -->
+
+                    {% if show_progress %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+
+                        <strong class="small">
+                            Submission Progress
+                        </strong>
+
+                        <span class="small text-muted">
+
+                            {{ assignment.submitted_count }}
+
+                            /
+
+                            {{ assignment.enrolled_count }}
+
+                        </span>
+
+                    </div>
+
+                    {% if assignment.enrolled_count %}
+
+                    <!--
+                        Native HTML progress avoids
+                        complex Django template logic
+                        inside a CSS style attribute.
+                    -->
+
+                    <progress
+                        class="ah-submission-progress mb-2"
+                        value="{{ assignment.submitted_count }}"
+                        max="{{ assignment.enrolled_count }}"
+                        aria-label="Assignment submission progress"
+                    >
+                        {{ assignment.submitted_count }}
+                        of
+                        {{ assignment.enrolled_count }}
+                    </progress>
+
+                    {% else %}
+
+                    <p class="small text-muted mb-2">
+                        No active student enrollments.
+                    </p>
+
+                    {% endif %}
+
+                    <p class="text-muted small mb-0">
+
+                        {{ assignment.submitted_count }}
+
+                        final submissions received.
+
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- ========================== -->
+                <!-- CARD FOOTER -->
+                <!-- ========================== -->
+
+                <div class="card-footer bg-white border-top p-3">
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <!-- VIEW DETAILS -->
+
+                        <a
+                            href="{% url 'assignments:detail' assignment.pk %}"
+                            class="btn btn-outline-secondary btn-sm"
+                        >
+                            View Details
+                        </a>
+
+                        <!-- SUBMISSION ROSTER -->
+
+                        {% if show_progress %}
+
+                        <a
+                            href="{% url 'assignments:roster' assignment.pk %}"
+                            class="btn btn-primary btn-sm"
+                        >
+                            View Submissions
+                        </a>
+
+                        {% endif %}
+
+                        <!-- TEACHER EDIT OPTION -->
+
+                        {% if can_create %}
+
+                        <a
+                            href="{% url 'assignments:edit' assignment.pk %}"
+                            class="btn btn-outline-primary btn-sm"
+                        >
+                            Edit
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </div>
+
+        {% empty %}
+
+        <!-- ================================== -->
+        <!-- EMPTY ASSIGNMENT STATE -->
+        <!-- ================================== -->
+
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body text-center p-5">
+
+                    <h2 class="h5">
+                        No Assignments Found
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        No assignments are available for your account.
+                    </p>
+
+                </div>
 
             </div>
 
         </div>
 
+        {% endfor %}
+
     </div>
 
-    {% endfor %}
-
-</div>
-
-{% else %}
-
-<div class="alert alert-info">
-    No assignments available.
-</div>
-
-{% endif %}
+</main>
 
 {% endblock %}

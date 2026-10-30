@@ -1,52 +1,257 @@
 {% extends "base.html" %}
 
-{% block title %}Login - AssignHub{% endblock %}
+{% block title %}Sign In - AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ah-login-page {
+        --ah-login-navy: #101c32;
+        --ah-login-blue: #4669ed;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        min-height: clamp(480px, calc(100vh - 220px), 720px);
+        overflow: hidden;
+        border: 1px solid #e5eaf2;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 16px 40px rgba(16, 28, 50, .08);
+    }
+
+    .ah-login-intro {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(32px, 6vw, 76px);
+        color: #fff;
+        background: linear-gradient(125deg, #101c32 0%, #223c70 65%, #3555ac 100%);
+    }
+
+    .ah-login-mark {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        margin-bottom: 32px;
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 17px;
+        color: #fff;
+        background: rgba(255, 255, 255, .12);
+        font-size: 25px;
+    }
+
+    .ah-login-eyebrow {
+        margin-bottom: 12px;
+        color: #cbd7ff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    .ah-login-intro h1 {
+        max-width: 470px;
+        margin: 0 0 14px;
+        color: #fff;
+        font-size: clamp(28px, 3.2vw, 42px);
+        font-weight: 800;
+        letter-spacing: -.8px;
+        line-height: 1.15;
+    }
+
+    .ah-login-intro p {
+        max-width: 440px;
+        margin: 0;
+        color: #d3def3;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .ah-login-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+    }
+
+    .ah-login-feature {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border: 1px solid rgba(255, 255, 255, .17);
+        border-radius: 30px;
+        color: #e4ebff;
+        background: rgba(255, 255, 255, .08);
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+    .ah-login-form-side {
+        display: grid;
+        place-items: center;
+        padding: clamp(28px, 5vw, 64px);
+        background: #f7f9fd;
+    }
+
+    .ah-login-card {
+        width: min(100%, 400px);
+        padding: clamp(25px, 4vw, 38px);
+        border: 1px solid #e6ebf3;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(16, 28, 50, .06);
+    }
+
+    .ah-login-card h2 {
+        margin: 0 0 7px;
+        color: var(--ah-login-navy);
+        font-size: 25px;
+        font-weight: 800;
+        letter-spacing: -.4px;
+    }
+
+    .ah-login-card-copy {
+        margin: 0 0 27px;
+        color: #78879d;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .ah-login-card .form-label {
+        margin-bottom: 7px;
+        color: #34445e;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .ah-login-card .form-control {
+        min-height: 46px;
+        border-color: #dce4f0;
+        border-radius: 9px;
+        font-size: 14px;
+    }
+
+    .ah-login-card .form-control:focus {
+        border-color: var(--ah-login-blue);
+        box-shadow: 0 0 0 .2rem rgba(70, 105, 237, .14);
+    }
+
+    .ah-login-submit {
+        min-height: 46px;
+        margin-top: 5px;
+        border: 0;
+        border-radius: 9px;
+        color: #fff;
+        background: var(--ah-login-blue);
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+    .ah-login-submit:hover {
+        color: #fff;
+        background: #3658d5;
+    }
+
+    .ah-login-forgot {
+        display: block;
+        margin-top: 19px;
+        color: #4669ed;
+        font-size: 12px;
+        font-weight: 650;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .ah-login-forgot:hover {
+        color: #304fc4;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 760px) {
+        .ah-login-page {
+            grid-template-columns: 1fr;
+            min-height: auto;
+        }
+
+        .ah-login-intro {
+            padding: 34px clamp(24px, 7vw, 48px);
+        }
+
+        .ah-login-mark {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 22px;
+            font-size: 21px;
+        }
+
+        .ah-login-form-side {
+            padding: 32px 20px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-
-<div class="row justify-content-center">
-    <div class="col-md-5 col-lg-4">
-
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-
-                <h2 class="text-center mb-4">
-                    AssignHub Login
-                </h2>
-
-                <form method="post">
-                    {% csrf_token %}
-
-                    <div class="mb-3">
-                        <label for="username" class="form-label">
-                            Username
-                        </label>
-
-                        <input type="text" name="username" id="username" class="form-control" required autofocus>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            Password
-                        </label>
-
-                        <input type="password" name="password" id="password" class="form-control" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-dark w-100">
-                        Login
-                    </button>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'accounts:password_reset' %}">
-                            Forgot your password?
-                        </a>
-                    </div>
-                </form>
-
-            </div>
+<section class="ah-login-page" aria-label="Sign in to AssignHub">
+    <div class="ah-login-intro">
+        <span class="ah-login-mark" aria-hidden="true">
+            <i class="bi bi-mortarboard-fill"></i>
+        </span>
+        <span class="ah-login-eyebrow">University Assignment Management</span>
+        <h1>Your academic work, all in one place.</h1>
+        <p>
+            Sign in to manage assignments, submit your academic work,
+            and stay connected with your university.
+        </p>
+        <div class="ah-login-features" aria-label="AssignHub features">
+            <span class="ah-login-feature"><i class="bi bi-shield-check" aria-hidden="true"></i> Secure workspace</span>
+            <span class="ah-login-feature"><i class="bi bi-journal-check" aria-hidden="true"></i> Assignment management</span>
         </div>
-
     </div>
-</div>
 
+    <div class="ah-login-form-side">
+        <div class="ah-login-card">
+            <h2>Sign In</h2>
+            <p class="ah-login-card-copy">Use your university account to continue.</p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="username"
+                        class="form-control"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        class="form-control"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn ah-login-submit w-100">
+                    <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>
+                    Sign In
+                </button>
+
+                <a class="ah-login-forgot" href="{% url 'accounts:password_reset' %}">
+                    Forgot your password?
+                </a>
+            </form>
+        </div>
+    </div>
+</section>
 {% endblock %}

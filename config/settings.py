@@ -1,7 +1,7 @@
 """Django settings for the AssignHub project."""
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -12,9 +12,9 @@ def env_bool(name, default=False):
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -73,6 +73,11 @@ INSTALLED_APPS = [
     "courses",
     "semesters",
     "departments",
+    "timed_writing",
+    "class_allocations.apps.ClassAllocationsConfig",
+    # "class_allocations",
+    "student_onboarding.apps.StudentOnboardingConfig",
+
 ]
 
 MIDDLEWARE = [
@@ -191,3 +196,24 @@ MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+# Development URL:
+# For remote users configure a reachable
+# HTTPS domain before sending invitations.
+ASSIGNHUB_PUBLIC_BASE_URL = os.environ.get(
+    "ASSIGNHUB_PUBLIC_BASE_URL",
+    "http://127.0.0.1:8000",
+).rstrip("/")
+
+# 48 hours
+STUDENT_ACTIVATION_MAX_AGE_SECONDS = 48 * 60 * 60
+
+# Set this to the real university email domain
+# before using the system with real students.
+#
+# Example:
+# STUDENT_EMAIL_DOMAIN = "university.edu"
+STUDENT_EMAIL_DOMAIN = os.environ.get(
+    "STUDENT_EMAIL_DOMAIN",
+    "",
+).strip().lower()

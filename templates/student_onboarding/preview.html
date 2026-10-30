@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}
+Student Import Preview | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+
+    <a
+        href="{% url 'student_onboarding:dashboard' %}"
+        class="btn btn-outline-secondary btn-sm mb-3"
+    >
+        Back to Student Onboarding
+    </a>
+
+    <h1 class="fw-bold mb-1">
+        Import Preview #{{ batch.pk }}
+    </h1>
+
+    <p class="text-muted mb-4">
+        Review all records before creating accounts.
+    </p>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="text-muted small">Total Records</div>
+                    <h2 class="fw-bold mt-2 mb-0">
+                        {{ batch.row_count }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="text-muted small">Valid Records</div>
+                    <h2 class="fw-bold mt-2 mb-0">
+                        {{ batch.valid_count }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="text-muted small">Errors</div>
+                    <h2 class="fw-bold mt-2 mb-0">
+                        {{ batch.error_count }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h6 fw-bold">
+                Target Academic Class
+            </h2>
+
+            <p class="mb-1">
+                <strong>Section:</strong>
+                {{ batch.section }}
+            </p>
+
+            <p class="mb-0">
+                <strong>Period:</strong>
+                {{ batch.get_term_display }}
+                {{ batch.academic_year }}
+            </p>
+
+        </div>
+
+    </div>
+
+    {% if batch.is_expired %}
+
+    <div class="alert alert-warning">
+        This preview has expired.
+        Upload the spreadsheet again.
+    </div>
+
+    {% elif batch.error_count %}
+
+    <div class="alert alert-danger">
+        Some records are invalid.
+        No accounts have been created.
+        Correct your spreadsheet and upload it again.
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-success">
+        All records passed initial validation.
+        Confirmation will recheck duplicates
+        and section capacity before creating accounts.
+    </div>
+
+    {% endif %}
+
+    <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="card-header bg-white border-0 p-4">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+                <h2 class="h5 fw-bold mb-0">
+                    Student Records
+                </h2>
+
+                {% if not batch.is_expired and not batch.error_count %}
+
+                <form
+                    method="post"
+                    action="{% url 'student_onboarding:confirm' batch.pk %}"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Confirm & Create Accounts
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Row</th>
+                            <th>Roll Number</th>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Validation</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in batch.rows %}
+
+                        <tr>
+
+                            <td class="ps-4">
+                                {{ row.row_number }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ row.roll_number }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ row.first_name }}
+                                {{ row.last_name }}
+                            </td>
+
+                            <td>
+                                {{ row.email }}
+                            </td>
+
+                            <td>
+                                {% if row.errors %}
+
+                                <span class="badge bg-danger mb-2">
+                                    Invalid
+                                </span>
+
+                                {% for error in row.errors %}
+                                    <div class="small text-danger">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                                {% else %}
+
+                                <span class="badge bg-success">
+                                    Valid
+                                </span>
+
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                No preview records available.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

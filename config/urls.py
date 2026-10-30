@@ -40,5 +40,16 @@ urlpatterns = [
         "departments/",
         include("departments.urls"),
     ),
-
+    path(
+    "timed-writing/",
+    include("timed_writing.urls"),
+),
+path(
+    "class-allocation/",
+    include("class_allocations.urls"),
+),
+path(
+    "student-onboarding/",
+    include("student_onboarding.urls"),
+),
 ]

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}
+Class Roster | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+
+        <a
+            href="{% url 'class_allocations:my_classes' %}"
+            class="btn btn-outline-secondary btn-sm mb-3"
+        >
+            Back to My Classes
+        </a>
+
+        <h1 class="fw-bold mb-1">
+            Class Roster
+        </h1>
+
+        <p class="text-muted mb-0">
+            {{ offering.course.code }}
+            —
+            {{ offering.course.title }}
+        </p>
+
+    </div>
+
+    <!-- CLASS SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <div class="text-muted small">
+                        Section
+                    </div>
+
+                    <h2 class="h5 fw-bold mt-2 mb-0">
+                        Semester
+                        {{ offering.section.semester.number }}
+                        /
+                        {{ offering.section.code }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <div class="text-muted small">
+                        Academic Period
+                    </div>
+
+                    <h2 class="h5 fw-bold mt-2 mb-0">
+                        {{ offering.get_term_display }}
+                        {{ offering.academic_year }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-4">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <div class="text-muted small">
+                        Active Enrollments
+                    </div>
+
+                    <h2 class="h5 fw-bold mt-2 mb-0">
+                        {{ student_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- STUDENT ROSTER -->
+    <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="card-header bg-white border-0 p-4">
+
+            <h2 class="h5 fw-bold mb-0">
+                Enrolled Students
+            </h2>
+
+        </div>
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">#</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Enrollment</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for enrollment in enrollments %}
+
+                        <tr>
+
+                            <td class="ps-4">
+                                {{ forloop.counter }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ enrollment.student.username }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ enrollment.student.get_full_name|default:"—" }}
+                            </td>
+
+                            <td>
+                                {{ enrollment.student.email|default:"—" }}
+                            </td>
+
+                            <td>
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td
+                                colspan="5"
+                                class="text-center text-muted py-5"
+                            >
+                                No active students are
+                                enrolled in this course.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

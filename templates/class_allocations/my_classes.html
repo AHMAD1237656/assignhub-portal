@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Classes | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+
+        <h1 class="fw-bold mb-1">
+            My Assigned Classes
+        </h1>
+
+        <p class="text-muted mb-0">
+            View the courses you teach and
+            their currently enrolled students.
+        </p>
+
+    </div>
+
+    <div class="row g-4">
+
+        {% for offering in offerings %}
+
+        <div class="col-12 col-lg-6 col-xxl-4">
+
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+
+                        <div>
+                            <h2 class="h5 fw-bold mb-1">
+                                {{ offering.course.code }}
+                            </h2>
+
+                            <p class="text-muted mb-0">
+                                {{ offering.course.title }}
+                            </p>
+                        </div>
+
+                        {% if offering.is_active %}
+
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-secondary">
+                            Archived
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="bg-light rounded-3 p-3 mb-3">
+
+                        <div class="small text-muted">
+                            Program
+                        </div>
+
+                        <strong>
+                            {{ offering.section.semester.program.code }}
+                        </strong>
+
+                        <div class="small text-muted mt-3">
+                            Semester / Section
+                        </div>
+
+                        <strong>
+                            Semester
+                            {{ offering.section.semester.number }}
+                            /
+                            {{ offering.section.code }}
+                        </strong>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span class="text-muted">
+                            Academic Year
+                        </span>
+
+                        <strong>
+                            {{ offering.academic_year }}
+                        </strong>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+
+                        <span class="text-muted">
+                            Term
+                        </span>
+
+                        <strong>
+                            {{ offering.get_term_display }}
+                        </strong>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <span class="fw-semibold">
+                            Enrolled Students
+                        </span>
+
+                        <span class="badge bg-primary">
+                            {{ offering.active_student_count }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="card-footer bg-white border-top p-3">
+
+                    <a
+                        href="{% url 'class_allocations:class_roster' offering.pk %}"
+                        class="btn btn-primary btn-sm"
+                    >
+                        View Class Roster
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body text-center p-5">
+
+                    <h2 class="h5">
+                        No Classes Assigned
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        No course offerings are currently
+                        assigned to your account.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

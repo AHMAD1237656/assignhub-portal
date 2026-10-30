@@ -71,4 +71,9 @@ urlpatterns = [
     views.assignment_close,
     name="close",
 ),
+    path(
+        "<int:pk>/roster/",
+        views.assignment_roster,
+        name="roster",
+    ),
 ]

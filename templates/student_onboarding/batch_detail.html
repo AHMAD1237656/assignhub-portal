@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}
+Student Import Batch | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+
+    <a
+        href="{% url 'student_onboarding:dashboard' %}"
+        class="btn btn-outline-secondary btn-sm mb-3"
+    >
+        Back to Student Onboarding
+    </a>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+            <h1 class="fw-bold mb-1">
+                Student Import #{{ batch.pk }}
+            </h1>
+
+            <p class="text-muted mb-0">
+                {{ batch.section }}
+                —
+                {{ batch.get_term_display }}
+                {{ batch.academic_year }}
+            </p>
+        </div>
+
+        <form
+            method="post"
+            action="{% url 'student_onboarding:send' batch.pk %}"
+        >
+            {% csrf_token %}
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-envelope-arrow-up me-1"></i>
+                Send Next 25 Activation Emails
+            </button>
+        </form>
+
+    </div>
+
+    <div class="alert alert-info mb-4">
+        Accounts are created but remain inactive until
+        students set their passwords. In development,
+        activation emails appear in the Django server
+        terminal because the console mail backend is configured.
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="small text-muted">Accounts Created</div>
+                    <h2 class="fw-bold mb-0 mt-2">{{ total }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="small text-muted">Pending</div>
+                    <h2 class="fw-bold mb-0 mt-2">{{ pending }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="small text-muted">Activated</div>
+                    <h2 class="fw-bold mb-0 mt-2">{{ activated }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="small text-muted">Emails Sent</div>
+                    <h2 class="fw-bold mb-0 mt-2">{{ sent }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% if failed %}
+    <div class="alert alert-warning">
+        {{ failed }} activation email(s) failed.
+        You can retry failed deliveries using
+        the Send Activation Emails action.
+    </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="card-header bg-white border-0 p-4">
+            <h2 class="h5 fw-bold mb-0">
+                Imported Student Accounts
+            </h2>
+
+            <p class="small text-muted mt-2 mb-0">
+                Showing the first 100 accounts.
+                Full records are available in the database.
+            </p>
+        </div>
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Roll Number</th>
+                            <th>Student</th>
+                            <th>Email</th>
+                            <th>Account</th>
+                            <th>Email Delivery</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for identity in identities %}
+
+                        <tr>
+                            <td class="ps-4">
+                                <strong>
+                                    {{ identity.roll_number }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ identity.user.get_full_name }}
+                            </td>
+
+                            <td>
+                                {{ identity.institutional_email }}
+                            </td>
+
+                            <td>
+                                {% if identity.status == "ACTIVE" %}
+                                <span class="badge bg-success">
+                                    Activated
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    Pending
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if identity.email_status == "SENT" %}
+                                <span class="badge bg-success">
+                                    Sent
+                                </span>
+                                {% elif identity.email_status == "FAILED" %}
+                                <span class="badge bg-danger">
+                                    Failed
+                                </span>
+                                {% elif identity.email_status == "SENDING" %}
+                                <span class="badge bg-info text-dark">
+                                    Sending
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    Queued
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                No student accounts found.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
