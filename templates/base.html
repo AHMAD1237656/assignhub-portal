@@ -14,9 +14,7 @@
 
     <meta name="theme-color" content="#101c32">
 
-    <title>
-        {% block title %}AssignHub{% endblock %}
-    </title>
+    <title>{% block title %}AssignHub{% endblock %}</title>
 
     <!-- Bootstrap 5 -->
     <link
@@ -30,13 +28,13 @@
         rel="stylesheet"
     >
 
-    <!-- Existing Application Styles -->
+    <!-- Application CSS -->
     <link
         rel="stylesheet"
         href="{% static 'css/app.css' %}"
     >
 
-    <!-- Sidebar and Shared UI Styles -->
+    <!-- Sidebar / Shared UI CSS -->
     <link
         rel="stylesheet"
         href="{% static 'css/assignhub-navbar.css' %}"
@@ -47,11 +45,11 @@
 
 <body class="assignhub-body">
 
+    {% if user.is_authenticated %}
+
     <!-- =====================================
          MOBILE SIDEBAR OVERLAY
     ====================================== -->
-
-    {% if user.is_authenticated %}
 
     <div
         id="ah-sidebar-overlay"
@@ -69,7 +67,7 @@
         aria-label="Main navigation"
     >
 
-        <!-- SIDEBAR BRAND -->
+        <!-- SIDEBAR HEADER -->
 
         <div class="ah-sidebar-header">
 
@@ -101,7 +99,7 @@
 
             </a>
 
-            <!-- MOBILE CLOSE -->
+            <!-- MOBILE CLOSE BUTTON -->
 
             <button
                 type="button"
@@ -117,12 +115,18 @@
 
         </div>
 
-        <!-- NAVIGATION SCROLL AREA -->
+        <!-- =====================================
+             SIDEBAR NAVIGATION
+        ====================================== -->
 
         <nav
             class="ah-sidebar-navigation"
             aria-label="AssignHub modules"
         >
+
+            <!-- =================================
+                 COMMON WORKSPACE
+            ================================== -->
 
             <div class="ah-sidebar-section">
 
@@ -134,10 +138,11 @@
 
                 <a
                     href="{% url 'home' %}"
-                    class="ah-sidebar-link
-                    {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                    class="ah-sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                     title="Dashboard"
-                    {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}
+                    {% if request.resolver_match.url_name == 'home' %}
+                    aria-current="page"
+                    {% endif %}
                 >
 
                     <span class="ah-sidebar-link-icon">
@@ -157,8 +162,7 @@
 
                 <a
                     href="{% url 'assignments:list' %}"
-                    class="ah-sidebar-link
-                    {% if request.resolver_match.namespace == 'assignments' or request.resolver_match.namespace == 'timed_writing' %}active{% endif %}"
+                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'assignments' or request.resolver_match.namespace == 'timed_writing' %}active{% endif %}"
                     title="Assignments"
                 >
 
@@ -178,7 +182,7 @@
             </div>
 
             <!-- =================================
-                 ADMIN MODULES
+                 ADMIN NAVIGATION
             ================================== -->
 
             {% if nav_is_admin %}
@@ -189,13 +193,14 @@
                     ACADEMIC MANAGEMENT
                 </div>
 
-                <!-- ACADEMICS GROUP -->
+                <!-- =================================
+                     ACADEMIC STRUCTURE
+                ================================== -->
 
                 <div class="ah-sidebar-group">
 
                     <div
-                        class="ah-sidebar-group-heading
-                        {% if request.resolver_match.namespace == 'departments' or request.resolver_match.namespace == 'semesters' %}active{% endif %}"
+                        class="ah-sidebar-group-heading {% if request.resolver_match.namespace == 'departments' or request.resolver_match.namespace == 'semesters' %}active{% endif %}"
                         title="Academic Structure"
                     >
 
@@ -212,53 +217,63 @@
 
                     </div>
 
+                    <!-- ACADEMICS SUBMENU -->
+
                     <div class="ah-sidebar-submenu">
+
+                        <!-- DEPARTMENTS -->
 
                         <a
                             href="{% url 'departments:department_list' %}"
-                            class="ah-sidebar-sublink
-                            {% if request.resolver_match.url_name == 'department_list' %}active{% endif %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'department_list' %}active{% endif %}"
                         >
                             <i
                                 class="bi bi-building"
                                 aria-hidden="true"
                             ></i>
+
                             Departments
                         </a>
 
+                        <!-- PROGRAMS -->
+
                         <a
                             href="{% url 'departments:program_list' %}"
-                            class="ah-sidebar-sublink
-                            {% if request.resolver_match.url_name == 'program_list' %}active{% endif %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'program_list' %}active{% endif %}"
                         >
                             <i
                                 class="bi bi-diagram-3"
                                 aria-hidden="true"
                             ></i>
+
                             Programs
                         </a>
 
+                        <!-- SEMESTERS -->
+
                         <a
                             href="{% url 'semesters:semester_list' %}"
-                            class="ah-sidebar-sublink
-                            {% if request.resolver_match.url_name == 'semester_list' %}active{% endif %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'semester_list' %}active{% endif %}"
                         >
                             <i
                                 class="bi bi-calendar3"
                                 aria-hidden="true"
                             ></i>
+
                             Semesters
                         </a>
 
+                        <!-- SECTIONS -->
+
                         <a
                             href="{% url 'semesters:section_list' %}"
-                            class="ah-sidebar-sublink
-                            {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'section_list' %}active{% endif %}"
                         >
                             <i
                                 class="bi bi-people"
                                 aria-hidden="true"
                             ></i>
+
                             Sections
                         </a>
 
@@ -266,13 +281,14 @@
 
                 </div>
 
-                <!-- COURSES GROUP -->
+                <!-- =================================
+                     COURSE MANAGEMENT
+                ================================== -->
 
                 <div class="ah-sidebar-group">
 
                     <div
-                        class="ah-sidebar-group-heading
-                        {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
+                        class="ah-sidebar-group-heading {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
                         title="Course Management"
                     >
 
@@ -289,41 +305,49 @@
 
                     </div>
 
+                    <!-- COURSES SUBMENU -->
+
                     <div class="ah-sidebar-submenu">
+
+                        <!-- COURSE CATALOG -->
 
                         <a
                             href="{% url 'courses:course_list' %}"
-                            class="ah-sidebar-sublink
-                            {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}"
                         >
                             <i
                                 class="bi bi-book"
                                 aria-hidden="true"
                             ></i>
+
                             Course Catalog
                         </a>
 
+                        <!-- COURSE OFFERINGS -->
+
                         <a
                             href="{% url 'courses:offering_list' %}"
-                            class="ah-sidebar-sublink
-                            {% if request.resolver_match.url_name == 'offering_list' %}active{% endif %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'offering_list' %}active{% endif %}"
                         >
                             <i
                                 class="bi bi-person-workspace"
                                 aria-hidden="true"
                             ></i>
+
                             Course Offerings
                         </a>
 
+                        <!-- STUDENT ENROLLMENTS -->
+
                         <a
                             href="{% url 'courses:enrollment_list' %}"
-                            class="ah-sidebar-sublink
-                            {% if request.resolver_match.url_name == 'enrollment_list' %}active{% endif %}"
+                            class="ah-sidebar-sublink {% if request.resolver_match.url_name == 'enrollment_list' %}active{% endif %}"
                         >
                             <i
                                 class="bi bi-person-check"
                                 aria-hidden="true"
                             ></i>
+
                             Student Enrollments
                         </a>
 
@@ -331,12 +355,13 @@
 
                 </div>
 
-                <!-- CLASS ALLOCATION -->
+                <!-- =================================
+                     CLASS ALLOCATION
+                ================================== -->
 
                 <a
                     href="{% url 'class_allocations:dashboard' %}"
-                    class="ah-sidebar-link
-                    {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
+                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
                     title="Class Allocation"
                 >
 
@@ -353,10 +378,33 @@
 
                 </a>
 
+                <!-- =================================
+                     STUDENT ONBOARDING
+                ================================== -->
+
+                <a
+                    href="{% url 'student_onboarding:dashboard' %}"
+                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'student_onboarding' %}active{% endif %}"
+                    title="Student Onboarding"
+                >
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-person-plus-fill"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        Student Onboarding
+                    </span>
+
+                </a>
+
             </div>
 
             <!-- =================================
-                 TEACHER MODULES
+                 TEACHER NAVIGATION
             ================================== -->
 
             {% elif nav_is_teacher %}
@@ -367,10 +415,11 @@
                     TEACHING
                 </div>
 
+                <!-- MY COURSES -->
+
                 <a
                     href="{% url 'courses:offering_list' %}"
-                    class="ah-sidebar-link
-                    {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
+                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'courses' %}active{% endif %}"
                     title="My Courses"
                 >
 
@@ -387,10 +436,11 @@
 
                 </a>
 
+                <!-- MY CLASSES -->
+
                 <a
                     href="{% url 'class_allocations:my_classes' %}"
-                    class="ah-sidebar-link
-                    {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
+                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'class_allocations' %}active{% endif %}"
                     title="My Classes"
                 >
 
@@ -408,6 +458,10 @@
                 </a>
 
             </div>
+
+            <!-- =================================
+                 STUDENT NAVIGATION
+            ================================== -->
 
             {% elif nav_is_student %}
 
@@ -436,7 +490,9 @@
 
             {% endif %}
 
-            <!-- ADMIN SETTINGS -->
+            <!-- =================================
+                 ADMIN SYSTEM SETTINGS
+            ================================== -->
 
             {% if nav_is_admin and user.is_superuser %}
 
@@ -471,7 +527,9 @@
 
         </nav>
 
-        <!-- SIDEBAR BOTTOM -->
+        <!-- =====================================
+             SIDEBAR ACCOUNT INFORMATION
+        ====================================== -->
 
         <div class="ah-sidebar-bottom">
 
@@ -518,13 +576,17 @@
 
     <div class="ah-app-shell">
 
-        <!-- TOP HEADER -->
+        <!-- =====================================
+             TOP HEADER
+        ====================================== -->
 
         <header class="ah-topbar">
 
             <div class="ah-topbar-left">
 
                 {% if user.is_authenticated %}
+
+                <!-- MOBILE MENU TOGGLE -->
 
                 <button
                     type="button"
@@ -534,18 +596,23 @@
                     aria-expanded="false"
                     aria-label="Open navigation"
                 >
+
                     <i
                         class="bi bi-list"
                         aria-hidden="true"
                     ></i>
+
                 </button>
 
                 {% else %}
+
+                <!-- GUEST BRAND -->
 
                 <a
                     href="{% url 'home' %}"
                     class="ah-guest-brand"
                 >
+
                     <span class="assignhub-brand-icon">
                         <i
                             class="bi bi-mortarboard-fill"
@@ -556,9 +623,12 @@
                     <span>
                         AssignHub
                     </span>
+
                 </a>
 
                 {% endif %}
+
+                <!-- HEADER TITLE -->
 
                 <div class="ah-topbar-heading">
 
@@ -578,7 +648,9 @@
 
             </div>
 
-            <!-- USER CONTROLS -->
+            <!-- =====================================
+                 TOP RIGHT USER MENU
+            ====================================== -->
 
             <div class="ah-topbar-actions">
 
@@ -623,9 +695,10 @@
 
                     </button>
 
+                    <!-- USER DROPDOWN -->
+
                     <ul
-                        class="dropdown-menu dropdown-menu-end
-                               assignhub-dropdown ah-topbar-dropdown"
+                        class="dropdown-menu dropdown-menu-end assignhub-dropdown ah-topbar-dropdown"
                         aria-labelledby="userDropdown"
                     >
 
@@ -645,21 +718,27 @@
                             <hr class="dropdown-divider">
                         </li>
 
+                        <!-- DASHBOARD -->
+
                         <li>
 
                             <a
                                 href="{% url 'home' %}"
                                 class="dropdown-item"
                             >
+
                                 <i
                                     class="bi bi-speedometer2"
                                     aria-hidden="true"
                                 ></i>
 
                                 Dashboard
+
                             </a>
 
                         </li>
+
+                        <!-- DJANGO ADMIN -->
 
                         {% if nav_is_admin and user.is_superuser %}
 
@@ -669,12 +748,14 @@
                                 href="{% url 'admin:index' %}"
                                 class="dropdown-item"
                             >
+
                                 <i
                                     class="bi bi-gear"
                                     aria-hidden="true"
                                 ></i>
 
                                 Django Admin
+
                             </a>
 
                         </li>
@@ -685,24 +766,29 @@
                             <hr class="dropdown-divider">
                         </li>
 
+                        <!-- LOGOUT -->
+
                         <li>
 
                             <form
                                 method="post"
                                 action="{% url 'accounts:logout' %}"
                             >
+
                                 {% csrf_token %}
 
                                 <button
                                     type="submit"
                                     class="dropdown-item assignhub-logout"
                                 >
+
                                     <i
                                         class="bi bi-box-arrow-right"
                                         aria-hidden="true"
                                     ></i>
 
                                     Sign Out
+
                                 </button>
 
                             </form>
@@ -714,6 +800,8 @@
                 </div>
 
                 {% else %}
+
+                <!-- GUEST LOGIN -->
 
                 <a
                     href="{% url 'accounts:login' %}"
@@ -735,9 +823,9 @@
 
         </header>
 
-        <!-- =================================
+        <!-- =====================================
              MAIN PAGE CONTENT
-        ================================== -->
+        ====================================== -->
 
         <main class="assignhub-main ah-page-main">
 
@@ -755,10 +843,7 @@
                     {% for message in messages %}
 
                     <div
-                        class="alert
-                               alert-{{ message.tags|default:'info' }}
-                               alert-dismissible fade show
-                               assignhub-alert"
+                        class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show assignhub-alert"
                         role="alert"
                     >
 
@@ -790,7 +875,7 @@
 
                 {% endif %}
 
-                <!-- EXISTING PAGE TEMPLATES -->
+                <!-- PAGE SPECIFIC CONTENT -->
 
                 {% block content %}{% endblock %}
 
@@ -798,17 +883,16 @@
 
         </main>
 
-        <!-- =================================
+        <!-- =====================================
              FOOTER
-        ================================== -->
+        ====================================== -->
 
         <footer class="assignhub-footer">
 
             <div class="container-fluid px-3 px-lg-4">
 
                 <div
-                    class="d-flex flex-column flex-md-row
-                           justify-content-between align-items-center gap-2"
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2"
                 >
 
                     <div class="assignhub-footer-brand">
@@ -829,10 +913,8 @@
                     </div>
 
                     <div class="assignhub-footer-copy">
-
                         © {% now "Y" %} AssignHub.
                         All rights reserved.
-
                     </div>
 
                 </div>
@@ -843,17 +925,22 @@
 
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- =====================================
+         BOOTSTRAP JAVASCRIPT
+    ====================================== -->
+
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     ></script>
 
-    <!-- Existing Application JS -->
-    <script
-        src="{% static 'js/app.js' %}"
-    ></script>
+    <!-- EXISTING APPLICATION JS -->
 
-    <!-- MOBILE SIDEBAR CONTROLLER -->
+    <script src="{% static 'js/app.js' %}"></script>
+
+    <!-- =====================================
+         MOBILE SIDEBAR CONTROLLER
+    ====================================== -->
+
     <script>
         (function () {
             "use strict";

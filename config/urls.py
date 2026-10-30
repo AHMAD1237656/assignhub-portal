@@ -48,5 +48,8 @@ path(
     "class-allocation/",
     include("class_allocations.urls"),
 ),
-
+path(
+    "student-onboarding/",
+    include("student_onboarding.urls"),
+),
 ]

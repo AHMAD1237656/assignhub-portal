@@ -10,8 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
+
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9o#wh3!u%shq$8ii-1=k6hbju0-#cfznwun@=j85!=5aw)5ucn'
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -53,8 +60,9 @@ INSTALLED_APPS = [
     "semesters",
     "departments",
     "timed_writing",
-    # "class_allocations.apps.ClassAllocationsConfig",
-    "class_allocations",
+    "class_allocations.apps.ClassAllocationsConfig",
+    # "class_allocations",
+    "student_onboarding.apps.StudentOnboardingConfig",
 
 ]
 
@@ -178,3 +186,30 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 DEFAULT_FROM_EMAIL = "AssignHub <noreply@assignhub.local>"
 
 PASSWORD_RESET_TIMEOUT = 3600
+
+import os
+
+# ==========================================
+# STUDENT ONBOARDING CONFIGURATION
+# ==========================================
+
+# Development URL:
+# For remote users configure a reachable
+# HTTPS domain before sending invitations.
+ASSIGNHUB_PUBLIC_BASE_URL = os.environ.get(
+    "ASSIGNHUB_PUBLIC_BASE_URL",
+    "http://127.0.0.1:8000",
+).rstrip("/")
+
+# 48 hours
+STUDENT_ACTIVATION_MAX_AGE_SECONDS = 48 * 60 * 60
+
+# Set this to the real university email domain
+# before using the system with real students.
+#
+# Example:
+# STUDENT_EMAIL_DOMAIN = "university.edu"
+STUDENT_EMAIL_DOMAIN = os.environ.get(
+    "STUDENT_EMAIL_DOMAIN",
+    "",
+).strip().lower()

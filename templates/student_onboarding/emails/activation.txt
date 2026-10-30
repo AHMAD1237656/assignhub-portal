@@ -1,0 +1,22 @@
+Hello {{ student.get_full_name }},
+
+Your university has created an AssignHub student account.
+
+Student Roll Number: {{ roll_number }}
+
+To activate your account and set your own password, open this link:
+
+{{ activation_url }}
+
+This activation link expires after {{ hours }} hours.
+
+Important:
+- Do not share this link with anyone.
+- You do not have a default password.
+- Your account will remain inactive until you complete activation.
+- After activation, you will be enrolled in your assigned section's active courses.
+
+If you were not expecting this email, contact your university administration.
+
+Regards,
+AssignHub Academic Portal
