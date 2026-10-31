@@ -1,6 +1,7 @@
 """Django settings for the AssignHub project."""
 
 import os
+import sys
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -25,7 +26,9 @@ if not SECRET_KEY:
         "Set the DJANGO_SECRET_KEY environment variable."
     )
 
-DEBUG = env_bool("DJANGO_DEBUG", False)
+# runserver is a development-only server, so enable its static-file serving by
+# default. Production entry points remain DEBUG=False unless explicitly set.
+DEBUG = env_bool("DJANGO_DEBUG", "runserver" in sys.argv[1:])
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(
