@@ -6,7 +6,7 @@ from django.core.exceptions import (
     ValidationError,
 )
 import csv
-
+from .similarity import analyze_submission
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.db.models import Count, Q
@@ -1277,5 +1277,91 @@ def assignment_roster(request, pk):
             "graded_count": graded_count,
             "draft_count": draft_count,
             "pending_count": pending_count,
+        },
+    )
+
+
+# =============================================
+# PHASE 11 - ADVANCED OCR SIMILARITY
+# =============================================
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def submission_similarity(request, pk):
+
+    submission = get_object_or_404(
+        Submission.objects.select_related(
+            "assignment",
+            "student",
+            "assignment__created_by",
+        ),
+        pk=pk,
+    )
+
+    # Reuse the exact permission rule
+    # already used for Teacher grading.
+    if not can_manage(
+        request,
+        submission.assignment,
+    ):
+        raise PermissionDenied(
+            "You cannot analyze this submission."
+        )
+
+    if submission.status == Submission.Status.DRAFT:
+        raise PermissionDenied(
+            "Draft submissions cannot be analyzed."
+        )
+
+    mode = "auto"
+    semantic_requested = False
+    report = None
+    analysis_error = ""
+
+    if request.method == "POST":
+
+        mode = request.POST.get(
+            "ocr_mode",
+            "auto",
+        )
+
+        semantic_requested = (
+            request.POST.get("semantic") == "on"
+        )
+
+        if mode not in {
+            "auto",
+            "printed",
+            "handwritten",
+        }:
+
+            analysis_error = (
+                "Invalid OCR mode."
+            )
+
+        else:
+
+            try:
+                report = analyze_submission(
+                    submission,
+                    mode=mode,
+                    use_semantic=semantic_requested,
+                )
+
+            except ValidationError as exc:
+
+                analysis_error = "; ".join(
+                    exc.messages
+                )
+
+    return render(
+        request,
+        "assignments/submission_similarity.html",
+        {
+            "submission": submission,
+            "report": report,
+            "analysis_error": analysis_error,
+            "ocr_mode": mode,
+            "semantic_requested": semantic_requested,
         },
     )

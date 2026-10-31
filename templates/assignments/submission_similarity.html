@@ -1,0 +1,730 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+Advanced Similarity Analysis | AssignHub
+{% endblock %}
+
+{% block content %}
+
+<style>
+.ah-sim {
+    max-width: 1180px;
+    margin: auto;
+}
+
+.ah-sim-hero {
+    background: linear-gradient(125deg, #102653, #2455ae);
+    border-radius: 18px;
+    padding: 29px;
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+.ah-sim-hero h1 {
+    font-weight: 800;
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.ah-sim-hero p {
+    color: #dce8ff;
+    font-size: 13px;
+    margin: 0;
+}
+
+.ah-sim-card {
+    border: 1px solid #e0e7f2;
+    border-radius: 14px;
+    padding: 22px;
+    background: white;
+    margin-bottom: 18px;
+    box-shadow: 0 5px 22px rgba(15, 23, 42, .045);
+}
+
+.ah-sim-title {
+    color: #172c51;
+    font-weight: 800;
+    font-size: 17px;
+    margin-bottom: 15px;
+}
+
+.ah-sim-stat {
+    color: #172c51;
+    font-weight: 800;
+    font-size: 26px;
+}
+
+.ah-sim-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 750;
+    color: #71809a;
+    letter-spacing: .4px;
+}
+
+.ah-sim-muted {
+    color: #71809a;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.ah-sim-progress {
+    height: 9px;
+    border-radius: 10px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.ah-sim-progress span {
+    display: block;
+    height: 100%;
+    background: #315de0;
+}
+
+.ah-sim-match {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.ah-sim-match-head {
+    padding: 16px;
+    background: #f8faff;
+}
+
+.ah-sim-match-body {
+    padding: 17px;
+}
+
+.ah-sim-passage {
+    border-left: 3px solid #315de0;
+    background: #eff4ff;
+    border-radius: 5px;
+    padding: 12px 15px;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+    margin-top: 10px;
+}
+
+.ah-sim-page-table th {
+    color: #52627e;
+    font-size: 12px;
+}
+
+.ah-sim-page-table td {
+    font-size: 12px;
+}
+
+.ah-sim-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #edf2ff;
+    color: #3155b5;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+@media (max-width: 767px) {
+    .ah-sim-hero {
+        padding: 20px;
+    }
+
+    .ah-sim-hero h1 {
+        font-size: 20px;
+    }
+
+    .ah-sim-card {
+        padding: 16px;
+    }
+}
+</style>
+
+<div class="container py-4 ah-sim">
+
+    <a
+        href="{% url 'assignments:submission_review' submission.pk %}"
+        class="btn btn-outline-secondary btn-sm mb-3"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to Review
+    </a>
+
+    <div class="ah-sim-hero">
+
+        <div class="small text-uppercase mb-2">
+            AssignHub / Academic Integrity
+        </div>
+
+        <h1>
+            Advanced OCR &amp; Plagiarism Analysis
+        </h1>
+
+        <p>
+            {{ submission.assignment.title }}
+            · Student: {{ submission.student.username }}
+        </p>
+
+    </div>
+
+    <!-- ANALYSIS SETTINGS -->
+
+    <div class="ah-sim-card">
+
+        <h2 class="ah-sim-title">
+            Analysis Configuration
+        </h2>
+
+        <p class="ah-sim-muted">
+            Select the type of scanned document.
+            Analysis runs on your configured server,
+            without a paid AI API.
+        </p>
+
+        <form method="post" id="ah-sim-form">
+            {% csrf_token %}
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+
+                    <label
+                        for="ah-ocr-mode"
+                        class="form-label fw-semibold"
+                    >
+                        OCR Recognition Mode
+                    </label>
+
+                    <select
+                        id="ah-ocr-mode"
+                        name="ocr_mode"
+                        class="form-select"
+                    >
+
+                        <option
+                            value="auto"
+                            {% if ocr_mode == "auto" %}selected{% endif %}
+                        >
+                            Automatic (Hybrid OCR)
+                        </option>
+
+                        <option
+                            value="printed"
+                            {% if ocr_mode == "printed" %}selected{% endif %}
+                        >
+                            Scanned / Printed Text
+                        </option>
+
+                        <option
+                            value="handwritten"
+                            {% if ocr_mode == "handwritten" %}selected{% endif %}
+                        >
+                            Handwritten English
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold d-block">
+                        Similarity Methods
+                    </label>
+
+                    <div class="form-check mt-2">
+
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            checked
+                            disabled
+                            id="ah-lexical-enabled"
+                        >
+
+                        <label
+                            class="form-check-label"
+                            for="ah-lexical-enabled"
+                        >
+                            Exact Text / Passage Matching
+                        </label>
+
+                    </div>
+
+                    <div class="form-check">
+
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="semantic"
+                            value="on"
+                            id="ah-semantic"
+                            {% if semantic_requested %}checked{% endif %}
+                        >
+
+                        <label
+                            class="form-check-label"
+                            for="ah-semantic"
+                        >
+                            Semantic / Paraphrase Matching
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary mt-4"
+                id="ah-sim-run"
+            >
+                <i class="bi bi-search me-1"></i>
+                Analyze Submission
+            </button>
+
+            <p class="ah-sim-muted mt-3 mb-0">
+                Handwriting and semantic analysis may
+                require significant CPU/GPU resources.
+                Model files must be installed locally.
+            </p>
+
+        </form>
+
+    </div>
+
+    {% if analysis_error %}
+
+    <div class="alert alert-danger" role="alert">
+        {{ analysis_error }}
+    </div>
+
+    {% endif %}
+
+    {% if report %}
+
+    <!-- SUMMARY -->
+
+    <div class="row g-3">
+
+        <div class="col-md-4">
+
+            <div class="ah-sim-card h-100">
+
+                <div class="ah-sim-label">
+                    Highest Lexical Overlap
+                </div>
+
+                <div class="ah-sim-stat">
+
+                    {% if report.highest_score != None %}
+                        {{ report.highest_score }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+
+                </div>
+
+                <div class="ah-sim-muted">
+                    Percentage of target text's
+                    unique word sequences matched
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="ah-sim-card h-100">
+
+                <div class="ah-sim-label">
+                    Compared Submissions
+                </div>
+
+                <div class="ah-sim-stat">
+                    {{ report.checked }}
+                </div>
+
+                <div class="ah-sim-muted">
+                    Readable submissions of the
+                    same assignment
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="ah-sim-card h-100">
+
+                <div class="ah-sim-label">
+                    Matching Submissions
+                </div>
+
+                <div class="ah-sim-stat">
+                    {{ report.matches|length }}
+                </div>
+
+                <div class="ah-sim-muted">
+                    Showing up to 15 candidates
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- OCR QUALITY -->
+
+    <div class="ah-sim-card mt-3">
+
+        <h2 class="ah-sim-title">
+            OCR Extraction Quality
+        </h2>
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <div class="ah-sim-label">Status</div>
+                <span class="ah-sim-badge">
+                    {{ report.source.status|upper }}
+                </span>
+            </div>
+
+            <div class="col-md-3">
+                <div class="ah-sim-label">Readable Pages</div>
+                <strong>
+                    {{ report.source.pages }}
+                    / {{ report.source.total_pages }}
+                </strong>
+            </div>
+
+            <div class="col-md-3">
+                <div class="ah-sim-label">Recognized Words</div>
+                <strong>
+                    {{ report.source.text.split|length }}
+                </strong>
+            </div>
+
+            <div class="col-md-3">
+                <div class="ah-sim-label">Tesseract Confidence</div>
+                <strong>
+
+                    {% if report.source.confidence != None %}
+                        {{ report.source.confidence }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+
+                </strong>
+            </div>
+
+        </div>
+
+        <p class="ah-sim-muted mt-3 mb-0">
+            OCR methods:
+            {% for method in report.source.methods %}
+                {{ method }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                None available
+            {% endfor %}
+        </p>
+
+    </div>
+
+    <!-- WARNINGS -->
+
+    {% if report.source.warnings or report.warnings or report.skipped %}
+
+    <div class="alert alert-warning">
+
+        <strong>
+            Analysis Quality Notices
+        </strong>
+
+        <ul class="mb-0 mt-2">
+
+            {% for warning in report.source.warnings %}
+                <li>{{ warning }}</li>
+            {% endfor %}
+
+            {% for warning in report.warnings %}
+                <li>{{ warning }}</li>
+            {% endfor %}
+
+            {% if report.skipped %}
+                <li>
+                    {{ report.skipped|length }}
+                    candidate submission(s) could not
+                    be evaluated.
+                </li>
+            {% endif %}
+
+        </ul>
+
+    </div>
+
+    {% endif %}
+
+    <!-- PDF PAGE-WISE REPORT -->
+
+    {% if report.source.page_details %}
+
+    <div class="ah-sim-card">
+
+        <h2 class="ah-sim-title">
+            Page-wise OCR Results
+        </h2>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover ah-sim-page-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Page</th>
+                        <th>Words</th>
+                        <th>Method</th>
+                        <th>Confidence</th>
+                        <th>Readable</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for page in report.source.page_details %}
+
+                    <tr>
+
+                        <td>{{ page.page }}</td>
+                        <td>{{ page.words }}</td>
+                        <td>{{ page.method }}</td>
+
+                        <td>
+                            {% if page.confidence != None %}
+                                {{ page.confidence }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if page.readable %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    <!-- MATCHES -->
+
+    <div class="ah-sim-card">
+
+        <h2 class="ah-sim-title">
+            Similarity Evidence
+        </h2>
+
+        {% if not report.source.usable %}
+
+            <div class="alert alert-danger mb-0">
+                The source document could not be
+                analyzed reliably. Improve the scan
+                or use a different OCR mode.
+                No plagiarism conclusion is available.
+            </div>
+
+        {% else %}
+
+            {% for match in report.matches %}
+
+            <div class="ah-sim-match">
+
+                <div class="ah-sim-match-head">
+
+                    <div class="d-flex justify-content-between gap-3 flex-wrap">
+
+                        <div>
+
+                            <strong>
+                                {{ match.submission.student.username }}
+                            </strong>
+
+                            <div class="ah-sim-muted">
+                                Submission #{{ match.submission.pk }}
+                            </div>
+
+                        </div>
+
+                        <div class="text-end">
+
+                            <strong class="fs-5">
+                                {{ match.lexical }}%
+                            </strong>
+
+                            <div class="ah-sim-muted">
+                                Exact text overlap
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="ah-sim-progress mt-3">
+
+                        <span style="width: {{ match.lexical }}%"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="ah-sim-match-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-sm-4">
+
+                            <div class="ah-sim-label">
+                                Lexical Matching
+                            </div>
+
+                            <strong>
+                                {{ match.lexical }}%
+                            </strong>
+
+                        </div>
+
+                        <div class="col-sm-4">
+
+                            <div class="ah-sim-label">
+                                Semantic Resemblance
+                            </div>
+
+                            <strong>
+                                {% if match.semantic != None %}
+                                    {{ match.semantic }}%
+                                {% else %}
+                                    Not available
+                                {% endif %}
+                            </strong>
+
+                        </div>
+
+                        <div class="col-sm-4">
+
+                            <div class="ah-sim-label">
+                                Candidate OCR
+                            </div>
+
+                            <strong>
+                                {{ match.candidate_status }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    {% if match.passages %}
+
+                    <h3 class="h6 fw-bold mt-4 mb-2">
+                        Matched Passages
+                    </h3>
+
+                    {% for passage in match.passages %}
+
+                    <div class="ah-sim-passage">
+
+                        <div class="ah-sim-muted mb-1">
+                            {{ passage.words }}
+                            consecutive matching words
+                        </div>
+
+                        {{ passage.text }}
+
+                    </div>
+
+                    {% endfor %}
+
+                    {% elif match.semantic != None %}
+
+                    <p class="ah-sim-muted mt-3">
+                        Semantic resemblance was detected
+                        without an exact matching passage.
+                        Manual comparison is required.
+                    </p>
+
+                    {% endif %}
+
+                    <a
+                        href="{% url 'assignments:submission_review' match.submission.pk %}"
+                        class="btn btn-outline-primary btn-sm mt-3"
+                    >
+                        View Matched Submission
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <p class="ah-sim-muted mb-0">
+                No candidate exceeded the configured
+                evidence thresholds among the compared
+                readable documents. This does not prove
+                the submission is plagiarism-free.
+            </p>
+
+            {% endfor %}
+
+        {% endif %}
+
+    </div>
+
+    <!-- ACADEMIC SAFETY NOTICE -->
+
+    <div class="alert alert-secondary">
+
+        <strong>
+            Teacher Verification Required
+        </strong>
+
+        <p class="mb-0 mt-2">
+            Text overlap, handwriting recognition
+            and semantic resemblance are indicators
+            only. OCR errors, legitimate citations,
+            common terminology and assignment
+            instructions can affect results.
+            The final academic integrity decision
+            belongs to the instructor.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

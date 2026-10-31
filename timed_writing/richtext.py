@@ -241,7 +241,6 @@ def normalize_delta(document):
     accepting untrusted raw HTML.
 
     Returns:
-
         (
             cleaned_delta,
             readable_plain_text,
@@ -272,7 +271,6 @@ def normalize_delta(document):
         )
 
     try:
-
         size = len(
             json.dumps(
                 document,
@@ -285,7 +283,6 @@ def normalize_delta(document):
         TypeError,
         UnicodeError,
     ) as exc:
-
         raise ValidationError(
             "Invalid document JSON."
         ) from exc
@@ -299,9 +296,9 @@ def normalize_delta(document):
     plain_parts = []
     plain_length = 0
 
-    # --------------------------------------
+    # ======================================
     # VALIDATE EACH DELTA OPERATION
-    # --------------------------------------
+    # ======================================
 
     for operation in ops:
 
@@ -334,7 +331,9 @@ def normalize_delta(document):
 
         elif isinstance(inserted, dict):
 
+            # ------------------------------
             # MATHEMATICAL FORMULA
+            # ------------------------------
 
             if set(inserted) == {"formula"}:
 
@@ -360,7 +359,9 @@ def normalize_delta(document):
                     + "]"
                 )
 
+            # ------------------------------
             # SHAPE EMBED
+            # ------------------------------
 
             elif set(inserted) == {"shape"}:
 
@@ -405,10 +406,12 @@ def normalize_delta(document):
                     + "]"
                 )
 
+            # ------------------------------
             # TABLE EMBED
-
-           
-           
+            #
+            # Supports current ahTable and
+            # legacy table format.
+            # ------------------------------
 
             elif set(inserted) in (
                 {"ahTable"},
@@ -494,11 +497,12 @@ def normalize_delta(document):
                     + "]"
                 )
 
-            # ==================================
-            # ASSIGNHUB HORIZONTAL RULE
-            # New: ahRule
-            # Legacy: rule
-            # ==================================
+            # ------------------------------
+            # HORIZONTAL RULE
+            #
+            # Supports current ahRule and
+            # legacy rule format.
+            # ------------------------------
 
             elif (
                 set(inserted) in (
@@ -520,9 +524,31 @@ def normalize_delta(document):
 
                 readable = "\n"
 
+            # ------------------------------
+            # SECURITY FIX:
+            # Unsupported embed rejection
+            # ------------------------------
+
+            else:
+                raise ValidationError(
+                    "Unsupported or invalid document embed."
+                )
+
         # ----------------------------------
+        # SECURITY FIX:
+        # Reject unsupported insert types
+        # such as None, numbers and lists.
+        # ----------------------------------
+
+        else:
+            raise ValidationError(
+                "Document insert must be text "
+                "or a supported embed."
+            )
+
+        # ==================================
         # VALIDATE FORMATTING ATTRIBUTES
-        # ----------------------------------
+        # ==================================
 
         attributes = operation.get(
             "attributes",
@@ -551,9 +577,9 @@ def normalize_delta(document):
                 value,
             )
 
-        # ----------------------------------
+        # ==================================
         # BUILD CLEAN DELTA
-        # ----------------------------------
+        # ==================================
 
         cleaned = {
             "insert": cleaned_insert
@@ -564,9 +590,9 @@ def normalize_delta(document):
 
         cleaned_ops.append(cleaned)
 
-        # ----------------------------------
+        # ==================================
         # PLAIN TEXT SIZE CHECK
-        # ----------------------------------
+        # ==================================
 
         plain_length += len(readable)
 

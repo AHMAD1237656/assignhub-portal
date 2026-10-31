@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}
@@ -8,60 +9,183 @@ Review Submission - AssignHub
 
 <div class="row g-4">
 
+    <!-- ===================================== -->
+    <!-- LEFT SIDE - STUDENT SUBMISSION        -->
+    <!-- ===================================== -->
+
     <div class="col-lg-7">
 
-        <div class="card shadow-sm">
+        <div class="card shadow-sm border-0">
 
             <div class="card-body p-4">
 
-                <h3>
-                    {{ submission.assignment.title }}
-                </h3>
+                <!-- Assignment Information -->
 
-                <p class="text-muted">
-                    Student:
-                    {{ submission.student.username }}
-                </p>
+                <div class="mb-3">
+
+                    <span class="text-muted small text-uppercase fw-semibold">
+                        AssignHub / Submission Review
+                    </span>
+
+                    <h3 class="fw-bold mt-2 mb-2">
+                        {{ submission.assignment.title }}
+                    </h3>
+
+                    <p class="text-muted mb-0">
+
+                        <i class="bi bi-person-circle me-1"></i>
+
+                        Student:
+                        <strong>
+                            {{ submission.student.username }}
+                        </strong>
+
+                    </p>
+
+                </div>
 
                 <hr>
+
+                <!-- ================================= -->
+                <!-- SUBMITTED ANSWER                  -->
+                <!-- ================================= -->
+
+                <h5 class="fw-bold mb-3">
+
+                    <i class="bi bi-file-earmark-text me-2"></i>
+
+                    Submitted Answer
+
+                </h5>
 
                 {% if submission.timed_attempt.rich_delta.ops %}
 
-                {% include "timed_writing/viewer.html" %}
+                    <!-- Preserve existing Timed Writing viewer -->
+
+                    {% include "timed_writing/viewer.html" %}
+
+                {% elif submission.text_content %}
+
+                    <!-- Ordinary typed assignment -->
+
+                    <div
+                        class="border rounded-3 p-3 bg-light"
+                        style="
+                            white-space: pre-wrap;
+                            overflow-wrap: anywhere;
+                            line-height: 1.8;
+                        "
+                    >{{ submission.text_content }}</div>
 
                 {% else %}
 
-                <div style="white-space: pre-wrap;">
-                    {{ submission.text_content }}
-                </div>
+                    <div class="alert alert-light border">
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        No typed answer provided.
+                        The student may have uploaded
+                        a document instead.
+
+                    </div>
 
                 {% endif %}
 
-                {% if submission.text_content %}
-
-                <div class="border rounded p-3 bg-light">
-                    {{ submission.text_content|linebreaks }}
-                </div>
-
-                {% else %}
-
-                <p class="text-muted">
-                    No written answer provided.
-                </p>
-
-                {% endif %}
+                <!-- ================================= -->
+                <!-- ATTACHMENT SECTION                -->
+                <!-- ================================= -->
 
                 {% if submission.submission_file %}
 
-                <hr>
+                    <hr class="my-4">
 
-                <h5>Submitted PDF</h5>
+                    <h5 class="fw-bold mb-3">
 
-                <a href="{% url 'assignments:submission_file' submission.pk %}" class="btn btn-outline-primary">
-                    Download Student PDF
-                </a>
+                        <i class="bi bi-paperclip me-2"></i>
+
+                        Submitted File
+
+                    </h5>
+
+                    <div class="border rounded-3 p-3 bg-light">
+
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Student Attachment
+                                </div>
+
+                                <div class="text-muted small mt-1">
+
+                                    PDF or scanned image
+                                    uploaded by the student.
+
+                                </div>
+
+                            </div>
+
+                            <a
+                                href="{% url 'assignments:submission_file' submission.pk %}"
+                                class="btn btn-outline-primary btn-sm"
+                            >
+
+                                <i class="bi bi-download me-1"></i>
+
+                                Download Student File
+
+                            </a>
+
+                        </div>
+
+                    </div>
 
                 {% endif %}
+
+                <!-- ================================= -->
+                <!-- SUBMISSION METADATA               -->
+                <!-- ================================= -->
+
+                <hr class="my-4">
+
+                <div class="row g-3">
+
+                    <div class="col-sm-6">
+
+                        <div class="text-muted small">
+                            Submission Status
+                        </div>
+
+                        <div class="fw-semibold mt-1">
+                            {{ submission.get_status_display }}
+                        </div>
+
+                    </div>
+
+                    <div class="col-sm-6">
+
+                        <div class="text-muted small">
+                            Submitted At
+                        </div>
+
+                        <div class="fw-semibold mt-1">
+
+                            {% if submission.submitted_at %}
+
+                                {{ submission.submitted_at|date:"d M Y, h:i A" }}
+
+                            {% else %}
+
+                                Not submitted
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -69,21 +193,188 @@ Review Submission - AssignHub
 
     </div>
 
+    <!-- ===================================== -->
+    <!-- RIGHT SIDE - ANALYSIS AND GRADING     -->
+    <!-- ===================================== -->
 
     <div class="col-lg-5">
 
-        <div class="card shadow-sm">
+        <!-- ================================= -->
+        <!-- ADVANCED PLAGIARISM ANALYSIS     -->
+        <!-- ================================= -->
+
+        <div class="card shadow-sm border-0 mb-4">
 
             <div class="card-body p-4">
 
-                <h4 class="mb-3">
+                <div class="d-flex align-items-start gap-3 mb-3">
+
+                    <div
+                        class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                        style="
+                            width: 52px;
+                            height: 52px;
+                            background: #edf3ff;
+                            color: #1d4ed8;
+                        "
+                    >
+
+                        <i class="bi bi-shield-check fs-4"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            Advanced Plagiarism Analysis
+                        </h5>
+
+                        <p class="text-muted small mb-0">
+                            OCR-powered assignment
+                            similarity detection.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <p class="text-muted small">
+
+                    Analyze this student's work
+                    against other finalized submissions
+                    of the same assignment.
+
+                </p>
+
+                <!-- Supported document types -->
+
+                <div
+                    class="rounded-3 p-3 mb-3"
+                    style="
+                        background: #f7f9fd;
+                        border: 1px solid #e5ebf5;
+                    "
+                >
+
+                    <div class="small fw-bold mb-2">
+                        Supported Analysis
+                    </div>
+
+                    <div class="small mb-2">
+
+                        <i class="bi bi-check-circle text-success me-2"></i>
+
+                        Typed assignments and Timed Writing
+
+                    </div>
+
+                    <div class="small mb-2">
+
+                        <i class="bi bi-check-circle text-success me-2"></i>
+
+                        Text-based and scanned PDFs
+
+                    </div>
+
+                    <div class="small mb-2">
+
+                        <i class="bi bi-check-circle text-success me-2"></i>
+
+                        Scanned JPG, PNG and WEBP images
+
+                    </div>
+
+                    <div class="small mb-2">
+
+                        <i class="bi bi-check-circle text-success me-2"></i>
+
+                        Handwritten English OCR
+
+                    </div>
+
+                    <div class="small">
+
+                        <i class="bi bi-check-circle text-success me-2"></i>
+
+                        Exact and optional semantic similarity
+
+                    </div>
+
+                </div>
+
+                <!-- Analysis Button -->
+
+                <div class="d-grid">
+
+                    <a
+                        href="{% url 'assignments:submission_similarity' submission.pk %}"
+                        class="btn btn-primary fw-semibold py-2"
+                    >
+
+                        <i class="bi bi-search me-2"></i>
+
+                        Open Advanced Analysis
+
+                    </a>
+
+                </div>
+
+                <p class="text-muted mt-3 mb-0" style="font-size: 11px; line-height: 1.7;">
+
+                    <i class="bi bi-info-circle me-1"></i>
+
+                    OCR and similarity results are
+                    supporting evidence, not automatic
+                    proof of plagiarism. Final review
+                    remains with the Teacher.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- ================================= -->
+        <!-- EXISTING GRADING FORM            -->
+        <!-- ================================= -->
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body p-4">
+
+                <h4 class="fw-bold mb-3">
+
+                    <i class="bi bi-clipboard-check me-2"></i>
+
                     Grade Submission
+
                 </h4>
 
-                <p>
-                    <strong>Total Marks:</strong>
-                    {{ submission.assignment.total_marks }}
-                </p>
+                <div
+                    class="rounded-3 p-3 mb-4"
+                    style="
+                        background: #f7f9fd;
+                        border: 1px solid #e5ebf5;
+                    "
+                >
+
+                    <div class="text-muted small">
+                        Total Assignment Marks
+                    </div>
+
+                    <div
+                        class="fw-bold mt-1"
+                        style="
+                            font-size: 24px;
+                            color: #172b50;
+                        "
+                    >
+                        {{ submission.assignment.total_marks }}
+                    </div>
+
+                </div>
+
+                <!-- Existing POST grading endpoint preserved -->
 
                 <form method="post">
 
@@ -91,37 +382,67 @@ Review Submission - AssignHub
 
                     {% if form.non_field_errors %}
 
-                    <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
-                    </div>
+                        <div class="alert alert-danger">
+
+                            {{ form.non_field_errors }}
+
+                        </div>
 
                     {% endif %}
 
                     {% for field in form %}
 
-                    <div class="mb-3">
+                        <div class="mb-3">
 
-                        <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
-                            {{ field.label }}
-                        </label>
+                            <label
+                                for="{{ field.id_for_label }}"
+                                class="form-label fw-semibold"
+                            >
 
-                        {{ field }}
+                                {{ field.label }}
 
-                        {% for error in field.errors %}
+                            </label>
 
-                        <div class="text-danger small">
-                            {{ error }}
+                            {{ field }}
+
+                            {% if field.help_text %}
+
+                                <div class="form-text">
+                                    {{ field.help_text }}
+                                </div>
+
+                            {% endif %}
+
+                            {% for error in field.errors %}
+
+                                <div class="text-danger small mt-1">
+
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+
+                                    {{ error }}
+
+                                </div>
+
+                            {% endfor %}
+
                         </div>
-
-                        {% endfor %}
-
-                    </div>
 
                     {% endfor %}
 
-                    <button type="submit" class="btn btn-dark">
-                        Save Grade
-                    </button>
+                    <div class="d-grid mt-4">
+
+                        <button
+                            type="submit"
+                            class="btn btn-dark fw-semibold py-2"
+                        >
+
+                            <i class="bi bi-check-circle me-2"></i>
+
+                            Save Grade
+
+                        </button>
+
+                    </div>
 
                 </form>
 

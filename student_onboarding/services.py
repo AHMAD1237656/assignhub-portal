@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.db import transaction
 from django.shortcuts import reverse
 from django.template.loader import render_to_string
@@ -45,6 +45,34 @@ def activation_max_age():
         172800,
     )
 
+
+def send_activation_email(*, body, recipient):
+    """
+    Send activation email with a copy-safe format.
+
+    ASCII invitations use 7bit transfer encoding so
+    Django's console email backend does not insert
+    quoted-printable soft breaks into activation URLs.
+
+    Unicode messages retain normal UTF-8 handling.
+    """
+
+    email = EmailMessage(
+        subject="Activate your AssignHub student account",
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[recipient],
+    )
+
+    # RFC-compliant, readable ASCII email body.
+    # Do not force ASCII for Unicode student names.
+    if body.isascii() and all(
+        len(line) <= 998
+        for line in body.splitlines()
+    ):
+        email.encoding = "us-ascii"
+
+    return email.send(fail_silently=False)
 
 
 def validate_section_capacity(batch, new_count):
@@ -421,14 +449,9 @@ def send_pending_activation_emails(batch_id, limit=25):
         )
 
         try:
-            sent = send_mail(
-                subject="Activate your AssignHub student account",
-                message=body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[
-                    identity.institutional_email
-                ],
-                fail_silently=False,
+            sent = send_activation_email(
+                body=body,
+                recipient=identity.institutional_email,
             )
 
             if sent != 1:

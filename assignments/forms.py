@@ -57,6 +57,111 @@ def validate_pdf(file):
 
     return file
 
+def validate_submission_document(file):
+    """
+    Accept PDF and scanned image submissions.
+
+    Existing validate_pdf() behavior preserved.
+    """
+
+    from pathlib import Path
+    import warnings
+
+    from django.core.exceptions import ValidationError
+    from django.core.files.uploadedfile import UploadedFile
+
+    if not file:
+        return file
+
+    extension = Path(file.name).suffix.lower()
+
+    if extension == ".pdf":
+        return validate_pdf(file)
+
+    if extension not in {
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+    }:
+
+        raise ValidationError(
+            "Only PDF, JPG, PNG or WEBP "
+            "submissions are allowed."
+        )
+
+    if (
+        file.size == 0
+        or file.size > MAX_PDF_BYTES
+    ):
+
+        raise ValidationError(
+            "Submission file must be "
+            "between 1 byte and 10 MB."
+        )
+
+    if not isinstance(file, UploadedFile):
+        return file
+
+    from PIL import (
+        Image,
+        UnidentifiedImageError,
+    )
+
+    position = file.tell()
+
+    try:
+        file.seek(0)
+
+        with warnings.catch_warnings():
+
+            warnings.simplefilter(
+                "error",
+                Image.DecompressionBombWarning,
+            )
+
+            with Image.open(file) as img:
+
+                if img.format not in {
+                    "JPEG",
+                    "PNG",
+                    "WEBP",
+                }:
+
+                    raise ValidationError(
+                        "Image contents do not match "
+                        "allowed formats."
+                    )
+
+                if (
+                    img.width * img.height
+                    > 8_000_000
+                ):
+
+                    raise ValidationError(
+                        "Image exceeds the "
+                        "8-megapixel analysis limit."
+                    )
+
+                img.verify()
+
+    except (
+        UnidentifiedImageError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+        OSError,
+        ValueError,
+    ) as exc:
+
+        raise ValidationError(
+            "Invalid or unsafe image file."
+        ) from exc
+
+    finally:
+        file.seek(position)
+
+    return file
+
 
 class AssignmentForm(forms.ModelForm):
 
@@ -242,9 +347,11 @@ class SubmissionForm(forms.ModelForm):
         self.fields[
             "submission_file"
         ].widget.attrs["class"] = "form-control"
-
+        self.fields["submission_file"].widget.attrs["accept"] = (
+    ".pdf,.jpg,.jpeg,.png,.webp"
+)
     def clean_submission_file(self):
-        return validate_pdf(
+        return validate_submission_document(
             self.cleaned_data.get("submission_file")
         )
 
@@ -259,7 +366,7 @@ class SubmissionForm(forms.ModelForm):
 
         if not text and not uploaded_file:
             raise ValidationError(
-                "Provide text or upload a PDF."
+                "Provide text or upload a PDF or scanned image."
             )
 
         return data

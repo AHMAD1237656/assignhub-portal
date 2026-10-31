@@ -4,7 +4,6 @@ import secrets
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -18,6 +17,7 @@ from .services import (
     activation_max_age,
     make_activation_token,
     validate_section_capacity,
+    send_activation_email,
 )
 
 
@@ -369,14 +369,9 @@ def resend_individual_activation(identity_id, *, actor):
     )
 
     try:
-        result = send_mail(
-            subject="Activate your AssignHub student account",
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[
-                identity.institutional_email
-            ],
-            fail_silently=False,
+        result = send_activation_email(
+            body=message,
+            recipient=identity.institutional_email,
         )
 
         if result != 1:

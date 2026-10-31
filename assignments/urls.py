@@ -76,4 +76,9 @@ urlpatterns = [
         views.assignment_roster,
         name="roster",
     ),
+    path(
+    "submissions/<int:pk>/similarity/",
+    views.submission_similarity,
+    name="submission_similarity",
+),
 ]

@@ -4,6 +4,7 @@ import os
 import secrets
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -14,9 +15,13 @@ def env_bool(name, default=False):
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Load environment variables from the project root .env file.
+load_dotenv(dotenv_path=BASE_DIR / ".env")
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -183,6 +188,7 @@ EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend",
 )
+EMAIL_FILE_PATH = BASE_DIR / "dev_emails"
 EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
