@@ -1,8 +1,24 @@
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
+
+
+ASSIGNMENT_ATTACHMENT_EXTENSIONS = [
+    "pdf",
+    "docx",
+    "doc",
+    "txt",
+    "pptx",
+    "ppt",
+    "xlsx",
+    "xls",
+    "csv",
+    "zip",
+    "rar",
+]
 
 
 class Assignment(models.Model):
@@ -27,6 +43,15 @@ class Assignment(models.Model):
         upload_to="assignments/attachments/",
         blank=True,
         null=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=ASSIGNMENT_ATTACHMENT_EXTENSIONS,
+                message=(
+                    "Allowed file types: .pdf, .docx, .doc, .txt, "
+                    ".pptx, .ppt, .xlsx, .xls, .csv, .zip, .rar."
+                ),
+            )
+        ],
     )
 
     deadline = models.DateTimeField()

@@ -7,10 +7,15 @@ from django.core.files.uploadedfile import UploadedFile
 
 from courses.models import CourseOffering
 
-from .models import Assignment, Submission
+from .models import (
+    ASSIGNMENT_ATTACHMENT_EXTENSIONS,
+    Assignment,
+    Submission,
+)
 
 
 MAX_PDF_BYTES = 10 * 1024 * 1024
+MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
 
 
 def validate_pdf(file):
@@ -130,10 +135,28 @@ class AssignmentForm(forms.ModelForm):
             else:
                 field.widget.attrs["class"] = "form-control"
 
-    def clean_attachment(self):
-        return validate_pdf(
-            self.cleaned_data.get("attachment")
+        self.fields["attachment"].widget.attrs["accept"] = ", ".join(
+            f".{extension}"
+            for extension in ASSIGNMENT_ATTACHMENT_EXTENSIONS
         )
+
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get("attachment")
+
+        if not attachment:
+            return attachment
+
+        if attachment.size == 0:
+            raise ValidationError(
+                "Attachment file cannot be empty."
+            )
+
+        if attachment.size > MAX_ATTACHMENT_BYTES:
+            raise ValidationError(
+                "Attachment must not exceed 10 MB."
+            )
+
+        return attachment
 
     def clean_total_marks(self):
         marks = self.cleaned_data["total_marks"]

@@ -28,7 +28,11 @@ from courses.models import (
     CourseOffering,
     CourseEnrollment,
 )
-from .models import Assignment, Submission
+from .models import (
+    ASSIGNMENT_ATTACHMENT_EXTENSIONS,
+    Assignment,
+    Submission,
+)
 from .permissions import is_admin, is_student, is_teacher
 
 
@@ -1945,7 +1949,10 @@ class PDFValidationTests(AssignmentTestBase):
             reverse("assignments:create"),
             {
                 **self.assignment_data(),
-                "attachment": invalid_pdf(),
+                "attachment": SimpleUploadedFile(
+                    "malware.exe",
+                    b"not an allowed attachment",
+                ),
             },
         )
 
@@ -1955,6 +1962,51 @@ class PDFValidationTests(AssignmentTestBase):
             "attachment",
             response.context["form"].errors,
         )
+
+    def test_presentation_assignment_attachment_accepted(self):
+        self.login_as(self.teacher)
+
+        response = self.client.post(
+            reverse("assignments:create"),
+            {
+                **self.assignment_data(),
+                "attachment": SimpleUploadedFile(
+                    "lecture-slides.pptx",
+                    b"presentation content",
+                ),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+    def test_allowed_assignment_attachment_extensions(self):
+        form = AssignmentForm()
+        self.assertEqual(
+            form.fields["attachment"].widget.attrs["accept"],
+            ", ".join(
+                f".{extension}"
+                for extension in ASSIGNMENT_ATTACHMENT_EXTENSIONS
+            ),
+        )
+
+        for extension in ASSIGNMENT_ATTACHMENT_EXTENSIONS:
+            with self.subTest(extension=extension):
+                upload_form = AssignmentForm(
+                    data=assignment_data(
+                        status=Assignment.Status.DRAFT,
+                    ),
+                    files={
+                        "attachment": SimpleUploadedFile(
+                            f"course-material.{extension}",
+                            b"course material",
+                        )
+                    },
+                )
+
+                self.assertTrue(
+                    upload_form.is_valid(),
+                    upload_form.errors.as_json(),
+                )
 
     def test_valid_assignment_attachment_accepted(self):
         self.login_as(self.teacher)
