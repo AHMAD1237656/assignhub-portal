@@ -1,6 +1,7 @@
 """Django settings for the AssignHub project."""
 
 import os
+import secrets
 import sys
 from pathlib import Path
 
@@ -20,15 +21,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-if not SECRET_KEY:
-    raise ImproperlyConfigured(
-        "Set the DJANGO_SECRET_KEY environment variable."
-    )
-
 # runserver is a development-only server, so enable its static-file serving by
 # default. Production entry points remain DEBUG=False unless explicitly set.
 DEBUG = env_bool("DJANGO_DEBUG", "runserver" in sys.argv[1:])
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = secrets.token_urlsafe(50)
+    else:
+        raise ImproperlyConfigured(
+            "Set the DJANGO_SECRET_KEY environment variable when DEBUG is disabled."
+        )
+
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(
