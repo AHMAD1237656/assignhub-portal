@@ -1,6 +1,7 @@
 
 import csv
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -13,6 +14,7 @@ from django.shortcuts import (
     redirect,
     render,
 )
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .admin_forms import (
@@ -27,6 +29,7 @@ from .admin_services import (
     restore_cancelled_student,
 )
 from .models import StudentIdentity
+from .services import get_identity_from_token, make_activation_token
 from .views import require_admin
 
 
@@ -136,20 +139,47 @@ def student_detail(request, identity_id):
         .order_by("-created_at")[:30]
     )
 
+    # Developer-only, admin-only activation link for THIS student.
+    # Sign on the running web server with the latest stored nonce.
+    # Never display activation tokens to ordinary students or in production.
+    dev_activation_url = None
+    if (
+        settings.DEBUG
+        and identity.status == StudentIdentity.Status.PENDING
+        and not identity.user.is_active
+        and not identity.user.has_usable_password()
+    ):
+        token = make_activation_token(identity)
+        current_identity = get_identity_from_token(token)
+        if current_identity is not None and current_identity.pk == identity.pk:
+            dev_activation_url = (
+                settings.ASSIGNHUB_PUBLIC_BASE_URL.rstrip("/")
+                + reverse(
+                    "student_onboarding:activate",
+                    kwargs={"token": token},
+                )
+            )
+
     context = {
         "identity": identity,
-        "edit_form": PendingStudentEditForm(
-            identity=identity
-        ),
+        "edit_form": PendingStudentEditForm(identity=identity),
         "cancel_form": CancelPendingStudentForm(),
         "events": events,
+        "dev_activation_url": dev_activation_url,
     }
 
-    return render(
+
+    response = render(
         request,
         "student_onboarding/student_detail.html",
         context,
     )
+
+    if dev_activation_url:
+        response["Cache-Control"] = "private, no-store, max-age=0"
+        response["Referrer-Policy"] = "same-origin"
+
+    return response
 
 
 @login_required

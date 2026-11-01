@@ -706,6 +706,74 @@ class StudentOnboardingTests(TestCase):
             )
         )
 
+    @override_settings(DEBUG=True)
+    def test_two_students_have_independent_current_activation_links(self):
+        self.provision_two_students()
+        first = StudentIdentity.objects.get(roll_number="2026-SE-001")
+        second = StudentIdentity.objects.get(roll_number="2026-SE-002")
+
+        def current_url(identity):
+            response = self.client.get(
+                reverse("student_onboarding:student_detail", args=[identity.pk])
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Cache-Control"], "private, no-store, max-age=0")
+            return response.context["dev_activation_url"]
+
+        first_url = current_url(first)
+        second_url = current_url(second)
+        self.assertNotEqual(first_url, second_url)
+        self.assertEqual(self.client.get(first_url).status_code, 200)
+        self.assertEqual(self.client.get(second_url).status_code, 200)
+
+        # Resending ONE student's email invalidates ONLY their old URL.
+        response = self.client.post(
+            reverse("student_onboarding:student_resend", args=[first.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        emailed_first_token = mail.outbox[-1].body.split(
+            "/student-onboarding/activate/", 1
+        )[1].split("/", 1)[0]
+        self.assertEqual(get_identity_from_token(emailed_first_token).pk, first.pk)
+        self.assertEqual(self.client.get(first_url).status_code, 400)
+        self.assertEqual(self.client.get(second_url).status_code, 200)
+        first_url = current_url(first)
+        self.assertEqual(self.client.get(first_url).status_code, 200)
+
+        # A later resend for another student cannot invalidate the first.
+        response = self.client.post(
+            reverse("student_onboarding:student_resend", args=[second.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        emailed_second_token = mail.outbox[-1].body.split(
+            "/student-onboarding/activate/", 1
+        )[1].split("/", 1)[0]
+        self.assertEqual(get_identity_from_token(emailed_second_token).pk, second.pk)
+        self.assertEqual(self.client.get(second_url).status_code, 400)
+        self.assertEqual(self.client.get(first_url).status_code, 200)
+        second_url = current_url(second)
+        self.assertEqual(self.client.get(second_url).status_code, 200)
+
+        # Activating first student does not affect second student's link.
+        response = self.client.post(first_url, {
+            "new_password1": "Strong#AcademicPass8642",
+            "new_password2": "Strong#AcademicPass8642",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.get(first_url).status_code, 400)
+        self.assertEqual(self.client.get(second_url).status_code, 200)
+
+    @override_settings(DEBUG=False)
+    def test_activation_link_not_exposed_to_admin_in_production(self):
+        self.provision_two_students()
+        identity = StudentIdentity.objects.get(roll_number="2026-SE-001")
+        response = self.client.get(
+            reverse("student_onboarding:student_detail", args=[identity.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context["dev_activation_url"])
+        self.assertNotContains(response, "assignhub-current-activation-link")
+
     def test_individual_activation_resend(self):
         self.provision_two_students()
 

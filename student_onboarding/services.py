@@ -47,33 +47,18 @@ def activation_max_age():
 
 
 def send_activation_email(*, body, recipient):
+    """Send a standards-compliant activation email.
+
+    MIME transfer encodings in saved/console messages are decoded
+    by email clients. Never copy encoded raw-MIME lines as URLs.
     """
-    Send activation email with a copy-safe format.
-
-    ASCII invitations use 7bit transfer encoding so
-    Django's console email backend does not insert
-    quoted-printable soft breaks into activation URLs.
-
-    Unicode messages retain normal UTF-8 handling.
-    """
-
     email = EmailMessage(
         subject="Activate your AssignHub student account",
         body=body,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[recipient],
     )
-
-    # RFC-compliant, readable ASCII email body.
-    # Do not force ASCII for Unicode student names.
-    if body.isascii() and all(
-        len(line) <= 998
-        for line in body.splitlines()
-    ):
-        email.encoding = "us-ascii"
-
     return email.send(fail_silently=False)
-
 
 def validate_section_capacity(batch, new_count):
     """

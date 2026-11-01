@@ -1,7 +1,6 @@
 """Django settings for the AssignHub project."""
 
 import os
-import secrets
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
@@ -31,12 +30,9 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 DEBUG = env_bool("DJANGO_DEBUG", "runserver" in sys.argv[1:])
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
-    if DEBUG:
-        SECRET_KEY = secrets.token_urlsafe(50)
-    else:
-        raise ImproperlyConfigured(
-            "Set the DJANGO_SECRET_KEY environment variable when DEBUG is disabled."
-        )
+    raise ImproperlyConfigured(
+        "Set a stable DJANGO_SECRET_KEY in .env before starting AssignHub."
+    )
 
 ALLOWED_HOSTS = [
     host.strip()

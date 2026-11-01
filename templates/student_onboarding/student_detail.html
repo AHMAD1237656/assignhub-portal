@@ -440,6 +440,49 @@ Manage Student | AssignHub
                         {{ identity.institutional_email }}
                     </div>
 
+                    {% if dev_activation_url %}
+                    <div class="border rounded-3 bg-light p-3 mt-3">
+                        <div class="fw-semibold text-dark mb-2">
+                            Development: Current Activation Link
+                        </div>
+                        <p class="small text-muted mb-2">
+                            Link belongs only to {{ identity.user.get_full_name }}
+                            ({{ identity.roll_number }}). Copy from here after
+                            every resend. Visible to admins only in DEBUG mode.
+                        </p>
+                        <input
+                            id="assignhub-current-activation-link"
+                            type="text"
+                            class="form-control form-control-sm mb-2"
+                            value="{{ dev_activation_url }}"
+                            readonly
+                            autocomplete="off"
+                            spellcheck="false"
+                            aria-label="Current student activation URL"
+                        >
+                        <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            onclick="
+                                const field = document.getElementById('assignhub-current-activation-link');
+                                if (navigator.clipboard &amp;&amp; window.isSecureContext) {
+                                    navigator.clipboard.writeText(field.value).then(() => {
+                                        this.textContent = 'Copied!';
+                                    }).catch(() => {
+                                        field.focus(); field.select();
+                                        this.textContent = 'Press Ctrl+C';
+                                    });
+                                } else {
+                                    field.focus(); field.select();
+                                    this.textContent = 'Press Ctrl+C';
+                                }
+                            "
+                        >
+                            Copy Current Link
+                        </button>
+                    </div>
+                    {% endif %}
+
                 </div>
 
             </div>
