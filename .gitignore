@@ -10,3 +10,4 @@ media/
 .pytest_cache/
 dev_emails/
 *.before_activation_fix.bak
+_auto_plagiarism_backup/

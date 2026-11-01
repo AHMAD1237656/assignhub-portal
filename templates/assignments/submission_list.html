@@ -1143,6 +1143,10 @@ Submissions | AssignHub
 
                         <th>MARKS</th>
 
+                        {% if is_teacher_user %}
+                        <th>PLAGIARISM</th>
+                        {% endif %}
+
                         <th class="text-end">ACTIONS</th>
 
                     </tr>
@@ -1313,6 +1317,37 @@ Submissions | AssignHub
 
                         </td>
 
+                        <!-- AUTOMATIC PLAGIARISM COLUMN: teacher only -->
+                        {% if is_teacher_user %}
+                        <td>
+                            {% if submission.status == "DRAFT" %}
+                                <span class="text-muted small">Not submitted</span>
+                            {% elif submission.plagiarism_scan %}
+                                {% with scan=submission.plagiarism_scan %}
+                                    {% if scan.status == "NEEDS_REVIEW" %}
+                                        <span class="badge bg-warning text-dark">Needs Review</span>
+                                    {% elif scan.status == "NO_FLAG" %}
+                                        <span class="badge bg-success">No Flag</span>
+                                    {% elif scan.status == "WAITING" %}
+                                        <span class="badge bg-secondary">Waiting for Peers</span>
+                                    {% elif scan.status == "FAILED" or scan.status == "UNREADABLE" or scan.status == "PARTIAL" %}
+                                        <span class="badge bg-danger">{{ scan.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark">{{ scan.get_status_display }}</span>
+                                    {% endif %}
+                                    {% if scan.highest_lexical != None %}
+                                        <span class="d-block small mt-1">Exact: {{ scan.highest_lexical }}%</span>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <span class="badge bg-secondary">Not Queued Yet</span>
+                            {% endif %}
+                            {% if submission.status != "DRAFT" %}
+                            <a class="d-block small mt-1" href="{% url 'assignments:auto_scan_report' submission.pk %}">View Report</a>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+
                         <!-- ACTIONS -->
 
                         <td class="text-end">
@@ -1379,7 +1414,7 @@ Submissions | AssignHub
 
                     <tr>
 
-                        <td colspan="{% if is_student_user %}6{% else %}7{% endif %}">
+                        <td colspan="{% if is_student_user %}6{% elif is_teacher_user %}8{% else %}7{% endif %}">
 
                             <div class="sl-empty">
 

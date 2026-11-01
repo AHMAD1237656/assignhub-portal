@@ -122,6 +122,9 @@ Assignment Submissions | AssignHub
                             <th>Status</th>
                             <th>Submitted At</th>
                             <th>Marks</th>
+                            {% if can_view_plagiarism %}
+                            <th>Plagiarism</th>
+                            {% endif %}
                             <th class="text-end pe-4">
                                 Action
                             </th>
@@ -215,6 +218,48 @@ Assignment Submissions | AssignHub
 
                             </td>
 
+                            {# ROSTER_PLAGIARISM_COLUMN_V1: show saved reports only #}
+                            {% if can_view_plagiarism %}
+                            <td>
+                                {% if row.submission and row.submission.status != "DRAFT" %}
+                                    {% with scan=row.submission.plagiarism_scan %}
+                                        {% if scan %}
+                                            {% if scan.status == "NEEDS_REVIEW" %}
+                                                <span class="badge bg-warning text-dark">Needs Review</span>
+                                            {% elif scan.status == "NO_FLAG" %}
+                                                <span class="badge bg-success">No Flag</span>
+                                            {% elif scan.status == "WAITING" %}
+                                                <span class="badge bg-secondary">Waiting for Peers</span>
+                                            {% elif scan.status == "QUEUED" %}
+                                                <span class="badge bg-info text-dark">Queued</span>
+                                            {% elif scan.status == "RUNNING" %}
+                                                <span class="badge bg-info text-dark">Scanning</span>
+                                            {% elif scan.status == "PARTIAL" %}
+                                                <span class="badge bg-warning text-dark">Partial Analysis</span>
+                                            {% elif scan.status == "UNREADABLE" %}
+                                                <span class="badge bg-danger">Unreadable</span>
+                                            {% elif scan.status == "FAILED" %}
+                                                <span class="badge bg-danger">Failed</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ scan.get_status_display }}</span>
+                                            {% endif %}
+                                            {% if scan.highest_lexical != None %}
+                                                <span class="d-block small mt-1">Exact: {{ scan.highest_lexical }}%</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Queued</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                    <a class="small d-block mt-1"
+                                       href="{% url 'assignments:auto_scan_report' row.submission.pk %}">
+                                        View Report
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+
                             <td class="text-end pe-4">
 
                                 {% if row.submission and row.status != "DRAFT" %}
@@ -243,7 +288,7 @@ Assignment Submissions | AssignHub
                         {% empty %}
 
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-5">
+                            <td colspan="{% if can_view_plagiarism %}7{% else %}6{% endif %}" class="text-center text-muted py-5">
                                 No active students enrolled
                                 in this Course Offering.
                             </td>

@@ -810,6 +810,7 @@ def submission_list(request):
             "assignment__course_offering__course",
             "assignment__course_offering__section",
             "student",
+            "plagiarism_scan",
         )
         .order_by(*sort_options[sort_filter])
     )
@@ -1192,6 +1193,7 @@ def assignment_roster(request, pk):
         .select_related(
             "student",
             "timed_attempt",
+            "plagiarism_scan",
         )
     )
 
@@ -1272,6 +1274,7 @@ def assignment_roster(request, pk):
         {
             "assignment": assignment,
             "student_rows": student_rows,
+            "can_view_plagiarism": can_manage(request, assignment),
             "total_students": total_students,
             "submitted_count": submitted_count,
             "graded_count": graded_count,

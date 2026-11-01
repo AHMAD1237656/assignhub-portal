@@ -300,3 +300,43 @@ class Submission(models.Model):
 
         if errors:
             raise ValidationError(errors)
+
+class PlagiarismScan(models.Model):
+    """Persisted OCR/similarity result for each finalized submission."""
+
+    class Status(models.TextChoices):
+        QUEUED = "QUEUED", "Queued"
+        RUNNING = "RUNNING", "Scanning"
+        WAITING = "WAITING", "Waiting for Peers"
+        NEEDS_REVIEW = "NEEDS_REVIEW", "Needs Review"
+        NO_FLAG = "NO_FLAG", "No Flag"
+        PARTIAL = "PARTIAL", "Partial Analysis"
+        UNREADABLE = "UNREADABLE", "Unreadable"
+        FAILED = "FAILED", "Failed"
+
+    submission = models.OneToOneField(
+        Submission, on_delete=models.CASCADE, related_name="plagiarism_scan"
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.QUEUED,
+        db_index=True,
+    )
+    version = models.PositiveIntegerField(default=0)
+    highest_lexical = models.FloatField(null=True, blank=True)
+    highest_semantic = models.FloatField(null=True, blank=True)
+    checked_count = models.PositiveIntegerField(default=0)
+    match_count = models.PositiveIntegerField(default=0)
+    result = models.JSONField(default=dict, blank=True)
+    error = models.CharField(max_length=300, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    scanned_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["status", "updated_at"], name="plagiarism_queue_idx"),
+        ]
+
+    def __str__(self):
+        return f"Submission {self.submission_id}: {self.get_status_display()}"

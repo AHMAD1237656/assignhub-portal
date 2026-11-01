@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Automatic Plagiarism Report | AssignHub{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:1050px">
+  <a href="{% url 'assignments:submissions' %}" class="btn btn-outline-secondary btn-sm mb-3">Back to Submissions</a>
+  <div class="card border-0 shadow-sm rounded-4 mb-3">
+    <div class="card-body p-4">
+      <h1 class="h3 fw-bold">Automatic Plagiarism Report</h1>
+      <p class="text-muted mb-3">{{ submission.assignment.title }} — {{ submission.student.get_full_name }} ({{ submission.student.username }})</p>
+      {% if scan %}
+        <div class="row g-3 mb-3">
+          <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="small text-muted">Scan Status</div><strong>{{ scan.get_status_display }}</strong></div></div>
+          <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="small text-muted">Highest Lexical Overlap</div><strong>{% if scan.highest_lexical != None %}{{ scan.highest_lexical }}%{% else %}N/A{% endif %}</strong></div></div>
+          <div class="col-md-4"><div class="border rounded-3 p-3 h-100"><div class="small text-muted">Compared Submissions</div><strong>{{ scan.checked_count }}</strong></div></div>
+        </div>
+        {% if scan.status == 'NEEDS_REVIEW' %}<div class="alert alert-warning">Potential similarity detected. Instructor review is required, not an automatic plagiarism verdict.</div>{% endif %}
+        {% if scan.status == 'WAITING' %}<div class="alert alert-info">Only one readable submission may be available. A new submission will automatically requeue this report.</div>{% endif %}
+        {% if scan.status == 'UNREADABLE' %}<div class="alert alert-warning">The source is not readable enough for a reliable comparison. Do not interpret this as 0% similarity.</div>{% endif %}
+        {% if scan.status == 'PARTIAL' %}<div class="alert alert-warning">Some candidates could not be checked or the comparison limit was reached. The report is incomplete.</div>{% endif %}
+        {% if scan.status == 'FAILED' %}<div class="alert alert-danger">{{ scan.error }}</div>{% endif %}
+        {% if scan.status == 'QUEUED' or scan.status == 'RUNNING' %}
+          <div class="alert alert-info">Background analysis is in progress. This page refreshes automatically.</div>
+          <script>window.setTimeout(function(){window.location.reload()}, 8000);</script>
+        {% endif %}
+        {% if scan.scanned_at and scan.status != 'QUEUED' and scan.status != 'RUNNING' %}<p class="text-muted small">Last completed: {{ scan.scanned_at|date:'d M Y, h:i A' }}</p>{% endif %}
+      {% else %}
+        <div class="alert alert-info">No automatic report yet. Start the scan worker or request a re-scan.</div>
+      {% endif %}
+      <div class="d-flex flex-wrap gap-2">
+        <form method="post" action="{% url 'assignments:auto_scan_retry' submission.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">Queue Fresh Scan</button>
+        </form>
+        <a class="btn btn-outline-primary" href="{% url 'assignments:submission_similarity' submission.pk %}">Run Detailed Manual Analysis</a>
+        <a class="btn btn-outline-secondary" href="{% url 'assignments:submission_review' submission.pk %}">Review / Grade</a>
+      </div>
+    </div>
+  </div>
+  {% if scan and scan.result %}
+    <div class="card border-0 shadow-sm rounded-4 mb-3"><div class="card-body p-4">
+      <h2 class="h5 fw-bold">Extraction Quality</h2>
+      <p class="small mb-2">Source: {{ scan.result.source.status }} &nbsp; | &nbsp; Words: {{ scan.result.source.recognized_words }} &nbsp; | &nbsp; Pages: {{ scan.result.source.pages }}/{{ scan.result.source.total_pages }}</p>
+      <p class="small text-muted">Methods: {% for method in scan.result.source.methods %}{{ method }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}</p>
+      {% for warning in scan.result.source.warnings %}<p class="small text-warning mb-1">{{ warning }}</p>{% endfor %}
+      {% for warning in scan.result.warnings %}<p class="small text-warning mb-1">{{ warning }}</p>{% endfor %}
+      {% if scan.result.skipped %}<p class="small text-warning">{{ scan.result.skipped|length }} candidate(s) skipped due to unavailable or unreadable content.</p>{% endif %}
+    </div></div>
+    <div class="card border-0 shadow-sm rounded-4"><div class="card-body p-4">
+      <h2 class="h5 fw-bold">Similarity Evidence</h2>
+      {% for match in scan.result.matches %}
+        <div class="border rounded-3 p-3 mb-3">
+          <div class="d-flex justify-content-between"><strong>{{ match.student }}</strong><strong>Exact: {{ match.lexical }}%</strong></div>
+          <div class="text-muted small">Semantic: {% if match.semantic != None %}{{ match.semantic }}%{% else %}Not enabled / available{% endif %}</div>
+          {% for passage in match.passages %}<blockquote class="bg-light border-start border-primary border-3 p-2 mt-2 small">{{ passage.text }} <span class="text-muted">({{ passage.words }} matching words)</span></blockquote>{% endfor %}
+          <a href="{% url 'assignments:submission_review' match.submission_id %}" class="btn btn-sm btn-outline-primary mt-2">View Matched Submission</a>
+        </div>
+      {% empty %}<p class="text-muted small">No qualifying match in the analyzed material. This does not prove that the answer is plagiarism-free.</p>{% endfor %}
+    </div></div>
+  {% endif %}
+</div>
+{% endblock %}

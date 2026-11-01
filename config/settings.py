@@ -226,3 +226,12 @@ STUDENT_EMAIL_DOMAIN = os.environ.get(
     "STUDENT_EMAIL_DOMAIN",
     "",
 ).strip().lower()
+
+# Automatic plagiarism worker (does not run inside web requests).
+PLAGIARISM_AUTO_SEMANTIC = env_bool("PLAGIARISM_AUTO_SEMANTIC", False)
+PLAGIARISM_FLAG_LEXICAL_PERCENT = float(
+    os.environ.get("PLAGIARISM_FLAG_LEXICAL_PERCENT", "35")
+)
+PLAGIARISM_FLAG_SEMANTIC_PERCENT = float(
+    os.environ.get("PLAGIARISM_FLAG_SEMANTIC_PERCENT", "85")
+)

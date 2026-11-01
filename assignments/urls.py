@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import views, auto_scan_views
 
 
 app_name = "assignments"
@@ -81,4 +81,14 @@ urlpatterns = [
     views.submission_similarity,
     name="submission_similarity",
 ),
+    path(
+        "submissions/<int:pk>/auto-report/",
+        auto_scan_views.auto_scan_report,
+        name="auto_scan_report",
+    ),
+    path(
+        "submissions/<int:pk>/auto-report/rescan/",
+        auto_scan_views.auto_scan_retry,
+        name="auto_scan_retry",
+    ),
 ]

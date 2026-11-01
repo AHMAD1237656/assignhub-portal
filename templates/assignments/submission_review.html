@@ -246,6 +246,21 @@ Review Submission - AssignHub
 
                 </p>
 
+                {% if submission.plagiarism_scan %}
+                <div class="alert alert-light border small mb-3">
+                    <strong>Automatic report:</strong>
+                    {{ submission.plagiarism_scan.get_status_display }}
+                    {% if submission.plagiarism_scan.highest_lexical != None %}
+                        · Exact overlap {{ submission.plagiarism_scan.highest_lexical }}%
+                    {% endif %}
+                    <a class="d-block mt-2" href="{% url 'assignments:auto_scan_report' submission.pk %}">Open Saved Report</a>
+                </div>
+                {% else %}
+                <div class="alert alert-light border small mb-3">
+                    Automatic analysis has not been queued yet. Start the background worker.
+                </div>
+                {% endif %}
+
                 <!-- Supported document types -->
 
                 <div
