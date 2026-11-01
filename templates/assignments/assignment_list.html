@@ -1,425 +1,221 @@
-
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-Assignments | AssignHub
+{% block title %}Assignment Workspace | AssignHub{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/assignment_directory.css' %}">
 {% endblock %}
 
 {% block content %}
+<main class="container-fluid ah-ad-container py-4" id="assignment-workspace">
 
-<style>
-    /* Assignment submission progress */
-
-    .ah-submission-progress {
-        display: block;
-        width: 100%;
-        height: 8px;
-        appearance: none;
-        -webkit-appearance: none;
-        border: none;
-        border-radius: 8px;
-        overflow: hidden;
-        background-color: #e9ecef;
-    }
-
-    .ah-submission-progress::-webkit-progress-bar {
-        background-color: #e9ecef;
-        border-radius: 8px;
-    }
-
-    .ah-submission-progress::-webkit-progress-value {
-        background-color: #0d6efd;
-        border-radius: 8px;
-    }
-
-    .ah-submission-progress::-moz-progress-bar {
-        background-color: #0d6efd;
-        border-radius: 8px;
-    }
-</style>
-
-<main class="container-fluid px-4 py-4">
-
-    <!-- ====================================== -->
-    <!-- PAGE HEADER -->
-    <!-- ====================================== -->
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-
-        <div>
-            <h1 class="fw-bold mb-1">
-                Assignments
-            </h1>
-
-            <p class="text-muted mb-0">
-                View and manage course assignments.
-            </p>
-        </div>
-
-        {% if can_create %}
-
-        <a
-            href="{% url 'assignments:create' %}"
-            class="btn btn-primary"
-        >
-            Create Assignment
-        </a>
-
+  <!-- HEADER -->
+  <section class="ah-ad-hero mb-4" aria-labelledby="ah-ad-heading">
+    <div class="ah-ad-hero-content">
+      <div class="ah-ad-eyebrow"><i class="bi bi-collection me-2"></i>ACADEMIC WORKSPACE / ASSIGNMENTS</div>
+      <h1 id="ah-ad-heading" class="ah-ad-title">Assignment Workspace</h1>
+      <p class="ah-ad-subtitle">
+        {% if is_teacher_user %}Manage assignments across your courses and sections from one organized view.
+        {% elif is_student_user %}Find assignments from your enrolled courses and keep track of deadlines.
+        {% else %}Browse assignments, courses, sections and submission progress across the portal.
         {% endif %}
-
+      </p>
     </div>
-
-    <!-- ====================================== -->
-    <!-- ASSIGNMENT LIST -->
-    <!-- ====================================== -->
-
-    <div class="row g-4">
-
-        {% for assignment in assignments %}
-
-        <div class="col-12 col-lg-6 col-xxl-4">
-
-            <article class="card h-100 shadow-sm border-0 rounded-4">
-
-                <!-- ========================== -->
-                <!-- ASSIGNMENT INFORMATION -->
-                <!-- ========================== -->
-
-                <div class="card-body p-4">
-
-                    <!-- TITLE AND STATUS -->
-
-                    <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
-
-                        <div>
-
-                            <h2 class="h5 fw-bold mb-1">
-                                {{ assignment.title }}
-                            </h2>
-
-                            {% if assignment.course_offering %}
-
-                            <div class="text-muted small">
-
-                                {{ assignment.course_offering.course.code }}
-
-                                —
-
-                                {{ assignment.course_offering.course.title }}
-
-                            </div>
-
-                            {% endif %}
-
-                        </div>
-
-                        <!-- ASSIGNMENT STATUS -->
-
-                        {% if assignment.status == "PUBLISHED" %}
-
-                        <span class="badge bg-success">
-                            Published
-                        </span>
-
-                        {% elif assignment.status == "DRAFT" %}
-
-                        <span class="badge bg-secondary">
-                            Draft
-                        </span>
-
-                        {% elif assignment.status == "CLOSED" %}
-
-                        <span class="badge bg-dark">
-                            Closed
-                        </span>
-
-                        {% endif %}
-
-                    </div>
-
-                    <!-- ========================== -->
-                    <!-- ACADEMIC INFORMATION -->
-                    <!-- ========================== -->
-
-                    {% if assignment.course_offering %}
-
-                    <div class="row g-2 mb-3">
-
-                        <!-- PROGRAM -->
-
-                        <div class="col-6">
-
-                            <div class="bg-light rounded-3 p-3 h-100">
-
-                                <div class="small text-muted">
-                                    Program
-                                </div>
-
-                                <strong class="small">
-
-                                    {{ assignment.course_offering.section.semester.program.name }}
-
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                        <!-- SEMESTER AND SECTION -->
-
-                        <div class="col-6">
-
-                            <div class="bg-light rounded-3 p-3 h-100">
-
-                                <div class="small text-muted">
-                                    Semester / Section
-                                </div>
-
-                                <strong class="small">
-
-                                    {{ assignment.course_offering.section.semester.number }}
-
-                                    /
-
-                                    {{ assignment.course_offering.section.code }}
-
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                        <!-- ACADEMIC YEAR -->
-
-                        <div class="col-6">
-
-                            <div class="bg-light rounded-3 p-3 h-100">
-
-                                <div class="small text-muted">
-                                    Academic Year
-                                </div>
-
-                                <strong class="small">
-
-                                    {{ assignment.course_offering.academic_year }}
-
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                        <!-- TERM -->
-
-                        <div class="col-6">
-
-                            <div class="bg-light rounded-3 p-3 h-100">
-
-                                <div class="small text-muted">
-                                    Term
-                                </div>
-
-                                <strong class="small">
-
-                                    {{ assignment.course_offering.get_term_display }}
-
-                                </strong>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    {% else %}
-
-                    <div class="alert alert-warning py-2 small">
-                        No Course Offering assigned.
-                    </div>
-
-                    {% endif %}
-
-                    <!-- ========================== -->
-                    <!-- DEADLINE -->
-                    <!-- ========================== -->
-
-                    <div class="mb-2">
-
-                        <span class="text-muted">
-                            Deadline:
-                        </span>
-
-                        <strong>
-
-                            {{ assignment.deadline|date:"d M Y, h:i A" }}
-
-                        </strong>
-
-                    </div>
-
-                    <!-- ========================== -->
-                    <!-- TOTAL MARKS -->
-                    <!-- ========================== -->
-
-                    <div class="mb-3">
-
-                        <span class="text-muted">
-                            Total Marks:
-                        </span>
-
-                        <strong>
-                            {{ assignment.total_marks }}
-                        </strong>
-
-                    </div>
-
-                    <!-- ========================== -->
-                    <!-- SUBMISSION PROGRESS -->
-                    <!-- TEACHER / ADMIN ONLY -->
-                    <!-- ========================== -->
-
-                    {% if show_progress %}
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-
-                        <strong class="small">
-                            Submission Progress
-                        </strong>
-
-                        <span class="small text-muted">
-
-                            {{ assignment.submitted_count }}
-
-                            /
-
-                            {{ assignment.enrolled_count }}
-
-                        </span>
-
-                    </div>
-
-                    {% if assignment.enrolled_count %}
-
-                    <!--
-                        Native HTML progress avoids
-                        complex Django template logic
-                        inside a CSS style attribute.
-                    -->
-
-                    <progress
-                        class="ah-submission-progress mb-2"
-                        value="{{ assignment.submitted_count }}"
-                        max="{{ assignment.enrolled_count }}"
-                        aria-label="Assignment submission progress"
-                    >
-                        {{ assignment.submitted_count }}
-                        of
-                        {{ assignment.enrolled_count }}
-                    </progress>
-
-                    {% else %}
-
-                    <p class="small text-muted mb-2">
-                        No active student enrollments.
-                    </p>
-
-                    {% endif %}
-
-                    <p class="text-muted small mb-0">
-
-                        {{ assignment.submitted_count }}
-
-                        final submissions received.
-
-                    </p>
-
-                    {% endif %}
-
-                </div>
-
-                <!-- ========================== -->
-                <!-- CARD FOOTER -->
-                <!-- ========================== -->
-
-                <div class="card-footer bg-white border-top p-3">
-
-                    <div class="d-flex flex-wrap gap-2">
-
-                        <!-- VIEW DETAILS -->
-
-                        <a
-                            href="{% url 'assignments:detail' assignment.pk %}"
-                            class="btn btn-outline-secondary btn-sm"
-                        >
-                            View Details
-                        </a>
-
-                        <!-- SUBMISSION ROSTER -->
-
-                        {% if show_progress %}
-
-                        <a
-                            href="{% url 'assignments:roster' assignment.pk %}"
-                            class="btn btn-primary btn-sm"
-                        >
-                            View Submissions
-                        </a>
-
-                        {% endif %}
-
-                        <!-- TEACHER EDIT OPTION -->
-
-                        {% if can_create %}
-
-                        <a
-                            href="{% url 'assignments:edit' assignment.pk %}"
-                            class="btn btn-outline-primary btn-sm"
-                        >
-                            Edit
-                        </a>
-
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-            </article>
-
-        </div>
-
-        {% empty %}
-
-        <!-- ================================== -->
-        <!-- EMPTY ASSIGNMENT STATE -->
-        <!-- ================================== -->
-
-        <div class="col-12">
-
-            <div class="card border-0 shadow-sm rounded-4">
-
-                <div class="card-body text-center p-5">
-
-                    <h2 class="h5">
-                        No Assignments Found
-                    </h2>
-
-                    <p class="text-muted mb-0">
-                        No assignments are available for your account.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
+    <div class="ah-ad-hero-actions">
+      {% if can_create %}
+      <a class="btn ah-ad-create-btn" href="{% url 'assignments:create' %}">
+        <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Create Assignment
+      </a>
+      {% endif %}
+      <span class="ah-ad-hero-footnote"><i class="bi bi-shield-check me-1"></i>Role-aware assignment directory</span>
     </div>
+  </section>
 
+  <!-- SUMMARY: SUMMARY TOTALS FOLLOW SEARCH/ACADEMIC FILTERS BUT NOT STATUS TAB -->
+  <section class="ah-ad-metrics mb-4" aria-label="Assignment summary">
+    <div class="ah-ad-metric"><span class="ah-ad-metric-icon"><i class="bi bi-layers"></i></span><div><span class="ah-ad-metric-label">All Assignments</span><strong class="ah-ad-metric-number">{{ summary.total }}</strong></div></div>
+    <div class="ah-ad-metric"><span class="ah-ad-metric-icon ah-ad-icon-blue"><i class="bi bi-broadcast"></i></span><div><span class="ah-ad-metric-label">Published</span><strong class="ah-ad-metric-number">{{ summary.published }}</strong></div></div>
+    {% if is_student_user %}
+    <div class="ah-ad-metric"><span class="ah-ad-metric-icon ah-ad-icon-amber"><i class="bi bi-calendar-week"></i></span><div><span class="ah-ad-metric-label">Due in 7 Days</span><strong class="ah-ad-metric-number">{{ summary.due_soon }}</strong></div></div>
+    {% else %}
+    <div class="ah-ad-metric"><span class="ah-ad-metric-icon ah-ad-icon-slate"><i class="bi bi-pencil-square"></i></span><div><span class="ah-ad-metric-label">Draft</span><strong class="ah-ad-metric-number">{{ summary.draft }}</strong></div></div>
+    {% endif %}
+    <div class="ah-ad-metric"><span class="ah-ad-metric-icon ah-ad-icon-rose"><i class="bi bi-clock-history"></i></span><div><span class="ah-ad-metric-label">Overdue</span><strong class="ah-ad-metric-number">{{ summary.overdue }}</strong></div></div>
+  </section>
+
+  <!-- QUICK COURSE NAVIGATION -->
+  {% if course_choices %}
+  <section class="ah-ad-panel mb-4" aria-labelledby="ah-ad-courses-heading">
+    <div class="ah-ad-section-heading">
+      <div><p class="ah-ad-section-kicker">BROWSE BY CATEGORY</p><h2 id="ah-ad-courses-heading">Your Courses</h2></div>
+      <small class="text-muted">Select a course to focus its assignments</small>
+    </div>
+    <div class="ah-ad-course-rail">
+      {% for course in course_choices %}
+      <a class="ah-ad-course-tile{% if selected_course == course.id %} active{% endif %}" href="{{ course.url }}" {% if selected_course == course.id %}aria-current="page"{% endif %}>
+        <span class="ah-ad-course-code">{{ course.code }}</span>
+        <span class="ah-ad-course-title" title="{{ course.title }}">{{ course.title }}</span>
+        <span class="ah-ad-course-count">{{ course.count }} assignment{{ course.count|pluralize }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- FILTERS -->
+  <section class="ah-ad-panel ah-ad-filters mb-4" aria-labelledby="ah-ad-filter-heading">
+    <div class="ah-ad-section-heading ah-ad-filter-title">
+      <div><p class="ah-ad-section-kicker">ORGANIZE YOUR WORK</p><h2 id="ah-ad-filter-heading"><i class="bi bi-funnel me-2"></i>Search &amp; Filters</h2></div>
+      {% if has_filters %}<a href="{{ clear_url }}" class="ah-ad-clear"><i class="bi bi-x-circle me-1"></i>Reset all filters</a>{% endif %}
+    </div>
+    <form action="{% url 'assignments:list' %}" method="get" class="ah-ad-filter-form" aria-label="Filter assignments">
+      <div class="ah-ad-filter-field ah-ad-filter-search">
+        <label for="ah-ad-search">Search assignments</label>
+        <div class="ah-ad-search-input"><i class="bi bi-search" aria-hidden="true"></i><input id="ah-ad-search" type="search" name="q" maxlength="120" placeholder="Title, topic, course code, section..." value="{{ search_query }}"></div>
+      </div>
+      <div class="ah-ad-filter-field">
+        <label for="ah-ad-course">Course</label>
+        <select id="ah-ad-course" name="course">
+          <option value="">All Courses</option>
+          {% for course in course_choices %}<option value="{{ course.id }}" {% if selected_course == course.id %}selected{% endif %}>{{ course.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="ah-ad-filter-field">
+        <label for="ah-ad-section">Section</label>
+        <select id="ah-ad-section" name="section">
+          <option value="">All Sections</option>
+          {% for section in section_choices %}<option value="{{ section.id }}" {% if selected_section == section.id %}selected{% endif %}>{{ section.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="ah-ad-filter-field">
+        <label for="ah-ad-semester">Semester</label>
+        <select id="ah-ad-semester" name="semester">
+          <option value="">All Semesters</option>
+          {% for semester in semester_choices %}<option value="{{ semester.id }}" {% if selected_semester == semester.id %}selected{% endif %}>{{ semester.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="ah-ad-filter-field">
+        <label for="ah-ad-year">Academic Year</label>
+        <select id="ah-ad-year" name="year">
+          <option value="">All Years</option>
+          {% for year in year_choices %}<option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="ah-ad-filter-field">
+        <label for="ah-ad-term">Term</label>
+        <select id="ah-ad-term" name="term">
+          <option value="">All Terms</option>
+          {% for term in term_choices %}<option value="{{ term.value }}" {% if selected_term == term.value %}selected{% endif %}>{{ term.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="ah-ad-filter-field">
+        <label for="ah-ad-sort">Sort By</label>
+        <select id="ah-ad-sort" name="sort">
+          <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest First</option>
+          <option value="oldest" {% if selected_sort == "oldest" %}selected{% endif %}>Oldest First</option>
+          <option value="deadline" {% if selected_sort == "deadline" %}selected{% endif %}>Deadline: Soonest</option>
+          <option value="course" {% if selected_sort == "course" %}selected{% endif %}>Course Code</option>
+          <option value="section" {% if selected_sort == "section" %}selected{% endif %}>Section</option>
+          {% if show_progress %}<option value="most_submitted" {% if selected_sort == "most_submitted" %}selected{% endif %}>Most Submissions</option>{% endif %}
+        </select>
+      </div>
+      <input type="hidden" name="status" value="{{ selected_status }}">
+      <div class="ah-ad-filter-buttons">
+        <button class="btn ah-ad-apply" type="submit"><i class="bi bi-funnel-fill me-2"></i>Apply Filters</button>
+        <a class="btn ah-ad-reset" href="{{ clear_url }}">Clear</a>
+      </div>
+    </form>
+  </section>
+
+  <!-- STATUS CATEGORIES -->
+  <section class="ah-ad-results-heading" aria-labelledby="ah-ad-results-title">
+    <div><p class="ah-ad-section-kicker">ASSIGNMENT DIRECTORY</p><h2 id="ah-ad-results-title">Assignments <span class="ah-ad-results-count">{{ filtered_count }}</span></h2></div>
+    <div class="ah-ad-results-aside">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} · {{ filtered_count }} matching record{{ filtered_count|pluralize }}</div>
+  </section>
+  <nav class="ah-ad-status-tabs" aria-label="Assignment status categories">
+    {% for item in status_tabs %}
+    <a href="{{ item.url }}" class="ah-ad-status-tab{% if item.active %} active{% endif %}" {% if item.active %}aria-current="page"{% endif %}>{{ item.label }} <span>{{ item.count }}</span></a>
+    {% endfor %}
+  </nav>
+
+  <!-- CARDS -->
+  <div class="row g-3 ah-ad-results" aria-live="polite">
+    {% for assignment in page_assignments %}
+    <div class="col-12 col-xl-6 col-xxl-4">
+      <article class="ah-ad-assignment-card h-100">
+        <div class="ah-ad-card-top">
+          <div class="ah-ad-card-course">
+            <span class="ah-ad-code"><i class="bi bi-journal-bookmark me-1"></i>{% if assignment.course_offering %}{{ assignment.course_offering.course.code }}{% else %}UNASSIGNED{% endif %}</span>
+            {% if assignment.status == "DRAFT" %}<span class="ah-ad-badge draft">Draft</span>
+            {% elif assignment.status == "CLOSED" %}<span class="ah-ad-badge closed">Closed</span>
+            {% elif assignment.deadline < now %}<span class="ah-ad-badge overdue">Overdue</span>
+            {% else %}<span class="ah-ad-badge published">Published</span>{% endif %}
+          </div>
+          <h3 class="ah-ad-card-title"><a href="{% url 'assignments:detail' assignment.pk %}">{{ assignment.title }}</a></h3>
+          {% if assignment.course_offering %}<p class="ah-ad-card-course-title">{{ assignment.course_offering.course.title }}</p>{% else %}<p class="ah-ad-card-course-title ah-ad-muted">Course Offering not yet assigned</p>{% endif %}
+        </div>
+        <div class="ah-ad-card-meta">
+          {% if assignment.course_offering %}
+          <span><i class="bi bi-people" aria-hidden="true"></i> {{ assignment.course_offering.section.semester.program.code }} · Sem {{ assignment.course_offering.section.semester.number }} · {{ assignment.course_offering.section.code }}</span>
+          <span><i class="bi bi-calendar3" aria-hidden="true"></i> {{ assignment.course_offering.get_term_display }} {{ assignment.course_offering.academic_year }}</span>
+          {% else %}
+          <span><i class="bi bi-exclamation-circle"></i> Add a Course Offering to publish</span>
+          {% endif %}
+          {% if is_admin_user %}<span><i class="bi bi-person-workspace"></i> Teacher: {{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</span>{% endif %}
+        </div>
+        <div class="ah-ad-card-deadline">
+          <div><span>Deadline</span><strong><i class="bi bi-clock me-1"></i>{{ assignment.deadline|date:"d M Y, h:i A" }}</strong></div>
+          <div><span>Total Marks</span><strong>{{ assignment.total_marks }}</strong></div>
+        </div>
+        {% if show_progress %}
+        <div class="ah-ad-card-progress">
+          <div class="ah-ad-progress-label"><strong>Submission Progress</strong><span>{{ assignment.submitted_count }}/{{ assignment.enrolled_count }} students</span></div>
+          {% if assignment.enrolled_count %}
+          <progress value="{{ assignment.submitted_count }}" max="{{ assignment.enrolled_count }}" aria-label="Submissions received for {{ assignment.title }}">{{ assignment.submitted_count }} out of {{ assignment.enrolled_count }}</progress>
+          {% else %}<div class="ah-ad-no-students">No active enrollments</div>{% endif %}
+          <div class="ah-ad-card-signals">
+            <span><i class="bi bi-hourglass-split"></i> {{ assignment.awaiting_grade_count }} awaiting grading</span>
+            {% if assignment.flagged_count %}<span class="ah-ad-suspicious"><i class="bi bi-shield-exclamation"></i> {{ assignment.flagged_count }} plagiarism review flag{{ assignment.flagged_count|pluralize }}</span>
+            {% else %}<span class="ah-ad-clean"><i class="bi bi-shield-check"></i> No flagged reports recorded</span>{% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="ah-ad-card-progress ah-ad-student-helper"><i class="bi bi-info-circle me-2"></i>{% if assignment.deadline < now %}Submission deadline has passed{% else %}Open the assignment to submit or view your work{% endif %}</div>
+        {% endif %}
+        <div class="ah-ad-card-actions">
+          <a href="{% url 'assignments:detail' assignment.pk %}" class="btn ah-ad-button-outline"><i class="bi bi-eye me-1"></i>View Details</a>
+          {% if show_progress %}<a href="{% url 'assignments:roster' assignment.pk %}" class="btn ah-ad-button-primary"><i class="bi bi-people me-1"></i>Submissions</a>{% endif %}
+          {% if is_teacher_user and assignment.submitted_count == 0 and not assignment.has_timed_attempt %}<a href="{% url 'assignments:edit' assignment.pk %}" class="btn ah-ad-button-quiet" title="Edit assignment"><i class="bi bi-pencil-square me-1"></i>Edit</a>{% endif %}
+        </div>
+      </article>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="ah-ad-empty">
+        <div class="ah-ad-empty-icon"><i class="bi bi-inbox"></i></div>
+        <h3>No Assignments Found</h3>
+        <p>{% if has_filters %}No assignments match these filters. Try another course, section or status.{% else %}No assignments are available for your account yet.{% endif %}</p>
+        {% if has_filters %}<a href="{{ clear_url }}" class="btn ah-ad-button-primary">Clear Filters</a>
+        {% elif can_create %}<a href="{% url 'assignments:create' %}" class="btn ah-ad-button-primary">Create Your First Assignment</a>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- PAGINATION -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="ah-ad-pages" aria-label="Assignment pagination">
+    <span class="ah-ad-page-caption">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="ah-ad-page-controls">
+      {% if page_obj.has_previous %}<a href="{{ page_urls.first }}" aria-label="First page"><i class="bi bi-chevron-double-left"></i></a><a href="{{ page_urls.previous }}">Previous</a>
+      {% else %}<span aria-disabled="true"><i class="bi bi-chevron-double-left"></i></span><span aria-disabled="true">Previous</span>{% endif %}
+      <span class="ah-ad-current-page" aria-current="page">{{ page_obj.number }}</span>
+      {% if page_obj.has_next %}<a href="{{ page_urls.next }}">Next</a><a href="{{ page_urls.last }}" aria-label="Last page"><i class="bi bi-chevron-double-right"></i></a>
+      {% else %}<span aria-disabled="true">Next</span><span aria-disabled="true"><i class="bi bi-chevron-double-right"></i></span>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  <div class="ah-ad-footnote"><i class="bi bi-lock me-1"></i>Assignments and filter options are restricted to your existing role and course access.</div>
 </main>
-
 {% endblock %}

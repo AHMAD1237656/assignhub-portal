@@ -81,82 +81,10 @@ def can_view(request, assignment):
 @login_required
 @require_http_methods(["GET"])
 def assignment_list(request):
-
-    user = request.user
-
-    if is_teacher(user):
-        assignments = Assignment.objects.filter(
-            created_by=user
-        )
-
-    elif is_student(user):
-        assignments = Assignment.objects.filter(
-            status=Assignment.Status.PUBLISHED,
-            course_offering__is_active=True,
-            course_offering__course__is_active=True,
-            course_offering__section__is_active=True,
-            course_offering__course__semester__is_active=True,
-            course_offering__course__program__is_active=True,
-            course_offering__course__program__department__is_active=True,
-            course_offering__enrollments__student=user,
-            course_offering__enrollments__status=(
-                CourseEnrollment.Status.ACTIVE
-            ),
-        ).distinct()
-
-    elif is_admin(user):
-        assignments = Assignment.objects.all()
-
-    else:
-        raise PermissionDenied
-
-    assignments = assignments.select_related(
-        "created_by",
-        "course_offering",
-        "course_offering__course",
-        "course_offering__course__program",
-        "course_offering__section",
-        "course_offering__section__semester",
-        "course_offering__section__semester__program",
-    )
-
-    show_progress = (
-        is_teacher(user) or is_admin(user)
-    )
-
-    if show_progress:
-        assignments = assignments.annotate(
-            enrolled_count=Count(
-                "course_offering__enrollments",
-                filter=Q(
-                    course_offering__enrollments__status=(
-                        CourseEnrollment.Status.ACTIVE
-                    )
-                ),
-                distinct=True,
-            ),
-            submitted_count=Count(
-                "submissions",
-                filter=Q(
-                    submissions__status__in=[
-                        Submission.Status.SUBMITTED,
-                        Submission.Status.GRADED,
-                    ]
-                ),
-                distinct=True,
-            ),
-        )
-
-    return render(
-        request,
-        "assignments/assignment_list.html",
-        {
-            "assignments": assignments,
-            "can_create": is_teacher(user),
-            "show_progress": show_progress,
-        },
-    )
-
+    # Course/section-aware read-only directory.
+    # The original URL, login and GET decorators are preserved.
+    from .assignment_directory import assignment_directory
+    return assignment_directory(request)
 
 
 @login_required
