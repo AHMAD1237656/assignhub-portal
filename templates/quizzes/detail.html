@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ quiz.title }} | AssignHub{% endblock %}
+{% block content %}
+<section class="ahq-page" aria-labelledby="ahq-title">
+  {% with offering=quiz.course_offering %}{% include 'quizzes/_breadcrumbs.html' %}{% endwith %}
+  <div class="ahq-page-top">
+    <div><span class="ahq-eyebrow">{{ quiz.course_offering.course.code }} / SECTION {{ quiz.course_offering.section.code }}</span><h1 id="ahq-title">{{ quiz.title }}</h1><p class="ahq-lead">{{ quiz.course_offering.course.title }} · {{ quiz.course_offering.get_term_display }} {{ quiz.course_offering.academic_year }}</p></div>
+    <span class="ahq-state ahq-state-{{ quiz.status|lower }}">{{ quiz.get_status_display }}</span>
+  </div>
+  {% if quiz.instructions %}<div class="ahq-card mb-3"><h2 class="ahq-card-title">Instructions</h2><p>{{ quiz.instructions|linebreaksbr }}</p></div>{% endif %}
+  <div class="ahq-summary-grid">
+    <div class="ahq-summary-cell"><span>Opens</span><strong>{{ quiz.opens_at|date:'d M Y, h:i A' }}</strong></div>
+    <div class="ahq-summary-cell"><span>Closes</span><strong>{{ quiz.closes_at|date:'d M Y, h:i A' }}</strong></div>
+    <div class="ahq-summary-cell"><span>Time limit</span><strong>{{ quiz.duration_minutes }} min</strong></div>
+    {% if manager %}<div class="ahq-summary-cell"><span>Questions / Marks</span><strong>{{ questions|length }} / {{ quiz.total_marks }}</strong></div>{% endif %}
+  </div>
+  {% if manager %}
+    <div class="ahq-action-bar">
+      {% if can_edit %}
+        <a class="btn btn-outline-primary" href="{% url 'quizzes:edit' quiz.pk %}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit settings</a>
+        <a class="btn btn-primary" href="{% url 'quizzes:question_add' quiz.pk %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add MCQ</a>
+        <form method="post" action="{% url 'quizzes:publish' quiz.pk %}">{% csrf_token %}<button class="btn btn-success" type="submit"><i class="bi bi-megaphone" aria-hidden="true"></i> Publish</button></form>
+        <form method="post" action="{% url 'quizzes:delete_draft' quiz.pk %}" onsubmit="return confirm('Delete this draft quiz permanently?')">{% csrf_token %}<button class="btn btn-outline-danger" type="submit">Delete draft</button></form>
+      {% endif %}
+      <a class="btn btn-outline-secondary" href="{% url 'quizzes:roster' quiz.pk %}"><i class="bi bi-people" aria-hidden="true"></i> Student attempts</a>
+      {% if quiz.status == 'PUBLISHED' and not can_edit and quiz.created_by_id == user.pk %}
+        <form method="post" action="{% url 'quizzes:close' quiz.pk %}" onsubmit="return confirm('Close quiz and end active attempts?')">{% csrf_token %}<button class="btn btn-outline-danger" type="submit">Close quiz</button></form>
+      {% endif %}
+      {% if not quiz.show_results and quiz.created_by_id == user.pk %}
+        {% if quiz.status == 'CLOSED' or quiz.closes_at <= now %}<form method="post" action="{% url 'quizzes:release_results' quiz.pk %}">{% csrf_token %}<button class="btn btn-outline-success" type="submit">Release results</button></form>{% endif %}
+      {% endif %}
+    </div>
+    <div class="ahq-card"><div class="ahq-section-bar"><div><h2>Question bank</h2><p>Correct options are visible only to authorized staff.</p></div><span class="ahq-count-chip">{{ questions|length }} MCQ{{ questions|length|pluralize }}</span></div>
+      {% for question in questions %}
+        <article class="ahq-question-record"><div class="ahq-question-top"><h3>Q{{ forloop.counter }}. {{ question.text }}</h3><span class="ahq-count-chip">{{ question.points }} mark{{ question.points|pluralize }}</span></div>
+          <ol type="A" class="ahq-option-list"><li>{{ question.option_a }}</li><li>{{ question.option_b }}</li><li>{{ question.option_c }}</li><li>{{ question.option_d }}</li></ol>
+          <div class="ahq-question-bottom"><span class="ahq-correct-answer"><i class="bi bi-check-circle" aria-hidden="true"></i> Correct answer: {{ question.correct_choice }}</span>
+            {% if can_edit %}<div class="ahq-inline-actions"><a class="btn btn-outline-primary btn-sm" href="{% url 'quizzes:question_edit' quiz.pk question.pk %}">Edit</a><form method="post" action="{% url 'quizzes:question_delete' quiz.pk question.pk %}" onsubmit="return confirm('Delete this question?')">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form></div>{% endif %}
+          </div>
+        </article>
+      {% empty %}<div class="ahq-empty ahq-empty-inside"><h3>No questions added</h3><p>Add your MCQs before publishing the quiz.</p></div>{% endfor %}
+    </div>
+  {% elif student %}
+    <div class="ahq-card ahq-student-start"><span class="ahq-tile-overline">YOUR QUIZ ATTEMPT</span><h2>Ready to begin?</h2>
+      {% if attempt %}<p>Current status: <strong>{{ attempt.get_status_display }}</strong></p>{% if attempt.is_finished %}<a class="btn btn-primary" href="{% url 'quizzes:result' quiz.pk %}">View submission</a>{% else %}<a class="btn btn-primary" href="{% url 'quizzes:take' quiz.pk %}">Resume quiz</a>{% endif %}
+      {% elif can_start %}<p>One attempt is allowed. The timer starts when you begin and will not restart after refreshing.</p><form method="post" action="{% url 'quizzes:start' quiz.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Start quiz <i class="bi bi-arrow-right" aria-hidden="true"></i></button></form>
+      {% else %}<p>This quiz is not currently available for new attempts.</p>{% endif %}
+    </div>
+  {% endif %}
+  <a class="ahq-text-link ahq-bottom-link" href="{% url 'quizzes:course_quizzes' quiz.course_offering_id %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to course quizzes</a>
+</section>
+{% endblock %}

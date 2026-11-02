@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     # "class_allocations",
     "student_onboarding.apps.StudentOnboardingConfig",
     "notifications.apps.NotificationsConfig",
+    "quizzes.apps.QuizzesConfig",
 
 ]
 

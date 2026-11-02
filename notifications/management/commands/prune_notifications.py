@@ -12,8 +12,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         days = max(1, options["days"])
-        n, _ = Notification.objects.filter(
-            read_at__isnull=False,
-            created_at__lt=timezone.now() - timedelta(days=days),
-        ).update(archived_at=timezone.now())
-        self.stdout.write(f"Archived {n} old read notification(s).")
+        n = Notification.objects.filter(
+    archived_at__isnull=True,
+    read_at__isnull=False,
+    created_at__lt=timezone.now() - timedelta(days=days),
+).update(archived_at=timezone.now())

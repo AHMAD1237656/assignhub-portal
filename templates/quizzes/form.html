@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ heading }} | AssignHub{% endblock %}
+{% block content %}
+<section class="ahq-page" aria-labelledby="ahq-title">
+  {% if back_quiz %}<nav class="ahq-breadcrumbs"><a href="{% url 'quizzes:course_quizzes' offering.pk %}">{{ offering.course.code }} Quizzes</a><span aria-hidden="true">/</span><a href="{% url 'quizzes:detail' back_quiz.pk %}">{{ back_quiz.title }}</a><span aria-hidden="true">/</span><span>{{ heading }}</span></nav>{% else %}{% include 'quizzes/_breadcrumbs.html' %}{% endif %}
+  <div class="ahq-page-top"><div><span class="ahq-eyebrow">TEACHER / QUIZ BUILDER</span><h1 id="ahq-title">{{ heading }}</h1><p class="ahq-lead">{% if back_quiz %}Manage the question bank for this quiz.{% else %}Create and schedule a quiz for the selected course.{% endif %}</p></div></div>
+  <div class="ahq-editor-layout">
+    <div class="ahq-card ahq-editor-card">
+      {% if offering %}<div class="ahq-locked-course"><span class="ahq-locked-icon"><i class="bi bi-lock-fill" aria-hidden="true"></i></span><div><strong>{{ offering.course.code }} · {{ offering.course.title }}</strong><small>Section {{ offering.section.code }} · {{ offering.get_term_display }} {{ offering.academic_year }}</small></div><span class="ahq-locked-label">Assigned course</span></div>{% endif %}
+      <form method="post" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="ahq-fields">
+        {% for field in form %}<div class="ahq-field {% if field.field.widget.input_type == 'checkbox' %}ahq-check-field{% endif %}">
+          {% if field.field.widget.input_type == 'checkbox' %}<label for="{{ field.id_for_label }}" class="ahq-check-label">{{ field }} <span>{{ field.label }}</span></label>{% else %}<label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="ahq-required"> *</span>{% endif %}</label>{{ field }}{% endif %}
+          {% for error in field.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+          {% if field.help_text %}<small class="ahq-help">{{ field.help_text }}</small>{% endif %}
+        </div>{% endfor %}
+        </div>
+        <div class="ahq-form-actions"><button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle" aria-hidden="true"></i> Save</button><a class="btn btn-outline-secondary" href="{% if back_quiz %}{% url 'quizzes:detail' back_quiz.pk %}{% elif offering %}{% url 'quizzes:course_quizzes' offering.pk %}{% else %}{% url 'quizzes:list' %}{% endif %}">Cancel</a></div>
+      </form>
+    </div>
+    <aside class="ahq-aside"><div class="ahq-tip"><i class="bi bi-lightbulb" aria-hidden="true"></i><h2>Quiz setup</h2><p>{% if back_quiz %}Each MCQ must have four distinct options and one correct answer. Questions can be edited while the quiz is a draft.{% else %}Create a draft first, add MCQs, then publish. Students will only see quizzes from courses where they are actively enrolled.{% endif %}</p></div></aside>
+  </div>
+</section>
+{% endblock %}

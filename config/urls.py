@@ -21,6 +21,7 @@ urlpatterns = [
         include("accounts.urls"),
     ),
     path("notifications/", include("notifications.urls")),
+    path("quizzes/", include("quizzes.urls")),
 
     path(
         "assignments/",

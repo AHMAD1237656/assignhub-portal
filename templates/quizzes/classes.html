@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Class Courses · Quizzes | AssignHub{% endblock %}
+{% block content %}
+<section class="ahq-page" aria-labelledby="ahq-title">
+  <nav class="ahq-breadcrumbs" aria-label="Quiz navigation"><a href="{% url 'quizzes:list' %}">My Classes</a><span aria-hidden="true">/</span><span aria-current="page">Courses</span></nav>
+  <div class="ahq-page-top">
+    <div><span class="ahq-eyebrow">SELECTED CLASS / STEP 2 OF 3</span><h1 id="ahq-title">{{ class_label }}</h1><p class="ahq-lead">{{ class_term }} · Select a course to manage or attempt its quizzes.</p></div>
+    <a href="{% url 'quizzes:list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> All classes</a>
+  </div>
+  <div class="ahq-stepper" aria-label="Quiz navigation steps"><span class="is-complete"><b><i class="bi bi-check" aria-hidden="true"></i></b> Classes</span><span class="ahq-step-separator" aria-hidden="true">→</span><span class="is-current"><b>2</b> Courses</span><span class="ahq-step-separator" aria-hidden="true">→</span><span><b>3</b> Quizzes</span></div>
+  <div class="ahq-section-bar"><div><h2>Courses in this class</h2><p>Only courses associated with this class and academic term are shown.</p></div><span class="ahq-count-chip">{{ courses|length }} course{{ courses|length|pluralize }}</span></div>
+  <div class="ahq-grid">
+    {% for item in courses %}
+      <a class="ahq-tile ahq-course-tile" href="{% url 'quizzes:course_quizzes' item.offering.pk %}">
+        <div class="ahq-tile-head"><span class="ahq-course-code">{{ item.offering.course.code }}</span><span class="ahq-tile-arrow"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></span></div>
+        <h3>{{ item.offering.course.title }}</h3>
+        <p><i class="bi bi-person-badge" aria-hidden="true"></i> {{ item.offering.teacher.get_full_name|default:item.offering.teacher.username }}</p>
+        <div class="ahq-tile-stats"><span><strong>{{ item.quiz_count }}</strong> Quiz{{ item.quiz_count|pluralize:"zes" }}</span><span>{{ item.offering.get_term_display }} {{ item.offering.academic_year }}</span></div>
+        <span class="ahq-tile-cta">View course quizzes <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+      </a>
+    {% empty %}
+      <div class="ahq-empty"><h2>No courses here</h2><p>This class has no active course allocations.</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

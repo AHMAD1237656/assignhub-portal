@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ offering.course.code }} Quizzes | AssignHub{% endblock %}
+{% block content %}
+<section class="ahq-page" aria-labelledby="ahq-title">
+  {% include 'quizzes/_breadcrumbs.html' %}
+  <div class="ahq-page-top">
+    <div><span class="ahq-eyebrow">SELECTED COURSE / STEP 3 OF 3</span><h1 id="ahq-title">{{ offering.course.code }} <span class="ahq-heading-muted">/ {{ offering.course.title }}</span></h1><p class="ahq-lead">{{ class_label }} · {{ offering.get_term_display }} {{ offering.academic_year }}</p></div>
+    {% if can_create %}<a href="{% url 'quizzes:create' offering.pk %}" class="btn btn-primary ahq-main-action"><i class="bi bi-plus-lg" aria-hidden="true"></i> Create quiz</a>{% endif %}
+  </div>
+  <div class="ahq-stepper" aria-label="Quiz navigation steps"><span class="is-complete"><b><i class="bi bi-check" aria-hidden="true"></i></b> Classes</span><span class="ahq-step-separator" aria-hidden="true">→</span><span class="is-complete"><b><i class="bi bi-check" aria-hidden="true"></i></b> Courses</span><span class="ahq-step-separator" aria-hidden="true">→</span><span class="is-current"><b>3</b> Quizzes</span></div>
+  <div class="ahq-section-bar"><div><h2>Course quizzes</h2><p>{% if can_create %}Create, publish and review quizzes for this course.{% elif is_student %}Available quizzes for your enrolled course.{% else %}Review quiz records for this course.{% endif %}</p></div><a class="ahq-text-link" href="{% url 'quizzes:class_courses' offering.section_id offering.academic_year offering.term %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to courses</a></div>
+  <form method="get" class="ahq-filter-bar" role="search">
+    <label class="ahq-search" for="ahq-quiz-search"><i class="bi bi-search" aria-hidden="true"></i><input id="ahq-quiz-search" name="q" value="{{ keyword }}" maxlength="80" placeholder="Search quizzes in this course"></label>
+    {% if not is_student %}<label class="visually-hidden" for="ahq-status-select">Status</label><select id="ahq-status-select" name="status" class="form-select ahq-filter-select"><option value="all" {% if scope == 'all' %}selected{% endif %}>All statuses</option><option value="draft" {% if scope == 'draft' %}selected{% endif %}>Draft</option><option value="published" {% if scope == 'published' %}selected{% endif %}>Published</option><option value="closed" {% if scope == 'closed' %}selected{% endif %}>Closed</option></select>{% endif %}
+    <button class="btn btn-primary" type="submit">Filter</button><a href="{% url 'quizzes:course_quizzes' offering.pk %}" class="btn btn-outline-secondary">Reset</a>
+  </form>
+  <div class="ahq-grid">
+    {% for quiz in quizzes %}
+      <article class="ahq-card ahq-quiz-card">
+        <div class="ahq-card-head"><span class="ahq-quiz-identity"><i class="bi bi-ui-checks-grid" aria-hidden="true"></i> MCQ QUIZ</span><span class="ahq-state ahq-state-{{ quiz.status|lower }}">{{ quiz.get_status_display }}</span></div>
+        <h3>{{ quiz.title }}</h3>
+        <div class="ahq-meta"><span><i class="bi bi-calendar-event" aria-hidden="true"></i> Opens: {{ quiz.opens_at|date:'d M Y, h:i A' }}</span><span><i class="bi bi-calendar-x" aria-hidden="true"></i> Closes: {{ quiz.closes_at|date:'d M Y, h:i A' }}</span><span><i class="bi bi-stopwatch" aria-hidden="true"></i> {{ quiz.duration_minutes }} minutes</span></div>
+        <a class="btn btn-outline-primary mt-auto" href="{% url 'quizzes:detail' quiz.pk %}">{% if can_create %}Manage quiz{% else %}View quiz{% endif %} <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </article>
+    {% empty %}
+      <div class="ahq-empty"><span class="ahq-empty-icon"><i class="bi bi-clipboard-x" aria-hidden="true"></i></span><h2>No quizzes found</h2><p>{% if keyword or scope != 'all' %}Try different filters.{% else %}{% if can_create %}This course has no quizzes yet. Create your first quiz to get started.{% else %}No quizzes are currently available in this course.{% endif %}{% endif %}</p>{% if can_create and not keyword and scope == 'all' %}<a href="{% url 'quizzes:create' offering.pk %}" class="btn btn-primary">Create first quiz</a>{% endif %}</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

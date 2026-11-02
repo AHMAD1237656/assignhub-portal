@@ -1,0 +1,13 @@
+<nav class="ahq-breadcrumbs" aria-label="Quiz navigation">
+  <a href="{% url 'quizzes:list' %}">My Classes</a>
+  {% if offering %}
+    <span aria-hidden="true">/</span>
+    <a href="{% url 'quizzes:class_courses' offering.section_id offering.academic_year offering.term %}">Section {{ offering.section.code }}</a>
+    <span aria-hidden="true">/</span>
+    <a href="{% url 'quizzes:course_quizzes' offering.pk %}">{{ offering.course.code }}</a>
+  {% endif %}
+  {% if quiz %}
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ quiz.title|truncatechars:36 }}</span>
+  {% endif %}
+</nav>
