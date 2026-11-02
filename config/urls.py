@@ -20,6 +20,7 @@ urlpatterns = [
         "accounts/",
         include("accounts.urls"),
     ),
+    path("notifications/", include("notifications.urls")),
 
     path(
         "assignments/",

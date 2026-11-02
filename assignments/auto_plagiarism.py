@@ -198,12 +198,13 @@ def process_next():
             for match in raw["matches"]
             if match.semantic is not None
         ]
-        PlagiarismScan.objects.filter(
+        scan_status = _status(raw, lexical_threshold, semantic_threshold)
+        updated = PlagiarismScan.objects.filter(
             pk=scan_id,
             version=version,
             status=PlagiarismScan.Status.RUNNING,
         ).update(
-            status=_status(raw, lexical_threshold, semantic_threshold),
+            status=scan_status,
             result=compact,
             checked_count=raw["checked"],
             match_count=len(raw["matches"]),
@@ -213,6 +214,12 @@ def process_next():
             started_at=None,
             error="",
         )
+        if updated and scan_status == PlagiarismScan.Status.NEEDS_REVIEW:
+            try:
+                from notifications.services import notify_plagiarism_flag
+                notify_plagiarism_flag(submission.pk)
+            except Exception:
+                logger.exception("Could not create teacher integrity notification")
 
     except Exception:
         logger.exception("Automatic plagiarism analysis failed: scan=%s", scan_id)

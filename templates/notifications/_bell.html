@@ -1,0 +1,30 @@
+{# Topbar bell: included only for logged-in users; requires notification_context. #}
+<div class="dropdown ah-notice-dropdown">
+  <button class="btn ah-notice-bell" type="button" id="ah-notice-bell"
+          data-bs-toggle="dropdown" aria-expanded="false"
+          aria-label="Notifications, {{ ah_unread_count }} unread" data-count-url="{% url 'notifications:count' %}" title="Notifications">
+    <i class="bi bi-bell" aria-hidden="true"></i>
+    <span id="ah-notice-badge" class="ah-notice-badge{% if not ah_unread_count %} d-none{% endif %}">{{ ah_unread_count }}</span>
+  </button>
+  <div class="dropdown-menu dropdown-menu-end ah-notice-menu" aria-labelledby="ah-notice-bell">
+    <div class="ah-notice-menu-head">
+      <strong>Notifications</strong>
+      <a href="{% url 'notifications:list' %}" class="ah-notice-viewall">View all</a>
+    </div>
+    {% for notice in ah_recent_notifications %}
+      <form method="post" action="{% url 'notifications:open' notice.pk %}" class="ah-notice-preview{% if not notice.read_at %} ah-notice-unread{% endif %}">
+        {% csrf_token %}
+        <button class="ah-notice-preview-button" type="submit" title="Open and mark as read">
+          <span class="ah-notice-preview-title">{{ notice.title }}</span>
+          <span class="ah-notice-preview-message">{{ notice.message|truncatechars:95 }}</span>
+          <small>{{ notice.created_at|timesince }} ago</small>
+        </button>
+      </form>
+    {% empty %}
+      <div class="ah-notice-preview-empty">You're all caught up.</div>
+    {% endfor %}
+    <div class="ah-notice-menu-foot">
+      <a href="{% url 'notifications:list' %}">Open Notification Center</a>
+    </div>
+  </div>
+</div>

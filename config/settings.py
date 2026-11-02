@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "class_allocations.apps.ClassAllocationsConfig",
     # "class_allocations",
     "student_onboarding.apps.StudentOnboardingConfig",
+    "notifications.apps.NotificationsConfig",
 
 ]
 
@@ -111,6 +112,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "config.context_processors.assignhub_navigation",
+                "notifications.context_processors.notification_context",
             ],
         },
     },

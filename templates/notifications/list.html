@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Notification Center | AssignHub{% endblock %}
+{% block content %}
+<main class="ah-notice-center container-fluid px-2 px-md-4 py-3">
+  <div class="ah-notice-hero mb-4">
+    <div>
+      <div class="ah-notice-eyebrow">ACADEMIC WORKSPACE / ACTIVITY</div>
+      <h1>Notification Center</h1>
+      <p>Assignment updates, submissions, grading, integrity review and deadlines — all in one place.</p>
+    </div>
+    <div class="ah-notice-hero-stat"><strong>{{ unread_count }}</strong><span>Unread</span></div>
+  </div>
+
+  <section class="ah-notice-panel" aria-labelledby="ah-notice-list-heading">
+    <div class="ah-notice-toolbar">
+      <div>
+        <h2 id="ah-notice-list-heading">Your Activity</h2>
+        <p>{{ total_count }} total notification{{ total_count|pluralize }}</p>
+      </div>
+      <div class="ah-notice-toolbar-actions">
+        <form method="post" action="{% url 'notifications:mark_all_read' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-primary btn-sm" {% if not unread_count %}disabled{% endif %}>
+            <i class="bi bi-check2-all me-1"></i>Mark all as read
+          </button>
+        </form>
+        <form method="post" action="{% url 'notifications:clear_read' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-secondary btn-sm" {% if not read_count %}disabled{% endif %}>
+            Clear read
+          </button>
+        </form>
+      </div>
+    </div>
+    <nav class="ah-notice-tabs" aria-label="Filter notification list">
+      <a class="{% if scope == 'all' %}active{% endif %}" href="{% url 'notifications:list' %}">All <span>{{ total_count }}</span></a>
+      <a class="{% if scope == 'unread' %}active{% endif %}" href="{% url 'notifications:list' %}?filter=unread">Unread <span>{{ unread_count }}</span></a>
+      <a class="{% if scope == 'read' %}active{% endif %}" href="{% url 'notifications:list' %}?filter=read">Read <span>{{ read_count }}</span></a>
+    </nav>
+    <div class="ah-notice-list">
+      {% for notice in page_obj %}
+      <article class="ah-notice-item{% if not notice.read_at %} is-unread{% endif %}">
+        <div class="ah-notice-item-icon"><i class="bi {% if notice.kind == 'PLAGIARISM' %}bi-shield-exclamation{% elif notice.kind == 'GRADE' %}bi-award{% elif notice.kind == 'SUBMISSION' %}bi-file-earmark-check{% elif notice.kind == 'DEADLINE' %}bi-clock-history{% elif notice.kind == 'ACTIVATION' %}bi-person-check{% else %}bi-journal-text{% endif %}"></i></div>
+        <div class="ah-notice-item-content">
+          <div class="ah-notice-item-heading"><strong>{{ notice.title }}</strong>{% if not notice.read_at %}<span class="ah-notice-unread-dot" title="Unread"></span>{% endif %}</div>
+          <p>{{ notice.message }}</p>
+          <small>{{ notice.get_kind_display }} · {{ notice.created_at|date:"d M Y, h:i A" }}</small>
+        </div>
+        <div class="ah-notice-item-actions">
+          <form method="post" action="{% url 'notifications:open' notice.pk %}">{% csrf_token %}<button type="submit" class="btn ah-notice-open btn-sm">View details</button></form>
+          {% if not notice.read_at %}<form method="post" action="{% url 'notifications:mark_read' notice.pk %}">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm">Mark read</button></form>{% endif %}
+        </div>
+      </article>
+      {% empty %}
+      <div class="ah-notice-empty"><i class="bi bi-bell-slash"></i><h3>Nothing to show</h3><p>New activity will appear here as it happens.</p></div>
+      {% endfor %}
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="ah-notice-pages" aria-label="Notification pages">
+      {% if page_obj.has_previous %}<a href="?filter={{ scope }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a href="?filter={{ scope }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+    </nav>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

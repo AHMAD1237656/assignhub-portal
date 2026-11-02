@@ -26,6 +26,7 @@
     <!-- Existing Application Styles -->
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/assignhub-navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
 
     {% block extra_css %}{% endblock %}
 
@@ -1035,6 +1036,8 @@
             <div class="ah-topbar-actions">
 
                 {% if user.is_authenticated %}
+
+                {% include "notifications/_bell.html" %}
 
                 <div class="dropdown">
 
@@ -2132,6 +2135,7 @@
     <!-- EXISTING APPLICATION JS -->
 
     <script src="{% static 'js/app.js' %}"></script>
+    <script defer src="{% static 'js/notifications.js' %}"></script>
 
     <!-- =====================================
          MOBILE SIDEBAR CONTROLLER
