@@ -53,7 +53,7 @@ def get_dashboard_role(user):
         .first()
     )
 
-    if role == UserProfile.Role.ADMIN:
+    if role == UserProfile.Role.ADMIN and user.is_staff and user.is_active:
         return "admin"
 
     if role == UserProfile.Role.TEACHER:

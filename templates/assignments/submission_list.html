@@ -1283,19 +1283,15 @@ Submissions | AssignHub
                         <td>
 
                             {% if is_student_user %}
-
-                                {% if submission.status == "DRAFT" %}
-
-                                    <span class="sl-secondary">
-                                        —
+                                {% if submission.status == "GRADED" and submission.marks != None %}
+                                    <span class="sl-marks">
+                                        {{ submission.marks }}
+                                        <small>/ {{ submission.assignment.total_marks }}</small>
                                     </span>
-
+                                {% elif submission.status == "DRAFT" %}
+                                    <span class="sl-secondary">—</span>
                                 {% else %}
-
-                                    <span class="sl-secondary">
-                                        Pending release
-                                    </span>
-
+                                    <span class="sl-secondary">Awaiting grading</span>
                                 {% endif %}
 
                             {% elif submission.status == "GRADED" and submission.marks != None %}
@@ -1391,7 +1387,7 @@ Submissions | AssignHub
                                         title="Download submitted file"
                                     >
                                         <i class="bi bi-file-earmark-arrow-down"></i>
-                                        PDF
+                                        Download File
                                     </a>
 
                                 {% endif %}

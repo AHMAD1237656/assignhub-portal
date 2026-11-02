@@ -88,7 +88,7 @@
 
         <div class="ah-assignment-actions">
 
-            {% if not has_final_submissions %}
+            {% if not has_final_submissions and not has_timed_attempt %}
 
             <a href="{% url 'assignments:edit' assignment.pk %}"
                class="btn btn-outline-primary">

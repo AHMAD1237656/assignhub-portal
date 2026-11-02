@@ -11,3 +11,9 @@ media/
 dev_emails/
 *.before_activation_fix.bak
 _auto_plagiarism_backup/
+
+# AssignHub security and temporary installer files
+*.sqlite3.backup
+*.before_semesters.backup
+AssignHub_Assignments_Redesign_Package/
+assignhub_hardening_backup/

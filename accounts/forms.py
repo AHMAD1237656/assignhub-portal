@@ -50,6 +50,10 @@ class UserCreateForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
 
+        # Role-admin accounts need is_staff for existing permission checks.
+        # Teacher/Student accounts remain non-staff; never elevate superuser.
+        user.is_staff = (self.cleaned_data["role"] == UserProfile.Role.ADMIN)
+
         user.set_password(self.cleaned_data["password"])
 
         if commit:

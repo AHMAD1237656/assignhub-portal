@@ -143,6 +143,12 @@ def assignment_detail(request, pk):
         assignment.submissions.exists()
     )
 
+    # Keep Edit action consistent with the existing timed-writing edit lock.
+    has_timed_attempt = (
+        hasattr(assignment, "timed_writing_config")
+        and assignment.timed_writing_config.attempts.exists()
+    )
+
     context = {
         "assignment": assignment,
         "submission": submission,
@@ -154,6 +160,7 @@ def assignment_detail(request, pk):
         # Workflow flags
         "has_final_submissions": has_final_submissions,
         "has_any_submissions": has_any_submissions,
+        "has_timed_attempt": has_timed_attempt,
     }
 
     return render(

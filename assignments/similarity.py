@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from functools import lru_cache
 
+from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -26,7 +27,9 @@ MAX_FILE_BYTES = 10 * 1024 * 1024
 MAX_PAGES = 12
 MAX_PIXELS = 8_000_000
 MAX_TEXT_CHARS = 60_000
-MAX_COMPARE = 30
+# A class of 40+ students must not silently stop at 30 peers.
+# Keep a hard ceiling: OCR remains expensive and reports flag truncation.
+MAX_COMPARE = max(30, min(int(getattr(settings, "ASSIGNHUB_MAX_COMPARE", 100)), 250))
 MAX_MATCHES = 15
 MAX_LINES_PER_PAGE = 45
 
@@ -1706,7 +1709,7 @@ def analyze_submission(
     if report["limited"]:
 
         report["warnings"].append(
-            "Only first 30 comparison "
+            f"Only first {MAX_COMPARE} comparison "
             "submissions checked; "
             "report is incomplete."
         )

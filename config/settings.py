@@ -227,6 +227,10 @@ STUDENT_EMAIL_DOMAIN = os.environ.get(
     "",
 ).strip().lower()
 
+# Per-submission comparison ceiling. Covers typical 40-student sections;
+# hard-clamped to 30..250 inside the similarity engine.
+ASSIGNHUB_MAX_COMPARE = int(os.environ.get("ASSIGNHUB_MAX_COMPARE", "100"))
+
 # Automatic plagiarism worker (does not run inside web requests).
 PLAGIARISM_AUTO_SEMANTIC = env_bool("PLAGIARISM_AUTO_SEMANTIC", False)
 PLAGIARISM_FLAG_LEXICAL_PERCENT = float(
