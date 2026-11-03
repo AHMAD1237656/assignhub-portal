@@ -164,24 +164,70 @@ def heartbeat(request, quiz_pk):
 @login_required
 @require_POST
 def record_event(request, quiz_pk):
+    # AssignHub AI Part 2: events are low-trust signals, never automated cheating verdicts.
+    ai_policy_fields = {
+        MonitoringEvent.Kind.NO_FACE: 'detect_face_absence',
+        MonitoringEvent.Kind.MULTIPLE_FACES: 'detect_multiple_faces',
+        MonitoringEvent.Kind.HEAD_TURNED: 'detect_head_movement',
+        MonitoringEvent.Kind.PHONE_VISIBLE: 'detect_phone',
+    }
     quiz = get_object_or_404(Quiz, pk=quiz_pk)
     session = active_student_session(request.user, quiz)
     policy = ProctoringPolicy.objects.filter(quiz=quiz, enabled=True).first()
-    if not policy or not policy.log_browser_events:
-        return JsonResponse({'ok': False, 'error': 'Event logging disabled'}, status=403)
     kind = request.POST.get('kind', '')
     if kind not in MonitoringEvent.Kind.values:
         return JsonResponse({'ok': False, 'error': 'Invalid event'}, status=400)
+    if policy is None:
+        return JsonResponse({'ok': False, 'error': 'Monitoring is disabled'}, status=403)
+
+    is_ai = kind in ai_policy_fields
+    if is_ai:
+        option = ai_policy_fields[kind]
+        if not policy.ai_enabled or not getattr(policy, option):
+            return JsonResponse({'ok': False, 'error': 'AI event not enabled for this quiz'}, status=403)
+    elif not policy.log_browser_events and not (kind == MonitoringEvent.Kind.MONITOR_ERROR and policy.ai_enabled):
+        return JsonResponse({'ok': False, 'error': 'Browser event logging disabled'}, status=403)
+
+    # Strict scalar validation, no free-text descriptions or webcam frames accepted.
+    raw_duration = request.POST.get('duration_s', '0')
+    raw_confidence = request.POST.get('confidence', '')
+    raw_faces = request.POST.get('face_count', '')
+    try:
+        duration = int(raw_duration)
+        if duration < 0 or duration > 600:
+            raise ValueError
+        confidence = float(raw_confidence) if raw_confidence else None
+        if confidence is not None and (confidence != confidence or not 0 <= confidence <= 1):
+            raise ValueError
+        face_count = int(raw_faces) if raw_faces else None
+        if face_count is not None and not 0 <= face_count <= 5:
+            raise ValueError
+    except (TypeError, ValueError, OverflowError):
+        return JsonResponse({'ok': False, 'error': 'Invalid event metadata'}, status=400)
+    if not is_ai and (raw_confidence or raw_faces or duration):
+        return JsonResponse({'ok': False, 'error': 'Browser events do not accept AI metadata'}, status=400)
+    if is_ai and kind == MonitoringEvent.Kind.MULTIPLE_FACES and face_count is not None and face_count < 2:
+        return JsonResponse({'ok': False, 'error': 'Invalid face count'}, status=400)
+
     now = timezone.now()
-    # Do not let a noisy client flood the incident table: at most one per kind per 10 seconds.
+    # Per-kind 10s cooldown prevents event floods. Server timestamp is authoritative.
     with transaction.atomic():
         locked = MonitoringSession.objects.select_for_update().get(pk=session.pk)
-        previous = MonitoringEvent.objects.filter(session=locked, kind=kind, created_at__gte=now - timedelta(seconds=10)).exists()
+        previous = MonitoringEvent.objects.filter(
+            session=locked, kind=kind, created_at__gte=now - timedelta(seconds=10),
+        ).exists()
         if not previous:
-            MonitoringEvent.objects.create(session=locked, kind=kind, created_at=now)
+            MonitoringEvent.objects.create(
+                session=locked,
+                kind=kind,
+                source=MonitoringEvent.Source.AI if is_ai else MonitoringEvent.Source.BROWSER,
+                confidence=confidence if is_ai else None,
+                duration_seconds=duration if is_ai else 0,
+                observed_faces=face_count if is_ai else None,
+                created_at=now,
+            )
         MonitoringSession.objects.filter(pk=locked.pk).update(last_heartbeat_at=now)
     return JsonResponse({'ok': True, 'recorded': not previous})
-
 
 @login_required
 @never_cache

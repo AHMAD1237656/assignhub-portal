@@ -1,9 +1,30 @@
 {% load static %}
-<div class="ahp-live-panel" id="ahp-monitor-root" data-event-url="{% url 'quiz_proctoring:event' quiz.pk %}" data-heartbeat-url="{% url 'quiz_proctoring:heartbeat' quiz.pk %}" data-camera-required="{% if camera_required %}yes{% else %}no{% endif %}" data-log-events="{% if browser_logging %}yes{% else %}no{% endif %}">
-  <div class="ahp-live-heading"><div><span class="ahp-eyebrow">MONITORED EXAM</span><strong>Device & browser status</strong></div><span class="ahp-pill">Part 1</span></div>
+<div class="ahp-live-panel" id="ahp-monitor-root" data-event-url="{% url 'quiz_proctoring:event' quiz.pk %}" data-heartbeat-url="{% url 'quiz_proctoring:heartbeat' quiz.pk %}" data-camera-required="{% if camera_required %}yes{% else %}no{% endif %}" data-log-events="{% if browser_logging %}yes{% else %}no{% endif %}"
+  data-ai-enabled="{% if quiz.proctoring_policy.ai_enabled %}yes{% else %}no{% endif %}"
+  data-detect-multiple="{% if quiz.proctoring_policy.detect_multiple_faces %}yes{% else %}no{% endif %}"
+  data-detect-absence="{% if quiz.proctoring_policy.detect_face_absence %}yes{% else %}no{% endif %}"
+  data-detect-head="{% if quiz.proctoring_policy.detect_head_movement %}yes{% else %}no{% endif %}"
+  data-detect-phone="{% if quiz.proctoring_policy.detect_phone %}yes{% else %}no{% endif %}">
+  <div class="ahp-live-heading"><div><span class="ahp-eyebrow">MONITORED EXAM</span><strong>Device & browser status</strong></div><span class="ahp-pill">{% if quiz.proctoring_policy.ai_enabled %}AI-assisted{% else %}Browser monitoring{% endif %}</span></div>
   {% if camera_required %}<video id="ahp-live-video" class="ahp-camera" autoplay muted playsinline aria-label="Live webcam monitoring preview"></video>{% endif %}
   <div class="ahp-monitor-status" id="ahp-live-status" role="status" aria-live="polite">Initializing monitoring...</div>
-  <p class="ahp-muted">Your answers and timer are managed independently. No AI face, phone, or gaze detection is active in this phase. Tab/focus events are browser-reported, not proof of misconduct.</p>
+  <p class="ahp-muted">Your answers and timer are independent. Incidents are technical review flags—not proof of cheating. No video, photos, or audio are uploaded.</p>
+  {% if quiz.proctoring_policy.ai_enabled %}
+  <section class="ahp-ai-module" aria-label="Local AI monitoring status">
+    <strong>AssignHub Smart Proctor AI</strong>
+    <p id="ahp-ai-status" role="status" aria-live="polite">Initializing models...</p>
+    <div class="ahp-ai-grid">
+      <span><i class="bi bi-person-bounding-box" aria-hidden="true"></i> <span id="ahp-ai-face">{% if quiz.proctoring_policy.detect_multiple_faces or quiz.proctoring_policy.detect_face_absence or quiz.proctoring_policy.detect_head_movement %}Loading face detector{% else %}Face detector disabled{% endif %}</span></span>
+      <span><i class="bi bi-phone" aria-hidden="true"></i> <span id="ahp-ai-phone">{% if quiz.proctoring_policy.detect_phone %}Loading phone detector{% else %}Phone detector disabled{% endif %}</span></span>
+    </div>
+    <small class="ahp-muted">MediaPipe / COCO-SSD run locally; the first load needs internet. Detection accuracy is not guaranteed. Teacher review is required.</small>
+  </section>
+  {% endif %}
   <button type="button" class="btn btn-outline-secondary btn-sm" id="ahp-fullscreen">Enter fullscreen (optional)</button>
 </div>
 <script defer src="{% static 'js/quiz_proctoring_live.js' %}"></script>
+
+{% if quiz.proctoring_policy.ai_enabled %}
+<link rel="stylesheet" href="{% static 'css/quiz_proctoring_ai.css' %}">
+<script defer src="{% static 'js/quiz_proctoring_ai.js' %}"></script>
+{% endif %}
