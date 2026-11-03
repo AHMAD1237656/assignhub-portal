@@ -16,6 +16,12 @@
   </div>
   {% if manager %}
     <div class="ahq-action-bar">
+      <!-- ASSIGNHUB-QUIZ-MONITORING-UX-V1 -->
+      {% if can_edit %}
+      <a class="btn btn-outline-primary" href="{% url 'quiz_proctoring:settings' quiz.pk %}"><i class="bi bi-shield-check" aria-hidden="true"></i> Monitoring settings</a>
+      {% else %}
+      <a class="btn btn-outline-primary" href="{% url 'quiz_proctoring:quiz_monitoring' quiz.pk %}"><i class="bi bi-shield-check" aria-hidden="true"></i> Monitoring &amp; incidents</a>
+      {% endif %}
       {% if can_edit %}
         <a class="btn btn-outline-primary" href="{% url 'quizzes:edit' quiz.pk %}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit settings</a>
         <a class="btn btn-primary" href="{% url 'quizzes:question_add' quiz.pk %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add MCQ</a>
@@ -30,6 +36,26 @@
         {% if quiz.status == 'CLOSED' or quiz.closes_at <= now %}<form method="post" action="{% url 'quizzes:release_results' quiz.pk %}">{% csrf_token %}<button class="btn btn-outline-success" type="submit">Release results</button></form>{% endif %}
       {% endif %}
     </div>
+    <section class="ahq-card mb-3" id="ahq-monitoring-settings" aria-labelledby="ahq-monitoring-heading">
+      <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+        <div>
+          <span class="ahq-eyebrow">EXAM CONFIGURATION</span>
+          <h2 class="ahq-card-title" id="ahq-monitoring-heading">Exam monitoring</h2>
+          {% if quiz.proctoring_policy.enabled %}
+          <p class="mb-1 text-success"><strong>Monitoring enabled</strong></p>
+          <p class="text-muted mb-0">Webcam check: {% if quiz.proctoring_policy.require_camera %}Required{% else %}Optional{% endif %} · Browser events: {% if quiz.proctoring_policy.log_browser_events %}Enabled{% else %}Disabled{% endif %}</p>
+          {% else %}
+          <p class="mb-0 text-muted">Monitoring is off for this quiz. Students can take it using the normal quiz flow.</p>
+          {% endif %}
+          {% if not can_edit %}<p class="text-muted mb-0 mt-2">Configuration is locked after publication or when an attempt exists. Previously recorded incidents can still be reviewed.</p>{% endif %}
+        </div>
+        {% if can_edit %}
+        <a class="btn btn-primary" href="{% url 'quiz_proctoring:settings' quiz.pk %}">Configure monitoring</a>
+        {% else %}
+        <a class="btn btn-outline-primary" href="{% url 'quiz_proctoring:quiz_monitoring' quiz.pk %}">View monitoring records</a>
+        {% endif %}
+      </div>
+    </section>
     <div class="ahq-card"><div class="ahq-section-bar"><div><h2>Question bank</h2><p>Correct options are visible only to authorized staff.</p></div><span class="ahq-count-chip">{{ questions|length }} MCQ{{ questions|length|pluralize }}</span></div>
       {% for question in questions %}
         <article class="ahq-question-record"><div class="ahq-question-top"><h3>Q{{ forloop.counter }}. {{ question.text }}</h3><span class="ahq-count-chip">{{ question.points }} mark{{ question.points|pluralize }}</span></div>

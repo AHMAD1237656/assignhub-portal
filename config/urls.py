@@ -22,6 +22,7 @@ urlpatterns = [
     ),
     path("notifications/", include("notifications.urls")),
     path("quizzes/", include("quizzes.urls")),
+    path("proctoring/", include("quiz_proctoring.urls")),
 
     path(
         "assignments/",

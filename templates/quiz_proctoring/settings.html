@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Monitoring Settings | AssignHub{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/quiz_proctoring.css' %}">{% endblock %}
+{% block content %}<section class="ahp-page ahp-narrow">
+  <a class="ahp-back" href="{% url 'quizzes:detail' quiz.pk %}">← Back to Manage Quiz</a>
+  <div class="ahp-hero"><div><span class="ahp-eyebrow">TEACHER / EXAM CONFIGURATION</span><h1>Configure monitoring</h1><p>{{ quiz.title }} · Settings lock after publishing.</p></div></div>
+  <form class="ahp-card" method="post">{% csrf_token %}<h2>Proctoring options</h2><p class="ahp-muted">This is Part 1: camera/device checks and browser activity. Face/phone AI detection is a separate later phase.</p>{{ form.non_field_errors }}
+    {% for field in form %}<div class="ahp-field"><label class="ahp-checkbox">{{ field }} <span>{{ field.label }}</span></label><small>{{ field.help_text }}</small>{{ field.errors }}</div>{% endfor %}
+    <div class="ahp-actions"><button class="btn btn-primary" type="submit">Save monitoring settings</button><a class="btn btn-outline-secondary" href="{% url 'quizzes:detail' quiz.pk %}">Back to Manage Quiz</a></div>
+  </form>
+</section>{% endblock %}

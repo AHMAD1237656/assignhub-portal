@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "student_onboarding.apps.StudentOnboardingConfig",
     "notifications.apps.NotificationsConfig",
     "quizzes.apps.QuizzesConfig",
+    "quiz_proctoring"
 
 ]
 

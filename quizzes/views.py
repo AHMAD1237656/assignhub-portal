@@ -15,6 +15,8 @@ from courses.models import CourseEnrollment, CourseOffering
 from .forms import QuestionForm, QuizForm
 from .models import Quiz, QuizAnswer, QuizAttempt, QuizQuestion
 from .services import begin, finish, refresh, save_choice, student_can_see
+from quiz_proctoring.models import MonitoringSession, ProctoringPolicy
+from quiz_proctoring.services import is_proctored
 
 
 def teacher_owns(user, quiz):
@@ -321,6 +323,8 @@ def start(request, pk):
     quiz = get_object_or_404(Quiz, pk=pk)
     if not student_can_see(request.user, quiz):
         raise PermissionDenied('You are not eligible for this quiz.')
+    if is_proctored(quiz) and not QuizAttempt.objects.filter(quiz=quiz, student=request.user).exists():
+        return redirect('quiz_proctoring:device_check', quiz_pk=quiz.pk)
     attempt = begin(pk, request.user)
     return redirect('quizzes:take' if not attempt.is_finished else 'quizzes:result', pk=pk)
 
@@ -342,6 +346,9 @@ def take(request, pk):
         'quiz': quiz, 'attempt': attempt, 'rows': rows,
         'expiry_epoch': int(attempt.expires_at.timestamp()),
         'server_epoch': int(timezone.now().timestamp()),
+        'proctoring_enabled': ProctoringPolicy.objects.filter(quiz=quiz, enabled=True).exists() and MonitoringSession.objects.filter(attempt=attempt).exists(),
+        'camera_required': ProctoringPolicy.objects.filter(quiz=quiz, enabled=True, require_camera=True).exists(),
+        'browser_logging': ProctoringPolicy.objects.filter(quiz=quiz, enabled=True, log_browser_events=True).exists(),
     })
 
 

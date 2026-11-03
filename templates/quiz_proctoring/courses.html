@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Exam Monitoring — Courses | AssignHub{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/quiz_proctoring.css' %}">{% endblock %}
+{% block content %}<section class="ahp-page">
+  {% include 'quiz_proctoring/_crumbs.html' %}
+  <div class="ahp-hero"><div><span class="ahp-eyebrow">EXAM MONITORING / STEP 2</span><h1>{{ class_label }}</h1><p>{{ class_term }} · Select a course to view quizzes and monitoring sessions.</p></div><span class="ahp-pill">Courses</span></div>
+  <div class="ahp-grid">{% for item in courses %}<a class="ahp-tile" href="{% url 'quiz_proctoring:course_quizzes' item.offering.pk %}"><span class="ahp-tile-tag">{{ item.offering.course.code }}</span><h2>{{ item.offering.course.title }}</h2><p>Teacher: {{ item.offering.teacher.get_full_name|default:item.offering.teacher.username }}</p><div class="ahp-tile-foot"><span>{{ item.quiz_count }} quiz{{ item.quiz_count|pluralize:'zes' }}</span><strong>View quizzes →</strong></div></a>{% empty %}<div class="ahp-empty">No courses for this class.</div>{% endfor %}</div>
+</section>{% endblock %}

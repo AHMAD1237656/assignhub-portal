@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Exam Device Check | AssignHub{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/quiz_proctoring.css' %}">{% endblock %}
+{% block content %}<section class="ahp-page ahp-narrow">
+  <a class="ahp-back" href="{% url 'quizzes:detail' quiz.pk %}">← Back to quiz</a>
+  <div class="ahp-hero"><div><span class="ahp-eyebrow">STUDENT / EXAM READINESS</span><h1>Device & privacy check</h1><p>{{ quiz.title }} · This quiz uses examination monitoring.</p></div><span class="ahp-pill">Before timer starts</span></div>
+  <div class="ahp-card"><h2>Camera preview</h2><p class="ahp-muted">{% if camera_required %}Camera access is required for this quiz. {% else %}Camera access is optional. {% endif %}Your video stays on this device in Part 1: no recording or image uploads.</p>
+    <video class="ahp-camera" id="ahp-check-video" autoplay muted playsinline aria-label="Live webcam preview"></video><div class="ahp-actions"><button type="button" class="btn btn-outline-primary" id="ahp-check-camera">Check camera</button><span id="ahp-check-status" class="ahp-muted" role="status" aria-live="polite">Camera not checked</span></div>
+  </div>
+  <form class="ahp-card" id="ahp-preflight-form" method="post" data-camera-required="{% if camera_required %}yes{% else %}no{% endif %}">{% csrf_token %}<input type="hidden" name="camera_checked" id="ahp-camera-checked" value="no"/><h2>Monitoring consent</h2>
+    <p>During the exam, the browser reports tab hiding, window focus loss, fullscreen exit and camera interruptions when enabled. The server stores event timestamps and teacher review decisions. Camera video is not uploaded. These signals do not establish cheating.</p>
+    <label class="ahp-checkbox"><input type="checkbox" name="consent" value="yes" id="ahp-consent" required/> <span>I understand this monitoring, its limitations, and consent to participate.</span></label>
+    <p class="ahp-muted">If you cannot provide consent or camera access, contact your teacher for an alternative assessment. The timer begins only after Start exam.</p>
+    <button type="submit" class="btn btn-primary" id="ahp-start-exam" disabled>Start monitored exam</button>
+  </form>
+</section>
+<script defer src="{% static 'js/quiz_proctoring_preflight.js' %}"></script>
+{% endblock %}

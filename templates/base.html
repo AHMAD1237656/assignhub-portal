@@ -517,7 +517,7 @@
 
                 <!-- ASSIGNHUB QUIZ MODULE LINK -->
                 <a href="{% url 'quizzes:list' %}"
-                   class="ah-sidebar-link {% if request.resolver_match.namespace == 'quizzes' %}active{% endif %}"
+                   class="ah-sidebar-link {% if request.resolver_match.namespace == 'quizzes' or request.resolver_match.namespace == 'quiz_proctoring' %}active{% endif %}"
                    title="Quizzes">
                   <span class="ah-sidebar-link-icon"><i class="bi bi-ui-checks" aria-hidden="true"></i></span>
                   <span class="ah-sidebar-link-label">Quizzes</span>

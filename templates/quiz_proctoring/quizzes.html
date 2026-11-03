@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Exam Monitoring — Quizzes | AssignHub{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/quiz_proctoring.css' %}">{% endblock %}
+{% block content %}<section class="ahp-page">
+  {% include 'quiz_proctoring/_crumbs.html' %}
+  <div class="ahp-hero"><div><span class="ahp-eyebrow">EXAM MONITORING / STEP 3</span><h1>{{ offering.course.code }} · {{ offering.course.title }}</h1><p>Quizzes available for monitoring in this class and course.</p></div><span class="ahp-pill">{{ offering.section.code }} · {{ offering.get_term_display }}</span></div>
+  <div class="ahp-stack">{% for item in quizzes %}<a class="ahp-row-card" href="{% url 'quiz_proctoring:quiz_monitoring' item.pk %}"><div><span class="ahp-eyebrow">{{ item.get_status_display }}</span><h2>{{ item.title }}</h2><p>{{ item.opens_at|date:'d M Y h:i A' }} – {{ item.closes_at|date:'d M Y h:i A' }}</p></div><div class="ahp-row-side"><span class="ahp-pill">{% if item.proctoring_policy.enabled %}Monitoring enabled{% else %}Monitoring off{% endif %}</span><strong>Open →</strong></div></a>{% empty %}<div class="ahp-empty"><h2>No quizzes yet</h2><p>Create quizzes from the Quiz module, then configure monitoring here while the quiz is a draft.</p></div>{% endfor %}</div>
+</section>{% endblock %}

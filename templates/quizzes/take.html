@@ -4,6 +4,8 @@
 {% block content %}
 <section class="ahq-page container-fluid" id="ahq-attempt" data-answer-url="{% url 'quizzes:answer' quiz.pk %}" data-result-url="{% url 'quizzes:result' quiz.pk %}" data-expiry="{{ expiry_epoch }}" data-server-now="{{ server_epoch }}">
   <div class="ahq-header"><div><span class="ahq-eyebrow">TIMED QUIZ · IN PROGRESS</span><h1>{{ quiz.title }}</h1><p>Answers save automatically. Only one attempt is allowed.</p></div><div class="ahq-countdown" id="ahq-clock" role="timer" aria-live="off">--:--</div></div>
+  <!-- ASSIGNHUB-PROCTORING-PART1 live -->
+  {% if proctoring_enabled %}{% include 'quiz_proctoring/_live_panel.html' %}{% endif %}
   <div class="alert alert-warning" id="ahq-status" role="status">Select an answer to autosave it.</div>
   <form id="ahq-csrf-form" hidden>{% csrf_token %}</form>
   {% for row in rows %}<div class="ahq-card ahq-question mb-3"><h2>{{ forloop.counter }}. {{ row.question.text }}</h2><p class="text-muted">{{ row.question.points }} mark{{ row.question.points|pluralize }}</p>

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Exam Monitoring — Classes | AssignHub{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/quiz_proctoring.css' %}">{% endblock %}
+{% block content %}
+<section class="ahp-page">
+  {% include 'quiz_proctoring/_crumbs.html' %}
+  <div class="ahp-hero"><div><span class="ahp-eyebrow">EXAM MONITORING / STEP 1</span><h1>My Classes</h1><p>Select an allocated class to review its course examinations.</p></div><span class="ahp-pill">Class-first workspace</span></div>
+  <form class="ahp-search" method="get"><label for="ahp-class-search">Search classes or courses</label><div class="ahp-searchbar"><input id="ahp-class-search" name="q" type="search" value="{{ request.GET.q }}" placeholder="Program, section, course, academic year"><button class="btn btn-primary" type="submit">Search</button></div></form>
+  <div class="ahp-grid">{% for item in classes %}<a class="ahp-tile" href="{% url 'quiz_proctoring:class_courses' item.section_id item.year item.term %}"><span class="ahp-tile-tag">CLASS {{ forloop.counter|stringformat:'02d' }}</span><h2>{{ item.label }}</h2><p>{{ item.subtitle }}</p><div class="ahp-tile-foot"><span>{{ item.courses }} course{{ item.courses|pluralize }}</span><strong>View courses →</strong></div></a>{% empty %}<div class="ahp-empty"><h2>No allocated classes</h2><p>Classes appear here once course offerings are assigned to your account.</p></div>{% endfor %}</div>
+</section>
+{% endblock %}
