@@ -7,6 +7,7 @@ class Notification(models.Model):
 
     class Kind(models.TextChoices):
         ASSIGNMENT = "ASSIGNMENT", "Assignment Published"
+        QUIZ = "QUIZ", "Quiz Activity"
         ASSIGNMENT_CLOSED = "CLOSED", "Assignment Closed"
         SUBMISSION = "SUBMISSION", "Submission Received"
         GRADE = "GRADE", "Grade Available"

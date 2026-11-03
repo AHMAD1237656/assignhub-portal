@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/assignhub-navbar.css' %}">
     <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/quizzes.css' %}">
 
     {% block extra_css %}{% endblock %}
 
@@ -512,6 +513,14 @@
                         Assignments
                     </span>
 
+                </a>
+
+                <!-- ASSIGNHUB QUIZ MODULE LINK -->
+                <a href="{% url 'quizzes:list' %}"
+                   class="ah-sidebar-link {% if request.resolver_match.namespace == 'quizzes' or request.resolver_match.namespace == 'quiz_proctoring' %}active{% endif %}"
+                   title="Quizzes">
+                  <span class="ah-sidebar-link-icon"><i class="bi bi-ui-checks" aria-hidden="true"></i></span>
+                  <span class="ah-sidebar-link-label">Quizzes</span>
                 </a>
 
                 <!-- =================================

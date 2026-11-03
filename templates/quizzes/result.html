@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Quiz Submission | AssignHub{% endblock %}
+{% block content %}
+<section class="ahq-page container-fluid"><div class="ahq-card"><span class="ahq-eyebrow">QUIZ SUBMISSION</span><h1>{{ quiz.title }}</h1><div class="alert alert-success mt-3" role="status"><strong>Quiz submission confirmed.</strong> {% if attempt.status == "AUTO_SUBMITTED" %}Time ended and your saved answers were submitted automatically.{% else %}Your final answers have been received successfully.{% endif %}</div><p>Submission status: <strong>{{ attempt.get_status_display }}</strong></p><p>Submitted: {{ attempt.submitted_at|date:'d M Y, h:i A' }}</p>
+{% if results_released %}<div class="ahq-score">{{ attempt.earned_marks }} / {{ attempt.total_marks }}</div><p>Your result is automatically calculated from the quiz answer key.</p>
+{% for row in rows %}<div class="ahq-question"><h2>{{ forloop.counter }}. {{ row.question.text }}</h2><p>Your choice: <strong>{{ row.selected|default:'Unanswered' }}</strong> {% if row.correct %}<span class="text-success">Correct</span>{% else %}<span class="text-danger">Incorrect / unanswered</span>{% endif %}</p><p>Correct choice: <strong>{{ row.question.correct_choice }}</strong></p></div>{% endfor %}
+{% else %}<p>Your answers have been submitted. Results are not released yet. They become available after the quiz closes when enabled by the teacher.</p>{% endif %}
+<a class="btn btn-primary mt-3" href="{% url 'quizzes:course_quizzes' quiz.course_offering_id %}">Back to course quizzes</a></div></section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}My Classes · Quizzes | AssignHub{% endblock %}
+{% block content %}
+<section class="ahq-page" aria-labelledby="ahq-title">
+  <div class="ahq-page-top">
+    <div>
+      <span class="ahq-eyebrow">ASSIGNHUB / QUIZ WORKSPACE</span>
+      <h1 id="ahq-title">My Classes</h1>
+      <p class="ahq-lead">{{ role_label }}. Select a class to see its courses and quizzes.</p>
+    </div>
+    <div class="ahq-count-chip"><i class="bi bi-collection" aria-hidden="true"></i> {{ classes|length }} class{{ classes|length|pluralize }}</div>
+  </div>
+  <div class="ahq-stepper" aria-label="Quiz navigation steps">
+    <span class="is-current"><b>1</b> Classes</span>
+    <span class="ahq-step-separator" aria-hidden="true">→</span>
+    <span><b>2</b> Courses</span>
+    <span class="ahq-step-separator" aria-hidden="true">→</span>
+    <span><b>3</b> Quizzes</span>
+  </div>
+  <form method="get" class="ahq-filter-bar" role="search">
+    <label class="ahq-search" for="ahq-class-search"><i class="bi bi-search" aria-hidden="true"></i><input id="ahq-class-search" name="q" value="{{ keyword }}" maxlength="80" placeholder="Search class, section, semester or course"></label>
+    <button class="btn btn-primary" type="submit">Search</button>
+    {% if keyword %}<a class="btn btn-outline-secondary" href="{% url 'quizzes:list' %}">Clear</a>{% endif %}
+  </form>
+  <div class="ahq-grid ahq-grid-classes">
+    {% for item in classes %}
+      <a class="ahq-tile ahq-class-tile" href="{% url 'quizzes:class_courses' item.section_id item.year item.term %}" aria-label="Open {{ item.label }} courses">
+        <div class="ahq-tile-head"><span class="ahq-tile-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span><span class="ahq-tile-arrow"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></span></div>
+        <div class="ahq-tile-overline">ACADEMIC CLASS</div>
+        <h2>{{ item.label }}</h2>
+        <p>{{ item.subtitle }}</p>
+        <div class="ahq-tile-stats"><span><strong>{{ item.course_count }}</strong> Course{{ item.course_count|pluralize }}</span><span><strong>{{ item.quiz_count }}</strong> Quiz{{ item.quiz_count|pluralize:"zes" }}</span></div>
+        <span class="ahq-tile-cta">Explore courses <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+      </a>
+    {% empty %}
+      <div class="ahq-empty"><span class="ahq-empty-icon"><i class="bi bi-folder2-open" aria-hidden="true"></i></span><h2>No classes available</h2><p>{% if keyword %}No allocated classes match your search. Try another keyword.{% else %}No active class allocations were found for your account. Contact the administrator if you expect a class here.{% endif %}</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

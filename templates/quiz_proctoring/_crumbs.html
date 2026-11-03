@@ -1,0 +1,6 @@
+<nav class="ahp-crumbs" aria-label="Breadcrumb">
+  <a href="{% url 'quiz_proctoring:classes' %}">My Classes</a>
+  {% if class_label %}<span>/</span><span>{{ class_label }}</span>{% endif %}
+  {% if offering %}<span>/</span><span>{{ offering.course.code }}</span>{% endif %}
+  {% if quiz %}<span>/</span><span>{{ quiz.title }}</span>{% endif %}
+</nav>
