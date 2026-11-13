@@ -1,0 +1,12 @@
+/* AssignHub Smart Proctor AI: namespaced styles only. */
+.ahp-live-panel .ahp-ai-module {
+  margin-top: 14px; padding: 15px 18px; border: 1px solid #ceddf6;
+  border-radius: 12px; background: #f6f9ff; color: #1c3656;
+}
+.ahp-live-panel .ahp-ai-module > strong { display:block; font-size: 14px; margin-bottom: 8px; }
+.ahp-live-panel #ahp-ai-status { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #3460a1; }
+.ahp-live-panel .ahp-ai-grid {display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:10px;}
+.ahp-live-panel .ahp-ai-grid > span {display:flex;align-items:center;gap:9px;background:white;border:1px solid #dfe7f3;border-radius:8px;padding:10px;font-size:12px;}
+.ahp-live-panel .ahp-ai-grid i {color:#3962a0;font-size:17px;}
+.ahp-live-panel .ahp-ai-module .ahp-muted {font-size:11px;line-height:1.5;display:block;}
+@media(max-width:600px){.ahp-live-panel .ahp-ai-grid{grid-template-columns:1fr}}

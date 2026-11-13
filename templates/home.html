@@ -685,6 +685,188 @@
 @media(prefers-reduced-motion:reduce) {
     .ah-dash-btn { transition: none; }
 }
+
+/* =====================================
+   ASSIGNHUB ROLE DASHBOARD ENTRANCE
+   Initial page-load only
+===================================== */
+
+.ah-dash.ah-animate-ready > .ah-dash-head,
+.ah-dash.ah-animate-ready > .ah-dash-hero,
+.ah-dash.ah-animate-ready > .ah-dash-kpis,
+.ah-dash.ah-animate-ready > .ah-dash-workspace,
+.ah-dash.ah-animate-ready > .ah-dash-columns,
+.ah-dash.ah-animate-ready > .ah-dash-panel {
+    animation: ahRoleEntrance .65s ease both;
+}
+
+.ah-dash.ah-animate-ready > .ah-dash-head {
+    animation-delay: .05s;
+}
+
+.ah-dash.ah-animate-ready > .ah-dash-hero {
+    animation-delay: .15s;
+}
+
+.ah-dash.ah-animate-ready > .ah-dash-kpis {
+    animation-delay: .25s;
+}
+
+.ah-dash.ah-animate-ready > .ah-dash-columns:nth-of-type(4) {
+    animation-delay: .35s;
+}
+
+.ah-dash.ah-animate-ready > .ah-dash-columns:nth-of-type(5) {
+    animation-delay: .45s;
+}
+
+.ah-dash.ah-animate-ready > .ah-dash-panel {
+    animation-delay: .45s;
+}
+
+.ah-dash.ah-animate-ready .ah-dash-kpi {
+    animation: ahRoleEntrance .55s ease both;
+}
+
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(1) {
+    animation-delay: .3s;
+}
+
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(2) {
+    animation-delay: .4s;
+}
+
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(3) {
+    animation-delay: .5s;
+}
+
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(4) {
+    animation-delay: .6s;
+}
+
+@keyframes ahRoleEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(17px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ah-dash.ah-animate-ready,
+    .ah-dash.ah-animate-ready *,
+    .ah-dash.ah-animate-ready *::before,
+    .ah-dash.ah-animate-ready *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* =====================================
+   ASSIGNHUB INITIAL DASHBOARD ANIMATIONS
+   All roles supported
+===================================== */
+
+.ah-dashboard.ah-animate-ready > *,
+.ah-dash.ah-animate-ready > * {
+    animation: ahDashboardEntrance .65s ease both;
+}
+
+/* Sequential dashboard sections */
+
+.ah-dashboard.ah-animate-ready > :nth-child(1),
+.ah-dash.ah-animate-ready > :nth-child(1) {
+    animation-delay: .05s;
+}
+
+.ah-dashboard.ah-animate-ready > :nth-child(2),
+.ah-dash.ah-animate-ready > :nth-child(2) {
+    animation-delay: .15s;
+}
+
+.ah-dashboard.ah-animate-ready > :nth-child(3),
+.ah-dash.ah-animate-ready > :nth-child(3) {
+    animation-delay: .25s;
+}
+
+.ah-dashboard.ah-animate-ready > :nth-child(4),
+.ah-dash.ah-animate-ready > :nth-child(4) {
+    animation-delay: .35s;
+}
+
+.ah-dashboard.ah-animate-ready > :nth-child(5),
+.ah-dash.ah-animate-ready > :nth-child(5) {
+    animation-delay: .45s;
+}
+
+.ah-dashboard.ah-animate-ready > :nth-child(6),
+.ah-dash.ah-animate-ready > :nth-child(6) {
+    animation-delay: .55s;
+}
+
+.ah-dashboard.ah-animate-ready > :nth-child(7),
+.ah-dash.ah-animate-ready > :nth-child(7) {
+    animation-delay: .65s;
+}
+
+/* KPI cards */
+
+.ah-dashboard.ah-animate-ready .ah-dash-kpi,
+.ah-dash.ah-animate-ready .ah-dash-kpi {
+    animation: ahDashboardEntrance .6s ease both;
+}
+
+.ah-dashboard.ah-animate-ready .ah-dash-kpi:nth-child(1),
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(1) {
+    animation-delay: .3s;
+}
+
+.ah-dashboard.ah-animate-ready .ah-dash-kpi:nth-child(2),
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(2) {
+    animation-delay: .4s;
+}
+
+.ah-dashboard.ah-animate-ready .ah-dash-kpi:nth-child(3),
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(3) {
+    animation-delay: .5s;
+}
+
+.ah-dashboard.ah-animate-ready .ah-dash-kpi:nth-child(4),
+.ah-dash.ah-animate-ready .ah-dash-kpi:nth-child(4) {
+    animation-delay: .6s;
+}
+
+/* Entrance animation */
+
+@keyframes ahDashboardEntrance {
+
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ah-dashboard.ah-animate-ready *,
+    .ah-dash.ah-animate-ready * {
+        animation: none !important;
+        transition: none !important;
+    }
+
+}
+
 </style>
 {% endblock %}
 

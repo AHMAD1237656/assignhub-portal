@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Sign In - AssignHub{% endblock %}
@@ -7,6 +8,7 @@
     .ah-login-page {
         --ah-login-navy: #101c32;
         --ah-login-blue: #4669ed;
+
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         min-height: clamp(480px, calc(100vh - 220px), 720px);
@@ -15,7 +17,76 @@
         border-radius: 18px;
         background: #fff;
         box-shadow: 0 16px 40px rgba(16, 28, 50, .08);
+
+        animation: ah-page-appear .65s ease-out both;
     }
+
+    /* ==============================
+       ANIMATION KEYFRAMES
+    ============================== */
+
+    @keyframes ah-page-appear {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes ah-slide-left {
+        from {
+            opacity: 0;
+            transform: translateX(-35px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes ah-slide-right {
+        from {
+            opacity: 0;
+            transform: translateX(35px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes ah-slide-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes ah-icon-pop {
+        0% {
+            opacity: 0;
+            transform: scale(.55) rotate(-12deg);
+        }
+        75% {
+            opacity: 1;
+            transform: scale(1.08) rotate(3deg);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) rotate(0);
+        }
+    }
+
+    /* ==============================
+       LEFT INTRO PANEL
+    ============================== */
 
     .ah-login-intro {
         display: flex;
@@ -23,7 +94,12 @@
         justify-content: center;
         padding: clamp(32px, 6vw, 76px);
         color: #fff;
-        background: linear-gradient(125deg, #101c32 0%, #223c70 65%, #3555ac 100%);
+        background: linear-gradient(
+            125deg,
+            #101c32 0%,
+            #223c70 65%,
+            #3555ac 100%
+        );
     }
 
     .ah-login-mark {
@@ -32,11 +108,13 @@
         width: 58px;
         height: 58px;
         margin-bottom: 32px;
-        border: 1px solid rgba(255, 255, 255, .22);
+        border: 1px solid rgba(255,255,255,.22);
         border-radius: 17px;
         color: #fff;
-        background: rgba(255, 255, 255, .12);
+        background: rgba(255,255,255,.12);
         font-size: 25px;
+
+        animation: ah-icon-pop .75s cubic-bezier(.2,.8,.2,1) .25s both;
     }
 
     .ah-login-eyebrow {
@@ -46,6 +124,8 @@
         font-weight: 800;
         letter-spacing: 1.5px;
         text-transform: uppercase;
+
+        animation: ah-slide-left .65s ease-out .4s both;
     }
 
     .ah-login-intro h1 {
@@ -56,6 +136,8 @@
         font-weight: 800;
         letter-spacing: -.8px;
         line-height: 1.15;
+
+        animation: ah-slide-left .7s ease-out .55s both;
     }
 
     .ah-login-intro p {
@@ -64,7 +146,13 @@
         color: #d3def3;
         font-size: 14px;
         line-height: 1.8;
+
+        animation: ah-slide-up .7s ease-out .75s both;
     }
+
+    /* ==============================
+       FEATURE BADGES
+    ============================== */
 
     .ah-login-features {
         display: flex;
@@ -78,13 +166,46 @@
         align-items: center;
         gap: 7px;
         padding: 8px 11px;
-        border: 1px solid rgba(255, 255, 255, .17);
+        border: 1px solid rgba(255,255,255,.17);
         border-radius: 30px;
         color: #e4ebff;
-        background: rgba(255, 255, 255, .08);
+        background: rgba(255,255,255,.08);
         font-size: 11px;
         font-weight: 650;
+
+        opacity: 0;
+        animation: ah-slide-up .6s ease-out forwards;
+        transition:
+            transform .25s ease,
+            background .25s ease,
+            border-color .25s ease;
     }
+
+    .ah-login-feature:nth-child(1) {
+        animation-delay: .95s;
+    }
+
+    .ah-login-feature:nth-child(2) {
+        animation-delay: 1.1s;
+    }
+
+    .ah-login-feature:hover {
+        transform: translateY(-3px);
+        background: rgba(255,255,255,.17);
+        border-color: rgba(255,255,255,.35);
+    }
+
+    .ah-login-feature i {
+        transition: transform .25s ease;
+    }
+
+    .ah-login-feature:hover i {
+        transform: scale(1.15);
+    }
+
+    /* ==============================
+       RIGHT FORM PANEL
+    ============================== */
 
     .ah-login-form-side {
         display: grid;
@@ -99,7 +220,9 @@
         border: 1px solid #e6ebf3;
         border-radius: 16px;
         background: #fff;
-        box-shadow: 0 10px 30px rgba(16, 28, 50, .06);
+        box-shadow: 0 10px 30px rgba(16,28,50,.06);
+
+        animation: ah-slide-right .8s cubic-bezier(.2,.7,.2,1) .25s both;
     }
 
     .ah-login-card h2 {
@@ -108,6 +231,8 @@
         font-size: 25px;
         font-weight: 800;
         letter-spacing: -.4px;
+
+        animation: ah-slide-up .6s ease-out .55s both;
     }
 
     .ah-login-card-copy {
@@ -115,6 +240,24 @@
         color: #78879d;
         font-size: 13px;
         line-height: 1.6;
+
+        animation: ah-slide-up .6s ease-out .65s both;
+    }
+
+    /* ==============================
+       FORM ELEMENT ANIMATIONS
+    ============================== */
+
+    .ah-login-card form > .mb-3 {
+        animation: ah-slide-up .6s ease-out both;
+    }
+
+    .ah-login-card form > .mb-3:nth-child(2) {
+        animation-delay: .8s;
+    }
+
+    .ah-login-card form > .mb-3:nth-child(3) {
+        animation-delay: .95s;
     }
 
     .ah-login-card .form-label {
@@ -129,12 +272,22 @@
         border-color: #dce4f0;
         border-radius: 9px;
         font-size: 14px;
+
+        transition:
+            border-color .25s ease,
+            box-shadow .25s ease,
+            background .25s ease;
     }
 
     .ah-login-card .form-control:focus {
         border-color: var(--ah-login-blue);
-        box-shadow: 0 0 0 .2rem rgba(70, 105, 237, .14);
+        background: #fff;
+        box-shadow: 0 0 0 .2rem rgba(70,105,237,.14);
     }
+
+    /* ==============================
+       SIGN IN BUTTON
+    ============================== */
 
     .ah-login-submit {
         min-height: 46px;
@@ -145,12 +298,38 @@
         background: var(--ah-login-blue);
         font-size: 13px;
         font-weight: 750;
+
+        animation: ah-slide-up .6s ease-out 1.1s both;
+
+        transition:
+            background .25s ease,
+            transform .25s ease,
+            box-shadow .25s ease;
     }
 
     .ah-login-submit:hover {
         color: #fff;
         background: #3658d5;
+        transform: translateY(-2px);
+        box-shadow: 0 7px 18px rgba(70,105,237,.25);
     }
+
+    .ah-login-submit:active {
+        transform: translateY(0);
+    }
+
+    .ah-login-submit i {
+        display: inline-block;
+        transition: transform .25s ease;
+    }
+
+    .ah-login-submit:hover i {
+        transform: translateX(3px);
+    }
+
+    /* ==============================
+       FORGOT PASSWORD
+    ============================== */
 
     .ah-login-forgot {
         display: block;
@@ -160,12 +339,20 @@
         font-weight: 650;
         text-align: center;
         text-decoration: none;
+
+        animation: ah-slide-up .6s ease-out 1.25s both;
+
+        transition: color .2s ease;
     }
 
     .ah-login-forgot:hover {
         color: #304fc4;
         text-decoration: underline;
     }
+
+    /* ==============================
+       RESPONSIVE DESIGN
+    ============================== */
 
     @media (max-width: 760px) {
         .ah-login-page {
@@ -188,37 +375,89 @@
             padding: 32px 20px;
         }
     }
+
+    /* ==============================
+       ACCESSIBILITY
+    ============================== */
+
+    @media (prefers-reduced-motion: reduce) {
+        .ah-login-page,
+        .ah-login-page *,
+        .ah-login-page *::before,
+        .ah-login-page *::after {
+            animation: none !important;
+            transition: none !important;
+            scroll-behavior: auto !important;
+        }
+
+        .ah-login-feature {
+            opacity: 1;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+
 <section class="ah-login-page" aria-label="Sign in to AssignHub">
+
+    <!-- LEFT INTRO PANEL -->
+
     <div class="ah-login-intro">
+
         <span class="ah-login-mark" aria-hidden="true">
             <i class="bi bi-mortarboard-fill"></i>
         </span>
-        <span class="ah-login-eyebrow">University Assignment Management</span>
+
+        <span class="ah-login-eyebrow">
+            University Assignment Management
+        </span>
+
         <h1>Your academic work, all in one place.</h1>
+
         <p>
             Sign in to manage assignments, submit your academic work,
             and stay connected with your university.
         </p>
+
         <div class="ah-login-features" aria-label="AssignHub features">
-            <span class="ah-login-feature"><i class="bi bi-shield-check" aria-hidden="true"></i> Secure workspace</span>
-            <span class="ah-login-feature"><i class="bi bi-journal-check" aria-hidden="true"></i> Assignment management</span>
+
+            <span class="ah-login-feature">
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                Secure workspace
+            </span>
+
+            <span class="ah-login-feature">
+                <i class="bi bi-journal-check" aria-hidden="true"></i>
+                Assignment management
+            </span>
+
         </div>
+
     </div>
 
+    <!-- RIGHT LOGIN PANEL -->
+
     <div class="ah-login-form-side">
+
         <div class="ah-login-card">
+
             <h2>Sign In</h2>
-            <p class="ah-login-card-copy">Use your university account to continue.</p>
+
+            <p class="ah-login-card-copy">
+                Use your university account to continue.
+            </p>
 
             <form method="post">
+
                 {% csrf_token %}
 
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
+
+                    <label for="username" class="form-label">
+                        Username
+                    </label>
+
                     <input
                         type="text"
                         name="username"
@@ -228,10 +467,15 @@
                         required
                         autofocus
                     >
+
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+
+                    <label for="password" class="form-label">
+                        Password
+                    </label>
+
                     <input
                         type="password"
                         name="password"
@@ -240,18 +484,36 @@
                         autocomplete="current-password"
                         required
                     >
+
                 </div>
 
-                <button type="submit" class="btn ah-login-submit w-100">
-                    <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>
+                <button
+                    type="submit"
+                    class="btn ah-login-submit w-100"
+                >
+
+                    <i
+                        class="bi bi-box-arrow-in-right me-1"
+                        aria-hidden="true"
+                    ></i>
+
                     Sign In
+
                 </button>
 
-                <a class="ah-login-forgot" href="{% url 'accounts:password_reset' %}">
+                <a
+                    class="ah-login-forgot"
+                    href="{% url 'accounts:password_reset' %}"
+                >
                     Forgot your password?
                 </a>
+
             </form>
+
         </div>
+
     </div>
+
 </section>
+
 {% endblock %}

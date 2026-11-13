@@ -1,22 +1,913 @@
+
 {% extends 'base.html' %}
 {% load static %}
+
 {% block title %}Attempt {{ quiz.title }} | AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================================
+   ASSIGNHUB QUIZ ATTEMPT REDESIGN
+========================================= */
+
+.ahq-attempt-page {
+    max-width: 1450px;
+    margin: auto;
+    padding: 12px 0 45px;
+    color: #1c2e49;
+}
+
+.ahq-attempt-page * {
+    box-sizing: border-box;
+}
+
+/* Header */
+
+.ahq-exam-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 25px 28px;
+    margin-bottom: 20px;
+    border-radius: 17px;
+    background: linear-gradient(120deg,#112440,#254b83);
+    color: white;
+    box-shadow: 0 9px 25px rgba(20,45,80,.12);
+}
+
+.ahq-exam-header h1 {
+    color: white;
+    font-size: clamp(22px,3vw,29px);
+    font-weight: 800;
+    margin: 6px 0;
+    overflow-wrap: anywhere;
+}
+
+.ahq-exam-header p {
+    color: #d0def2;
+    font-size: 13px;
+    margin: 0;
+}
+
+.ahq-exam-eyebrow {
+    color: #a9c7fa;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    font-weight: 800;
+}
+
+.ahq-exam-timer {
+    min-width: 150px;
+    padding: 12px 18px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 12px;
+    background: rgba(255,255,255,.1);
+}
+
+.ahq-exam-timer small {
+    display: block;
+    color: #d3e0f5;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ahq-exam-timer .ahq-countdown {
+    display: block;
+    color: white;
+    font-size: 29px;
+    font-weight: 800;
+    padding: 0;
+    margin-top: 3px;
+    background: transparent;
+    font-variant-numeric: tabular-nums;
+}
+
+.ahq-exam-timer .ahq-countdown.urgent {
+    color: #ffb5a9;
+}
+
+/* Overview */
+
+.ahq-exam-overview {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.ahq-overview-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 16px 19px;
+    border: 1px solid #e1e8f1;
+    border-radius: 13px;
+    background: white;
+}
+
+.ahq-overview-icon {
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #edf3ff;
+    color: #4267ca;
+    font-size: 19px;
+}
+
+.ahq-overview-item strong {
+    display: block;
+    color: #203c61;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.ahq-overview-item small {
+    color: #8491a4;
+    font-size: 11px;
+}
+
+/* Main layout */
+
+.ahq-exam-layout {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 330px;
+    gap: 20px;
+    align-items: start;
+}
+
+.ahq-exam-main {
+    min-width: 0;
+}
+
+.ahq-exam-sidebar {
+    position: sticky;
+    top: 18px;
+    min-width: 0;
+}
+
+/* Common sections */
+
+.ahq-section-card {
+    background: white;
+    border: 1px solid #e1e8f1;
+    border-radius: 15px;
+    padding: 21px;
+    margin-bottom: 17px;
+    box-shadow: 0 4px 16px rgba(20,40,70,.035);
+}
+
+.ahq-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.ahq-section-heading i {
+    color: #456be0;
+    font-size: 19px;
+}
+
+.ahq-section-heading h2 {
+    margin: 0;
+    color: #213b5d;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.ahq-section-heading p {
+    color: #8995a6;
+    font-size: 11px;
+    margin: 4px 0 0;
+}
+
+/* Instructions */
+
+.ahq-instructions {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 17px;
+    border: 1px solid #f0dfac;
+    border-radius: 11px;
+    background: #fff9e9;
+    color: #795b18;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.ahq-instructions i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Status */
+
+.ahq-save-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    margin-bottom: 18px;
+    border: 1px solid #dce8f8;
+    border-radius: 11px;
+    background: #f3f7ff;
+    color: #345a92;
+    font-size: 12px;
+}
+
+.ahq-save-status i {
+    font-size: 17px;
+}
+
+/* Questions */
+
+.ahq-question-list {
+    display: grid;
+    gap: 15px;
+}
+
+.ahq-question-card {
+    padding: 21px;
+    margin: 0;
+    border: 1px solid #e0e7f0;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(20,40,70,.035);
+}
+
+.ahq-question-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.ahq-question-number {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #254d80;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.ahq-question-number span {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: #edf3ff;
+    color: #4569d7;
+}
+
+.ahq-question-marks {
+    padding: 5px 10px;
+    border-radius: 30px;
+    background: #f1f5fa;
+    color: #657a96;
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.ahq-question-text {
+    color: #243a58;
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 650;
+    margin: 12px 0 17px;
+    overflow-wrap: anywhere;
+}
+
+.ahq-options-heading {
+    color: #8290a3;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 9px;
+}
+
+.ahq-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    border: 1px solid #e3e9f1;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s ease,background .15s ease;
+}
+
+.ahq-choice:hover {
+    border-color: #aabde5;
+    background: #f9fbff;
+}
+
+.ahq-choice:has(input:checked) {
+    border-color: #5478e6;
+    background: #f0f4ff;
+}
+
+.ahq-choice input {
+    flex-shrink: 0;
+    width: 17px;
+    height: 17px;
+    margin-top: 2px;
+    accent-color: #4669ed;
+}
+
+.ahq-choice span {
+    color: #40536e;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+/* Monitoring panel */
+
+.ahq-exam-sidebar .ahp-live-panel {
+    width: 100%;
+    max-width: none;
+    padding: 17px;
+    margin: 0 0 16px;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(20,40,70,.04);
+}
+
+.ahq-exam-sidebar .ahp-live-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.ahq-exam-sidebar .ahp-camera {
+    width: 100%;
+    max-height: none;
+    aspect-ratio: 16/9;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.ahq-exam-sidebar .ahp-ai-module {
+    padding: 12px;
+}
+
+.ahq-exam-sidebar .ahp-ai-grid {
+    grid-template-columns: 1fr;
+}
+
+.ahq-exam-sidebar #ahp-fullscreen {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Submission */
+
+.ahq-submit-card {
+    padding: 23px;
+    border: 1px solid #dce6f5;
+    border-radius: 15px;
+    background: #f7f9ff;
+}
+
+.ahq-submit-card h2 {
+    color: #213b5d;
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 7px;
+}
+
+.ahq-submit-card p {
+    color: #75859b;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.ahq-submit-button {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 10px;
+    background: #4669ed;
+    border-color: #4669ed;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.ahq-submit-button:hover {
+    background: #3658d5;
+    border-color: #3658d5;
+}
+
+.ahq-submit-button:disabled {
+    opacity: .65;
+}
+
+.ahq-submit-help {
+    margin-top: 11px;
+    font-size: 11px;
+    color: #7d8da2;
+    line-height: 1.6;
+}
+
+/* Responsive */
+
+@media(max-width:1050px) {
+    .ahq-exam-layout {
+        grid-template-columns: minmax(0,1fr) 290px;
+        gap: 14px;
+    }
+}
+
+@media(max-width:800px) {
+    .ahq-exam-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .ahq-exam-sidebar {
+        position: static;
+        grid-row: 1;
+    }
+
+    .ahq-exam-sidebar .ahp-live-panel {
+        max-width: 100%;
+    }
+}
+
+@media(max-width:560px) {
+    .ahq-attempt-page {
+        padding-top: 5px;
+    }
+
+    .ahq-exam-header {
+        padding: 20px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ahq-exam-timer {
+        width: 100%;
+    }
+
+    .ahq-exam-overview {
+        gap: 8px;
+    }
+
+    .ahq-overview-item {
+        padding: 11px 8px;
+        gap: 7px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ahq-overview-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+    }
+
+    .ahq-overview-item strong {
+        font-size: 17px;
+    }
+
+    .ahq-overview-item small {
+        font-size: 9px;
+    }
+
+    .ahq-section-card,
+    .ahq-question-card,
+    .ahq-submit-card {
+        padding: 15px;
+    }
+
+    .ahq-question-heading {
+        flex-wrap: wrap;
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .ahq-choice {
+        transition: none;
+    }
+}
+</style>
+{% endblock %}
+
+
 {% block content %}
-<section class="ahq-page container-fluid" id="ahq-attempt" data-answer-url="{% url 'quizzes:answer' quiz.pk %}" data-result-url="{% url 'quizzes:result' quiz.pk %}" data-expiry="{{ expiry_epoch }}" data-server-now="{{ server_epoch }}">
-  <div class="ahq-header"><div><span class="ahq-eyebrow">TIMED QUIZ · IN PROGRESS</span><h1>{{ quiz.title }}</h1><p>Answers save automatically. Only one attempt is allowed.</p></div><div class="ahq-countdown" id="ahq-clock" role="timer" aria-live="off">--:--</div></div>
-  <!-- ASSIGNHUB-PROCTORING-PART1 live -->
-  {% if proctoring_enabled %}{% include 'quiz_proctoring/_live_panel.html' %}{% endif %}
-  <div class="alert alert-warning" id="ahq-status" role="status">Select an answer to autosave it.</div>
-  <form id="ahq-csrf-form" hidden>{% csrf_token %}</form>
-  {% for row in rows %}<div class="ahq-card ahq-question mb-3"><h2>{{ forloop.counter }}. {{ row.question.text }}</h2><p class="text-muted">{{ row.question.points }} mark{{ row.question.points|pluralize }}</p>
-    {% with q=row.question %}
-    <label class="ahq-choice"><input type="radio" name="q-{{ q.pk }}" data-question="{{ q.pk }}" value="A" {% if row.selected == 'A' %}checked{% endif %}><span>A. {{ q.option_a }}</span></label>
-    <label class="ahq-choice"><input type="radio" name="q-{{ q.pk }}" data-question="{{ q.pk }}" value="B" {% if row.selected == 'B' %}checked{% endif %}><span>B. {{ q.option_b }}</span></label>
-    <label class="ahq-choice"><input type="radio" name="q-{{ q.pk }}" data-question="{{ q.pk }}" value="C" {% if row.selected == 'C' %}checked{% endif %}><span>C. {{ q.option_c }}</span></label>
-    <label class="ahq-choice"><input type="radio" name="q-{{ q.pk }}" data-question="{{ q.pk }}" value="D" {% if row.selected == 'D' %}checked{% endif %}><span>D. {{ q.option_d }}</span></label>
-    {% endwith %}
-  </div>{% endfor %}
-  <form method="post" action="{% url 'quizzes:submit' quiz.pk %}" id="ahq-submit-form">{% csrf_token %}<button class="btn btn-primary btn-lg" id="ahq-submit" type="submit">Submit final answers</button><div id="ahq-submit-status" class="small text-muted mt-2" role="status" aria-live="polite">After submission, you will be redirected to a confirmation page.</div></form>
+
+<section
+    class="ahq-page ahq-attempt-page"
+    id="ahq-attempt"
+    data-answer-url="{% url 'quizzes:answer' quiz.pk %}"
+    data-result-url="{% url 'quizzes:result' quiz.pk %}"
+    data-expiry="{{ expiry_epoch }}"
+    data-server-now="{{ server_epoch }}"
+>
+
+    <!-- EXAM HEADER -->
+
+    <header class="ahq-exam-header">
+
+        <div>
+            <span class="ahq-exam-eyebrow">
+                ASSIGNHUB / ONLINE ASSESSMENT
+            </span>
+
+            <h1>{{ quiz.title }}</h1>
+
+            <p>
+                Timed assessment · Your answers are saved automatically.
+            </p>
+        </div>
+
+        <div class="ahq-exam-timer">
+
+            <small>Time remaining</small>
+
+            <div
+                class="ahq-countdown"
+                id="ahq-clock"
+                role="timer"
+                aria-live="off"
+            >
+                --:--
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- QUIZ OVERVIEW -->
+
+    <div class="ahq-exam-overview">
+
+        <div class="ahq-overview-item">
+
+            <span class="ahq-overview-icon">
+                <i class="bi bi-question-circle"></i>
+            </span>
+
+            <div>
+                <strong>{{ rows|length }}</strong>
+                <small>Total questions</small>
+            </div>
+
+        </div>
+
+        <div class="ahq-overview-item">
+
+            <span class="ahq-overview-icon">
+                <i class="bi bi-award"></i>
+            </span>
+
+            <div>
+                <strong>
+                    {{ quiz.total_marks|default:"—" }}
+                </strong>
+                <small>Total marks</small>
+            </div>
+
+        </div>
+
+        <div class="ahq-overview-item">
+
+            <span class="ahq-overview-icon">
+                <i class="bi bi-shield-check"></i>
+            </span>
+
+            <div>
+                <strong>1</strong>
+                <small>Allowed attempt</small>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MAIN EXAM LAYOUT -->
+
+    <div class="ahq-exam-layout">
+
+
+        <!-- LEFT: QUESTIONS -->
+
+        <main class="ahq-exam-main">
+
+
+            <!-- INSTRUCTIONS -->
+
+            <div class="ahq-instructions">
+
+                <i class="bi bi-info-circle-fill"></i>
+
+                <div>
+                    <strong>Important instructions</strong><br>
+
+                    Select an answer to save it automatically.
+                    Your timer continues independently.
+                    Review your answers before final submission.
+                </div>
+
+            </div>
+
+
+            <!-- AUTOSAVE STATUS -->
+
+            <div
+                class="ahq-save-status"
+                id="ahq-status"
+                role="status"
+                aria-live="polite"
+            >
+
+                <i class="bi bi-cloud-check"></i>
+
+                Select an answer to autosave it.
+
+            </div>
+
+
+            <form id="ahq-csrf-form" hidden>
+                {% csrf_token %}
+            </form>
+
+
+            <!-- QUESTIONS SECTION -->
+
+            <section class="ahq-section-card">
+
+                <div class="ahq-section-heading">
+
+                    <i class="bi bi-card-checklist"></i>
+
+                    <div>
+                        <h2>Assessment Questions</h2>
+
+                        <p>
+                            Read each question carefully and select one answer.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="ahq-question-list">
+
+                    {% for row in rows %}
+
+                    <article class="ahq-question-card">
+
+                        <div class="ahq-question-heading">
+
+                            <div class="ahq-question-number">
+
+                                <span>
+                                    {{ forloop.counter }}
+                                </span>
+
+                                Question {{ forloop.counter }}
+
+                            </div>
+
+                            <span class="ahq-question-marks">
+
+                                {{ row.question.points }}
+                                mark{{ row.question.points|pluralize }}
+
+                            </span>
+
+                        </div>
+
+
+                        <h3 class="ahq-question-text">
+                            {{ row.question.text }}
+                        </h3>
+
+
+                        <div class="ahq-options-heading">
+                            Select your answer
+                        </div>
+
+
+                        {% with q=row.question %}
+
+                        <label class="ahq-choice">
+
+                            <input
+                                type="radio"
+                                name="q-{{ q.pk }}"
+                                data-question="{{ q.pk }}"
+                                value="A"
+                                {% if row.selected == 'A' %}checked{% endif %}
+                            >
+
+                            <span>
+                                <strong>A.</strong> {{ q.option_a }}
+                            </span>
+
+                        </label>
+
+
+                        <label class="ahq-choice">
+
+                            <input
+                                type="radio"
+                                name="q-{{ q.pk }}"
+                                data-question="{{ q.pk }}"
+                                value="B"
+                                {% if row.selected == 'B' %}checked{% endif %}
+                            >
+
+                            <span>
+                                <strong>B.</strong> {{ q.option_b }}
+                            </span>
+
+                        </label>
+
+
+                        <label class="ahq-choice">
+
+                            <input
+                                type="radio"
+                                name="q-{{ q.pk }}"
+                                data-question="{{ q.pk }}"
+                                value="C"
+                                {% if row.selected == 'C' %}checked{% endif %}
+                            >
+
+                            <span>
+                                <strong>C.</strong> {{ q.option_c }}
+                            </span>
+
+                        </label>
+
+
+                        <label class="ahq-choice">
+
+                            <input
+                                type="radio"
+                                name="q-{{ q.pk }}"
+                                data-question="{{ q.pk }}"
+                                value="D"
+                                {% if row.selected == 'D' %}checked{% endif %}
+                            >
+
+                            <span>
+                                <strong>D.</strong> {{ q.option_d }}
+                            </span>
+
+                        </label>
+
+                        {% endwith %}
+
+                    </article>
+
+                    {% empty %}
+
+                    <div class="ahq-empty">
+                        No questions are available for this quiz.
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+
+            <!-- FINAL SUBMISSION -->
+
+            <section class="ahq-submit-card">
+
+                <h2>
+                    <i class="bi bi-send-check me-2"></i>
+                    Submit your assessment
+                </h2>
+
+                <p>
+                    Make sure you have reviewed your selected answers.
+                    Once submitted, your attempt will be finalized.
+                </p>
+
+
+                <form
+                    method="post"
+                    action="{% url 'quizzes:submit' quiz.pk %}"
+                    id="ahq-submit-form"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        class="btn btn-primary ahq-submit-button"
+                        id="ahq-submit"
+                        type="submit"
+                    >
+
+                        <i class="bi bi-check2-circle me-2"></i>
+
+                        Submit Final Answers
+
+                    </button>
+
+                    <div
+                        id="ahq-submit-status"
+                        class="ahq-submit-help"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        After submission, you will be redirected
+                        to a confirmation page.
+                    </div>
+
+                </form>
+
+            </section>
+
+        </main>
+
+
+        <!-- RIGHT: EXAM MONITORING -->
+
+        <aside class="ahq-exam-sidebar">
+
+            {% if proctoring_enabled %}
+
+                {% include 'quiz_proctoring/_live_panel.html' %}
+
+            {% else %}
+
+                <section class="ahq-section-card">
+
+                    <div class="ahq-section-heading">
+
+                        <i class="bi bi-shield-check"></i>
+
+                        <div>
+                            <h2>Exam Information</h2>
+                            <p>Assessment monitoring is not enabled.</p>
+                        </div>
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+            <section class="ahq-section-card">
+
+                <div class="ahq-section-heading">
+
+                    <i class="bi bi-lightbulb"></i>
+
+                    <div>
+                        <h2>Exam Guidelines</h2>
+                    </div>
+
+                </div>
+
+                <ul class="small text-muted ps-3 mb-0">
+
+                    <li class="mb-2">
+                        Select one answer for each question.
+                    </li>
+
+                    <li class="mb-2">
+                        Your answers are automatically saved.
+                    </li>
+
+                    <li class="mb-2">
+                        Keep an eye on the remaining time.
+                    </li>
+
+                    <li>
+                        Submit before the timer expires.
+                    </li>
+
+                </ul>
+
+            </section>
+
+        </aside>
+
+    </div>
+
 </section>
+
 <script defer src="{% static 'js/quizzes.js' %}"></script>
+
 {% endblock %}
