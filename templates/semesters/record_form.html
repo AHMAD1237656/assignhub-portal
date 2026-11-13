@@ -1,227 +1,119 @@
-
 {% extends "base.html" %}
 
-{% block title %}
-{{ page_title }} | AssignHub
-{% endblock %}
+{% block title %}{{ page_title }} | AssignHub{% endblock %}
 
 {% block content %}
 <div class="container py-3">
-
     <div class="row justify-content-center">
         <div class="col-lg-8">
-
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-
-                    <h2 class="fw-bold mb-4">
-                        {{ page_title }}
-                    </h2>
-
+                    <h2 class="fw-bold mb-4">{{ page_title }}</h2>
                     <form method="post" novalidate>
                         {% csrf_token %}
-
                         {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
                         {% endif %}
 
                         {% for field in form %}
-
                             {% if field.name == "is_active" %}
                             <div class="form-check mb-3">
                                 {{ field }}
-
-                                <label class="form-check-label"
-                                       for="{{ field.id_for_label }}">
-                                    {{ field.label }}
-                                </label>
-
-                                {% for error in field.errors %}
-                                <div class="text-danger small">
-                                    {{ error }}
-                                </div>
-                                {% endfor %}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                             </div>
-
                             {% else %}
                             <div class="mb-3">
-
-                                <label class="form-label fw-semibold"
-                                       for="{{ field.id_for_label }}">
-                                    {{ field.label }}
-                                </label>
-
+                                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 {{ field }}
-
                                 {% if field.name == "department" %}
-                                <div class="form-text">
-                                    First select the department.
-                                </div>
+                                <div class="form-text">First select the department.</div>
+                                {% elif field.name == "program" %}
+                                <div class="form-text">Programs are filtered by the selected department.</div>
+                                {% elif field.name == "semester" and form.department %}
+                                <div class="form-text">Select the program first, then choose its semester.</div>
                                 {% endif %}
-
-                                {% if field.name == "program" %}
-                                <div class="form-text">
-                                    Programs will be filtered
-                                    according to the selected department.
-                                </div>
-                                {% endif %}
-
-                                {% if field.help_text %}
-                                <div class="form-text">
-                                    {{ field.help_text }}
-                                </div>
-                                {% endif %}
-
-                                {% for error in field.errors %}
-                                <div class="text-danger small">
-                                    {{ error }}
-                                </div>
-                                {% endfor %}
-
+                                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                                {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                             </div>
                             {% endif %}
-
                         {% endfor %}
 
                         <div class="d-flex gap-2 mt-4">
-                            <button type="submit"
-                                    class="btn btn-dark">
-                                Save
-                            </button>
-
-                            <a href="{% url back_url %}"
-                               class="btn btn-outline-secondary">
-                                Cancel
-                            </a>
+                            <button type="submit" class="btn btn-dark">Save</button>
+                            <a href="{% url back_url %}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
-
                     </form>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 {% endblock %}
 
-
 {% if form.department %}
 {% block extra_js %}
 {{ block.super }}
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const department = document.getElementById("id_department");
+    const program = document.getElementById("id_program");
+    const semester = document.getElementById("id_semester");
+    if (!department || !program) return;
 
-    const departmentSelect = document.getElementById(
-        "id_department"
-    );
+    const programsApi = "{% url 'semesters:program_options_api' %}";
+    const semestersApi = "{% url 'semesters:semester_options_api' %}";
 
-    const programSelect = document.getElementById(
-        "id_program"
-    );
-
-    if (!departmentSelect || !programSelect) {
-        return;
+    function reset(select, label) {
+        if (select) select.replaceChildren(new Option(label, ""));
     }
 
-    const apiUrl = "{% url 'semesters:program_options_api' %}";
-
-    function resetPrograms(message) {
-        programSelect.innerHTML = "";
-
-        const option = new Option(
-            message,
-            ""
-        );
-
-        programSelect.add(option);
-    }
-
-    function updateProgramState() {
-        programSelect.disabled = (
-            !departmentSelect.value
-        );
-    }
-
-    // Preserve existing options on initial page load.
-    resetIfNoDepartment();
-
-    function resetIfNoDepartment() {
-        if (!departmentSelect.value) {
-            resetPrograms("Select Department First");
+    async function load(select, api, key, value, placeholder) {
+        reset(select, "Loading...");
+        select.disabled = true;
+        if (!value) {
+            reset(select, placeholder);
+            return;
         }
-
-        updateProgramState();
+        try {
+            const url = new URL(api, window.location.origin);
+            url.searchParams.set(key, value);
+            const response = await fetch(url.toString(), {
+                credentials: "same-origin",
+                headers: {"X-Requested-With": "XMLHttpRequest"}
+            });
+            if (!response.ok) throw new Error("Could not load options");
+            const payload = await response.json();
+            reset(select, placeholder);
+            payload.results.forEach(item =>
+                select.add(new Option(item.label, String(item.id)))
+            );
+            select.disabled = payload.results.length === 0;
+            if (!payload.results.length) reset(select, "No options available");
+        } catch (error) {
+            reset(select, "Could not load options");
+            select.disabled = true;
+            console.error(error);
+        }
     }
 
-    departmentSelect.addEventListener(
-        "change",
-        async function () {
-
-            const departmentId = this.value;
-
-            resetPrograms("Loading programs...");
-            programSelect.disabled = true;
-
-            if (!departmentId) {
-                resetPrograms("Select Department First");
-                return;
-            }
-
-            try {
-                const response = await fetch(
-                    apiUrl + "?department=" +
-                    encodeURIComponent(departmentId),
-                    {
-                        method: "GET",
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest"
-                        }
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error(
-                        "Unable to load programs."
-                    );
-                }
-
-                const data = await response.json();
-
-                resetPrograms("Select Program");
-
-                if (!data.results.length) {
-                    resetPrograms("No programs available");
-                    return;
-                }
-
-                data.results.forEach(function (program) {
-                    programSelect.add(
-                        new Option(
-                            program.label,
-                            program.id
-                        )
-                    );
-                });
-
-                programSelect.disabled = false;
-
-            } catch (error) {
-                resetPrograms("Could not load programs");
-                programSelect.disabled = true;
-
-                console.error(
-                    "Program dropdown error:",
-                    error
-                );
-            }
+    department.addEventListener("change", async function () {
+        await load(program, programsApi, "department", this.value, "Select Program");
+        if (semester) {
+            reset(semester, "Select Program First");
+            semester.disabled = true;
         }
-    );
+    });
 
-    updateProgramState();
+    if (semester) {
+        program.addEventListener("change", function () {
+            load(semester, semestersApi, "program", this.value, "Select Semester");
+        });
+    }
 
+    // Keep server-selected options intact on first render (especially edit forms).
+    program.disabled = !department.value;
+    if (semester) semester.disabled = !program.value;
 });
 </script>
 {% endblock %}

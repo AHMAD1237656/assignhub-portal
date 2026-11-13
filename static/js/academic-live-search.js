@@ -27,6 +27,10 @@ function initializeLiveSearch(form) {
         Number(form.dataset.debounce) || 200
     );
 
+    const departmentSelect = form.querySelector(
+        'select[name="department"]'
+    );
+
     const programSelect = form.querySelector(
         'select[name="program"]'
     );
@@ -35,7 +39,9 @@ function initializeLiveSearch(form) {
         'select[name="semester"]'
     );
 
+    const programsApi = form.dataset.programsApi;
     const semestersApi = form.dataset.semestersApi;
+    const includeArchived = form.dataset.includeArchived === "1";
 
     let debounceTimer = null;
 
@@ -212,14 +218,10 @@ function initializeLiveSearch(form) {
             return;
         }
 
-        if (
-            target === programSelect
-            && semesterSelect
-            && semestersApi
-        ) {
-            updateSemesterOptions(
-                target.value
-            );
+        if (target === departmentSelect && programSelect && programsApi) {
+            updateProgramOptions(target.value);
+        } else if (target === programSelect && semesterSelect && semestersApi) {
+            updateSemesterOptions(target.value);
         }
 
         scheduleSearch();
@@ -269,6 +271,59 @@ function initializeLiveSearch(form) {
 
 
     // -----------------------------------------------
+    // DEPARTMENT -> PROGRAM DEPENDENT DROPDOWN
+    // -----------------------------------------------
+
+    async function updateProgramOptions(departmentId) {
+        if (!programSelect || !programsApi) return;
+
+        dropdownVersion += 1;
+        const version = dropdownVersion;
+        if (dropdownController) {
+            dropdownController.abort();
+            dropdownController = null;
+        }
+
+        programSelect.replaceChildren(new Option("All Programs", ""));
+        programSelect.disabled = true;
+        if (semesterSelect) {
+            semesterSelect.replaceChildren(new Option("All Semesters", ""));
+            semesterSelect.disabled = true;
+        }
+        if (!departmentId) return;
+
+        const controller = new AbortController();
+        dropdownController = controller;
+        const url = new URL(programsApi, window.location.origin);
+        url.searchParams.set("department", departmentId);
+        if (includeArchived) url.searchParams.set("include_archived", "1");
+
+        try {
+            const response = await fetch(url.toString(), {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {"Accept": "application/json"},
+                signal: controller.signal
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const payload = await response.json();
+            if (version !== dropdownVersion) return;
+
+            payload.results.forEach(item =>
+                programSelect.add(new Option(item.label, String(item.id)))
+            );
+            programSelect.disabled = false;
+        } catch (error) {
+            if (error.name !== "AbortError" && version === dropdownVersion) {
+                setNotice("Unable to load programs. Please select the department again.");
+            }
+        } finally {
+            if (dropdownController === controller) dropdownController = null;
+        }
+    }
+
+
+    // -----------------------------------------------
     // PROGRAM -> SEMESTER DEPENDENT DROPDOWN
     // -----------------------------------------------
 
@@ -306,10 +361,10 @@ function initializeLiveSearch(form) {
             window.location.origin
         );
 
-        url.searchParams.set(
-            "program",
-            programId
-        );
+        url.searchParams.set("program", programId);
+        if (includeArchived) {
+            url.searchParams.set("include_archived", "1");
+        }
 
         try {
             const response = await fetch(

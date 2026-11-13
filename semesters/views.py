@@ -578,15 +578,18 @@ def section_list(request):
     search = search_value(request)
     status = status_value(request)
 
-    program_id = parse_id(
-        request.GET.get("program")
-    )
+    department_id = parse_id(request.GET.get("department"))
+    program_id = parse_id(request.GET.get("program"))
+    semester_id = parse_id(request.GET.get("semester"))
 
-    semester_id = parse_id(
-        request.GET.get("semester")
-    )
+    # Backward compatibility for URLs that contain program only.
+    if department_id is None and program_id and program_id > 0:
+        selected_program = Program.objects.filter(
+            pk=program_id
+        ).only("department_id").first()
+        if selected_program:
+            department_id = selected_program.department_id
 
-    # A semester must be selected within a program.
     if program_id is None:
         semester_id = None
 
@@ -610,6 +613,11 @@ def section_list(request):
             | Q(description__icontains=search)
         )
 
+    if department_id is not None:
+        sections = sections.filter(
+            semester__program__department_id=department_id
+        )
+
     if program_id is not None:
         sections = sections.filter(
             semester__program_id=program_id
@@ -625,14 +633,21 @@ def section_list(request):
         status,
     )
 
-    semester_options = Semester.objects.none()
+    # List filters include archived hierarchy records so old sections
+    # remain discoverable.
+    departments = Department.objects.order_by("name")
 
+    programs = Program.objects.none()
+    if department_id is not None and department_id > 0:
+        programs = Program.objects.filter(
+            department_id=department_id
+        ).order_by("code")
+
+    semester_options = Semester.objects.none()
     if program_id is not None and program_id > 0:
-        semester_options = (
-            Semester.objects.filter(
-                program_id=program_id
-            ).order_by("number")
-        )
+        semester_options = Semester.objects.filter(
+            program_id=program_id
+        ).order_by("number")
 
     page_obj = get_page(
         request,
@@ -643,6 +658,10 @@ def section_list(request):
         "page_obj": page_obj,
         "search": search,
         "status": status,
+        "departments": departments,
+        "selected_department": (
+            "" if department_id is None else str(department_id)
+        ),
         "selected_program": (
             ""
             if program_id is None
@@ -653,21 +672,17 @@ def section_list(request):
             if semester_id is None
             else str(semester_id)
         ),
-        "programs": Program.objects.select_related(
-            "department"
-        ).order_by(
-            "department__name",
-            "code",
-        ),
+        "programs": programs,
         "semester_options": semester_options,
         "base_query": pagination_query(
             request,
             q=search,
             status=status,
+            department=(
+                "" if department_id is None else department_id
+            ),
             program=(
-                ""
-                if program_id is None
-                else program_id
+                "" if program_id is None else program_id
             ),
             semester=(
                 ""
@@ -747,7 +762,13 @@ def section_create(request):
         )
 
         if semester_id and semester_id > 0:
-            initial["semester"] = semester_id
+            selected_semester = Semester.objects.select_related(
+                "program", "program__department"
+            ).filter(pk=semester_id).first()
+            if selected_semester:
+                initial["semester"] = selected_semester.pk
+                initial["program"] = selected_semester.program_id
+                initial["department"] = selected_semester.program.department_id
 
         form = SectionForm(
             initial=initial
@@ -865,12 +886,14 @@ def semester_options_api(request):
             status=400,
         )
 
-    semesters = Semester.objects.filter(
-        program_id=program_id,
-        is_active=True,
-        program__is_active=True,
-        program__department__is_active=True,
-    ).order_by("number")
+    semesters = Semester.objects.filter(program_id=program_id)
+    if request.GET.get("include_archived") != "1":
+        semesters = semesters.filter(
+            is_active=True,
+            program__is_active=True,
+            program__department__is_active=True,
+        )
+    semesters = semesters.order_by("number")
 
     return JsonResponse({
         "results": [
@@ -946,11 +969,13 @@ def program_options_api(request):
             status=400,
         )
 
-    programs = Program.objects.filter(
-        department_id=department_id,
-        is_active=True,
-        department__is_active=True,
-    ).order_by("code")
+    programs = Program.objects.filter(department_id=department_id)
+    if request.GET.get("include_archived") != "1":
+        programs = programs.filter(
+            is_active=True,
+            department__is_active=True,
+        )
+    programs = programs.order_by("code")
 
     return JsonResponse({
         "results": [
