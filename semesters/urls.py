@@ -82,4 +82,9 @@ urlpatterns = [
         views.section_options_api,
         name="section_options_api",
     ),
+    path(
+    "api/programs/",
+    views.program_options_api,
+    name="program_options_api",
+),
 ]

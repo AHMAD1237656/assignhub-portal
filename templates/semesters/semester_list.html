@@ -37,9 +37,11 @@
                   data-live-search
                   data-results-target="semester-results"
                   data-debounce="200"
+                  id="semester-filter-form"
                   class="row g-3">
 
-                <div class="col-md-5">
+                <!-- Search -->
+                <div class="col-md-3">
                     <label for="semester-search"
                            class="form-label">
                         Search
@@ -51,10 +53,36 @@
                            value="{{ search }}"
                            class="form-control"
                            autocomplete="off"
-                           placeholder="Search program or semester">
+                           placeholder="Search semester or program">
                 </div>
 
-                <div class="col-md-4">
+                <!-- Department -->
+                <div class="col-md-3">
+                    <label for="department-filter"
+                           class="form-label">
+                        Department
+                    </label>
+
+                    <select id="department-filter"
+                            name="department"
+                            class="form-select">
+
+                        <option value="">
+                            All Departments
+                        </option>
+
+                        {% for department in departments %}
+                        <option value="{{ department.pk }}"
+                            {% if selected_department == department.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ department.code }} - {{ department.name }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <!-- Program -->
+                <div class="col-md-3">
                     <label for="program-filter"
                            class="form-label">
                         Program
@@ -62,23 +90,28 @@
 
                     <select id="program-filter"
                             name="program"
-                            class="form-select">
+                            class="form-select"
+                            {% if not selected_department %}disabled{% endif %}>
 
                         <option value="">
-                            All Programs
+                            {% if selected_department %}
+                                All Programs
+                            {% else %}
+                                Select Department First
+                            {% endif %}
                         </option>
 
                         {% for program in programs %}
                         <option value="{{ program.pk }}"
                             {% if selected_program == program.pk|stringformat:"s" %}selected{% endif %}>
-                            {{ program.code }}
-                            - {{ program.name }}
+                            {{ program.code }} - {{ program.name }}
                         </option>
                         {% endfor %}
 
                     </select>
                 </div>
 
+                <!-- Status -->
                 <div class="col-md-3">
                     <label for="semester-status"
                            class="form-label">
@@ -103,6 +136,7 @@
                             {% if status == "inactive" %}selected{% endif %}>
                             Archived
                         </option>
+
                     </select>
                 </div>
 
@@ -130,8 +164,132 @@
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
 <script defer
         src="{% static 'js/academic-live-search.js' %}">
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const departmentSelect = document.getElementById(
+        "department-filter"
+    );
+
+    const programSelect = document.getElementById(
+        "program-filter"
+    );
+
+    if (!departmentSelect || !programSelect) {
+        return;
+    }
+
+    const apiUrl = "{% url 'semesters:program_options_api' %}";
+
+    departmentSelect.addEventListener(
+        "change",
+        async function () {
+
+            const departmentId = this.value;
+
+            // Reset the previous program selection.
+            programSelect.innerHTML = "";
+
+            programSelect.add(
+                new Option(
+                    departmentId
+                        ? "Loading programs..."
+                        : "Select Department First",
+                    ""
+                )
+            );
+
+            programSelect.disabled = true;
+
+            if (!departmentId) {
+                return;
+            }
+
+            try {
+
+                const response = await fetch(
+                    apiUrl + "?department=" +
+                    encodeURIComponent(departmentId),
+                    {
+                        method: "GET",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Unable to load programs."
+                    );
+                }
+
+                const data = await response.json();
+
+                programSelect.innerHTML = "";
+
+                programSelect.add(
+                    new Option(
+                        "All Programs",
+                        ""
+                    )
+                );
+
+                if (!data.results.length) {
+                    programSelect.innerHTML = "";
+
+                    programSelect.add(
+                        new Option(
+                            "No programs available",
+                            ""
+                        )
+                    );
+
+                    return;
+                }
+
+                data.results.forEach(function (program) {
+
+                    programSelect.add(
+                        new Option(
+                            program.label,
+                            program.id
+                        )
+                    );
+
+                });
+
+                programSelect.disabled = false;
+
+            } catch (error) {
+
+                programSelect.innerHTML = "";
+
+                programSelect.add(
+                    new Option(
+                        "Could not load programs",
+                        ""
+                    )
+                );
+
+                programSelect.disabled = true;
+
+                console.error(
+                    "Department program filter error:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+});
 </script>
 {% endblock %}

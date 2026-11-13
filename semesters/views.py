@@ -17,7 +17,7 @@ from django.views.decorators.http import (
     require_POST,
 )
 
-from departments.models import Program
+from departments.models import Department, Program
 from departments.permissions import academic_admin_required
 
 from .forms import SectionForm, SemesterForm
@@ -258,6 +258,7 @@ def delete_record(
 # SEMESTER LIST + LIVE SEARCH
 # =====================================================
 
+
 @academic_admin_required
 @require_GET
 def semester_list(request):
@@ -265,9 +266,26 @@ def semester_list(request):
     search = search_value(request)
     status = status_value(request)
 
+    department_id = parse_id(
+        request.GET.get("department")
+    )
+
     program_id = parse_id(
         request.GET.get("program")
     )
+
+    # Backward compatibility:
+    # If a program is supplied without a department,
+    # automatically determine its department.
+    if department_id is None and program_id and program_id > 0:
+        selected_program_obj = Program.objects.filter(
+            pk=program_id
+        ).only(
+            "department_id"
+        ).first()
+
+        if selected_program_obj:
+            department_id = selected_program_obj.department_id
 
     semesters = (
         Semester.objects.select_related(
@@ -278,21 +296,12 @@ def semester_list(request):
 
     if search:
         semesters = semesters.filter(
-            Q(
-                program__code__icontains=search
-            )
-            | Q(
-                program__name__icontains=search
-            )
-            | Q(
-                program__department__name__icontains=search
-            )
-            | Q(
-                description__icontains=search
-            )
+            Q(program__code__icontains=search)
+            | Q(program__name__icontains=search)
+            | Q(program__department__name__icontains=search)
+            | Q(description__icontains=search)
         )
 
-        # Searching "1" also finds Semester 1.
         if search.isascii() and search.isdecimal():
             number = int(search[:6])
 
@@ -307,6 +316,13 @@ def semester_list(request):
                 )
             )
 
+    # Department filter.
+    if department_id is not None:
+        semesters = semesters.filter(
+            program__department_id=department_id
+        )
+
+    # Program filter.
     if program_id is not None:
         semesters = semesters.filter(
             program_id=program_id
@@ -317,6 +333,19 @@ def semester_list(request):
         status,
     )
 
+    # Department dropdown.
+    departments = Department.objects.order_by(
+        "name"
+    )
+
+    # Only show programs belonging to selected department.
+    programs = Program.objects.none()
+
+    if department_id and department_id > 0:
+        programs = Program.objects.filter(
+            department_id=department_id
+        ).order_by("code")
+
     page_obj = get_page(
         request,
         semesters,
@@ -326,21 +355,32 @@ def semester_list(request):
         "page_obj": page_obj,
         "search": search,
         "status": status,
+
+        "departments": departments,
+
+        "selected_department": (
+            ""
+            if department_id is None
+            else str(department_id)
+        ),
+
         "selected_program": (
             ""
             if program_id is None
             else str(program_id)
         ),
-        "programs": Program.objects.select_related(
-            "department"
-        ).order_by(
-            "department__name",
-            "code",
-        ),
+
+        "programs": programs,
+
         "base_query": pagination_query(
             request,
             q=search,
             status=status,
+            department=(
+                ""
+                if department_id is None
+                else department_id
+            ),
             program=(
                 ""
                 if program_id is None
@@ -394,6 +434,7 @@ def semester_detail(request, pk):
 # CREATE SEMESTER
 # =====================================================
 
+
 @academic_admin_required
 @require_http_methods(["GET", "POST"])
 def semester_create(request):
@@ -413,6 +454,7 @@ def semester_create(request):
                     "semesters:semester_detail",
                     pk=record.pk,
                 )
+
     else:
         initial = {}
 
@@ -421,7 +463,15 @@ def semester_create(request):
         )
 
         if program_id and program_id > 0:
-            initial["program"] = program_id
+            program = Program.objects.filter(
+                pk=program_id
+            ).first()
+
+            if program:
+                initial["program"] = program.pk
+                initial["department"] = (
+                    program.department_id
+                )
 
         form = SemesterForm(
             initial=initial
@@ -436,7 +486,6 @@ def semester_create(request):
             "back_url": "semesters:semester_list",
         },
     )
-
 
 # =====================================================
 # EDIT SEMESTER
@@ -874,3 +923,44 @@ def section_options_api(request):
             for section in sections
         ],
     })
+
+
+# =====================================================
+# DEPENDENT DROPDOWN API:
+# DEPARTMENT -> PROGRAMS
+# =====================================================
+
+@academic_admin_required
+@require_GET
+def program_options_api(request):
+
+    department_id = parse_id(
+        request.GET.get("department")
+    )
+
+    if department_id is None or department_id < 1:
+        return JsonResponse(
+            {
+                "error": "Valid department ID required.",
+            },
+            status=400,
+        )
+
+    programs = Program.objects.filter(
+        department_id=department_id,
+        is_active=True,
+        department__is_active=True,
+    ).order_by("code")
+
+    return JsonResponse({
+        "results": [
+            {
+                "id": program.pk,
+                "label": (
+                    f"{program.code} - {program.name}"
+                ),
+            }
+            for program in programs
+        ],
+    })
+

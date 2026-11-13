@@ -1,117 +1,205 @@
 
-/* =====================================
+/* ==========================================
    ASSIGNHUB FRONTEND INITIALIZATION
-   ===================================== */
+   Unified Dashboard JavaScript
+========================================== */
 
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("AssignHub frontend initialized.");
-});
+(function () {
 
+    "use strict";
+
+
+    /* =====================================
+       1. FRONTEND INITIALIZATION
+    ===================================== */
+
+    function initializeAssignHub() {
+
+        console.log("AssignHub frontend initialized.");
+
+
+        /* =====================================
+           2. INITIALIZE LUCIDE ICONS
+        ===================================== */
+
+        if (
+            window.lucide &&
+            typeof window.lucide.createIcons === "function"
+        ) {
+
+            window.lucide.createIcons({
+
+                attrs: {
+                    "stroke-width": 1.8
+                }
+
+            });
+
+        }
 
 /* =====================================
-   ASSIGNHUB DASHBOARD JAVASCRIPT
-   ===================================== */
+   ASSIGNHUB LOGIN PAGE INITIALIZATION
+===================================== */
 
-document.addEventListener("DOMContentLoaded", function () {
+const loginPage = document.querySelector(".ah-login-page");
 
-    // Support both existing dashboard class names
-    const dashboards = document.querySelectorAll(
-        ".ah-dashboard, .ah-dash"
-    );
+if (loginPage && !reduceMotion) {
 
-    if (!dashboards.length) {
-        return;
-    }
+    window.requestAnimationFrame(function () {
 
-    /* ---------------------------------
-       1. INITIALIZE LUCIDE ICONS
-       --------------------------------- */
-
-    if (
-        window.lucide &&
-        typeof window.lucide.createIcons === "function"
-    ) {
-        window.lucide.createIcons({
-            attrs: {
-                "stroke-width": 1.8
-            }
-        });
-    }
-
-    /* ---------------------------------
-       2. CHECK REDUCED MOTION
-       --------------------------------- */
-
-    const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-
-    dashboards.forEach(function (dashboard) {
-
-        /* ---------------------------------
-           3. INITIAL PAGE-LOAD ANIMATIONS
-           --------------------------------- */
-
-        if (!reduceMotion) {
-
-            requestAnimationFrame(function () {
-
-                dashboard.classList.add("ah-animate-ready");
-
-            });
-
-        }
-
-
-        /* ---------------------------------
-           4. WELCOME HAND ANIMATION
-           --------------------------------- */
-
-        const wave = dashboard.querySelector(".ah-wave");
-
-        if (wave && !reduceMotion) {
-
-            wave.classList.add("animate");
-
-            wave.addEventListener(
-                "animationend",
-                function () {
-
-                    wave.classList.remove("animate");
-
-                },
-                { once: true }
-            );
-
-        }
-
-
-        /* ---------------------------------
-           5. CARD HOVER MICRO INTERACTIONS
-           EXISTING FUNCTIONALITY PRESERVED
-           --------------------------------- */
-
-        const cards = dashboard.querySelectorAll(
-            ".ah-feature-card"
-        );
-
-        cards.forEach(function (card) {
-
-            card.addEventListener("mouseenter", function () {
-
-                card.classList.add("ah-card-hovered");
-
-            });
-
-            card.addEventListener("mouseleave", function () {
-
-                card.classList.remove("ah-card-hovered");
-
-            });
-
-        });
+        loginPage.classList.add("ah-login-animate-ready");
 
     });
 
-});
+}
+
+
+        /* =====================================
+           3. FIND ALL DASHBOARDS
+           Supports both dashboard classes
+        ===================================== */
+
+        const dashboards = document.querySelectorAll(
+            ".ah-dashboard, .ah-dash"
+        );
+
+        if (!dashboards.length) {
+            return;
+        }
+
+
+        /* =====================================
+           4. ACCESSIBILITY: REDUCED MOTION
+        ===================================== */
+
+        const reduceMotion = window.matchMedia &&
+            window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
+
+
+        /* =====================================
+           5. INITIALIZE EACH DASHBOARD
+        ===================================== */
+
+        dashboards.forEach(function (dashboard) {
+
+
+            /* ---------------------------------
+               Prevent duplicate initialization
+            --------------------------------- */
+
+            if (dashboard.dataset.ahInitialized === "true") {
+                return;
+            }
+
+            dashboard.dataset.ahInitialized = "true";
+
+
+            /* =================================
+               6. INITIAL PAGE-LOAD ANIMATIONS
+               Runs only once on page load
+            ================================= */
+
+            if (!reduceMotion) {
+
+                window.requestAnimationFrame(function () {
+
+                    dashboard.classList.add(
+                        "ah-animate-ready"
+                    );
+
+                });
+
+            }
+
+
+            /* =================================
+               7. WELCOME HAND ANIMATION
+               Existing functionality preserved
+            ================================= */
+
+            const wave = dashboard.querySelector(
+                ".ah-wave"
+            );
+
+            if (wave && !reduceMotion) {
+
+                wave.classList.add("animate");
+
+                wave.addEventListener(
+                    "animationend",
+                    function () {
+
+                        wave.classList.remove("animate");
+
+                    },
+                    { once: true }
+                );
+
+            }
+
+
+            /* =================================
+               8. CARD HOVER MICRO INTERACTIONS
+               Existing functionality preserved
+            ================================= */
+
+            const cards = dashboard.querySelectorAll(
+                ".ah-feature-card"
+            );
+
+            cards.forEach(function (card) {
+
+                card.addEventListener(
+                    "mouseenter",
+                    function () {
+
+                        card.classList.add(
+                            "ah-card-hovered"
+                        );
+
+                    }
+                );
+
+                card.addEventListener(
+                    "mouseleave",
+                    function () {
+
+                        card.classList.remove(
+                            "ah-card-hovered"
+                        );
+
+                    }
+                );
+
+            });
+
+
+        });
+
+
+    }
+
+
+    /* =====================================
+       9. DOM READY HANDLING
+       Supports deferred and normal scripts
+    ===================================== */
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            initializeAssignHub,
+            { once: true }
+        );
+
+    } else {
+
+        initializeAssignHub();
+
+    }
+
+
+})();

@@ -55,6 +55,19 @@
 
                                 {{ field }}
 
+                                {% if field.name == "department" %}
+                                <div class="form-text">
+                                    First select the department.
+                                </div>
+                                {% endif %}
+
+                                {% if field.name == "program" %}
+                                <div class="form-text">
+                                    Programs will be filtered
+                                    according to the selected department.
+                                </div>
+                                {% endif %}
+
                                 {% if field.help_text %}
                                 <div class="form-text">
                                     {{ field.help_text }}
@@ -92,3 +105,124 @@
     </div>
 </div>
 {% endblock %}
+
+
+{% if form.department %}
+{% block extra_js %}
+{{ block.super }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const departmentSelect = document.getElementById(
+        "id_department"
+    );
+
+    const programSelect = document.getElementById(
+        "id_program"
+    );
+
+    if (!departmentSelect || !programSelect) {
+        return;
+    }
+
+    const apiUrl = "{% url 'semesters:program_options_api' %}";
+
+    function resetPrograms(message) {
+        programSelect.innerHTML = "";
+
+        const option = new Option(
+            message,
+            ""
+        );
+
+        programSelect.add(option);
+    }
+
+    function updateProgramState() {
+        programSelect.disabled = (
+            !departmentSelect.value
+        );
+    }
+
+    // Preserve existing options on initial page load.
+    resetIfNoDepartment();
+
+    function resetIfNoDepartment() {
+        if (!departmentSelect.value) {
+            resetPrograms("Select Department First");
+        }
+
+        updateProgramState();
+    }
+
+    departmentSelect.addEventListener(
+        "change",
+        async function () {
+
+            const departmentId = this.value;
+
+            resetPrograms("Loading programs...");
+            programSelect.disabled = true;
+
+            if (!departmentId) {
+                resetPrograms("Select Department First");
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    apiUrl + "?department=" +
+                    encodeURIComponent(departmentId),
+                    {
+                        method: "GET",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Unable to load programs."
+                    );
+                }
+
+                const data = await response.json();
+
+                resetPrograms("Select Program");
+
+                if (!data.results.length) {
+                    resetPrograms("No programs available");
+                    return;
+                }
+
+                data.results.forEach(function (program) {
+                    programSelect.add(
+                        new Option(
+                            program.label,
+                            program.id
+                        )
+                    );
+                });
+
+                programSelect.disabled = false;
+
+            } catch (error) {
+                resetPrograms("Could not load programs");
+                programSelect.disabled = true;
+
+                console.error(
+                    "Program dropdown error:",
+                    error
+                );
+            }
+        }
+    );
+
+    updateProgramState();
+
+});
+</script>
+{% endblock %}
+{% endif %}
