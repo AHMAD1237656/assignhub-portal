@@ -1,119 +1,887 @@
+
 {% extends "base.html" %}
 
-{% block title %}Create User - AssignHub{% endblock %}
+{% block title %}Create Account - AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ah-create-page {
+        --ah-navy: #14243a;
+        --ah-navy-light: #203a59;
+        --ah-muted: #718096;
+        --ah-border: #e5eaf0;
+        --ah-bg: #f5f7fb;
+        --ah-primary: #315c91;
+
+        min-height: calc(100vh - 100px);
+        padding: 36px 16px 55px;
+        background: var(--ah-bg);
+    }
+
+    .ah-create-wrapper {
+        max-width: 1050px;
+        margin: 0 auto;
+    }
+
+    .ah-create-heading {
+        margin-bottom: 25px;
+    }
+
+    .ah-create-heading h1 {
+        color: var(--ah-navy);
+        font-size: clamp(25px, 3vw, 32px);
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin: 0 0 8px;
+    }
+
+    .ah-create-heading p {
+        color: var(--ah-muted);
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .ah-create-layout {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .ah-create-sidebar {
+        background: linear-gradient(
+            155deg,
+            var(--ah-navy),
+            var(--ah-navy-light)
+        );
+        color: white;
+        border-radius: 17px;
+        padding: 27px 23px;
+        position: relative;
+        overflow: hidden;
+        min-height: 100%;
+    }
+
+    .ah-create-sidebar::after {
+        content: "";
+        position: absolute;
+        width: 190px;
+        height: 190px;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 50%;
+        right: -85px;
+        bottom: -80px;
+        box-shadow:
+            0 0 0 25px rgba(255,255,255,.035),
+            0 0 0 50px rgba(255,255,255,.025);
+    }
+
+    .ah-create-sidebar-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 15px;
+        display: grid;
+        place-items: center;
+        background: rgba(255,255,255,.12);
+        font-size: 25px;
+        margin-bottom: 23px;
+    }
+
+    .ah-create-sidebar h2 {
+        font-size: 22px;
+        line-height: 1.35;
+        font-weight: 750;
+        margin-bottom: 12px;
+    }
+
+    .ah-create-sidebar > p {
+        color: rgba(255,255,255,.72);
+        font-size: 13px;
+        line-height: 1.8;
+        margin-bottom: 27px;
+    }
+
+    .ah-create-benefits {
+        display: grid;
+        gap: 17px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .ah-create-benefit {
+        display: flex;
+        gap: 11px;
+        align-items: flex-start;
+        font-size: 12px;
+        color: rgba(255,255,255,.88);
+        line-height: 1.6;
+    }
+
+    .ah-create-benefit i {
+        color: #91c5ff;
+        font-size: 16px;
+        margin-top: 1px;
+    }
+
+    .ah-create-main {
+        background: white;
+        border: 1px solid var(--ah-border);
+        border-radius: 17px;
+        box-shadow: 0 8px 30px rgba(20,36,58,.045);
+        overflow: hidden;
+    }
+
+    .ah-create-main-header {
+        padding: 24px 28px 20px;
+        border-bottom: 1px solid var(--ah-border);
+    }
+
+    .ah-create-main-header h2 {
+        color: var(--ah-navy);
+        font-size: 18px;
+        font-weight: 750;
+        margin: 0 0 5px;
+    }
+
+    .ah-create-main-header p {
+        color: var(--ah-muted);
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .ah-create-form {
+        padding: 26px 28px 28px;
+    }
+
+    .ah-form-section {
+        margin-bottom: 25px;
+    }
+
+    .ah-form-section-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--ah-navy);
+        font-size: 13px;
+        font-weight: 750;
+        margin-bottom: 17px;
+    }
+
+    .ah-form-section-title i {
+        font-size: 16px;
+        color: var(--ah-primary);
+    }
+
+    .ah-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .ah-form-group {
+        min-width: 0;
+        margin-bottom: 15px;
+    }
+
+    .ah-form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .ah-form-label {
+        display: block;
+        color: #344256;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .ah-required {
+        color: #dc5252;
+    }
+
+    .ah-form-control {
+        width: 100%;
+        min-height: 45px;
+        padding: 10px 13px;
+        border: 1px solid #dce3eb;
+        border-radius: 9px;
+        background: #fff;
+        color: var(--ah-navy);
+        font-size: 13px;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .ah-form-control:focus {
+        border-color: #6389ba;
+        box-shadow: 0 0 0 3px rgba(49,92,145,.10);
+    }
+
+    .ah-form-control::placeholder {
+        color: #a2adba;
+    }
+
+    .ah-form-control.is-invalid {
+        border-color: #dc5252;
+    }
+
+    .ah-field-error {
+        color: #d74747;
+        font-size: 11px;
+        margin-top: 5px;
+    }
+
+    .ah-field-help {
+        color: var(--ah-muted);
+        font-size: 11px;
+        margin-top: 6px;
+    }
+
+    .ah-password-wrap {
+        position: relative;
+    }
+
+    .ah-password-wrap .ah-form-control {
+        padding-right: 45px;
+    }
+
+    .ah-password-toggle {
+        position: absolute;
+        right: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 0;
+        background: transparent;
+        color: #8190a2;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .ah-password-toggle:hover {
+        color: var(--ah-primary);
+    }
+
+    .ah-role-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .ah-role-option {
+        position: relative;
+    }
+
+    .ah-role-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .ah-role-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 105px;
+        padding: 13px 7px;
+        text-align: center;
+        border: 1px solid var(--ah-border);
+        border-radius: 11px;
+        cursor: pointer;
+        transition: all .2s;
+        background: white;
+    }
+
+    .ah-role-card i {
+        font-size: 23px;
+        color: #73849a;
+    }
+
+    .ah-role-card strong {
+        color: #344256;
+        font-size: 12px;
+    }
+
+    .ah-role-card small {
+        color: var(--ah-muted);
+        font-size: 10px;
+    }
+
+    .ah-role-option input:checked + .ah-role-card {
+        border-color: var(--ah-primary);
+        background: #f1f6fc;
+        box-shadow: 0 0 0 2px rgba(49,92,145,.08);
+    }
+
+    .ah-role-option input:checked + .ah-role-card i,
+    .ah-role-option input:checked + .ah-role-card strong {
+        color: var(--ah-primary);
+    }
+
+    .ah-role-option input:focus-visible + .ah-role-card {
+        outline: 3px solid rgba(49,92,145,.25);
+        outline-offset: 2px;
+    }
+
+    .ah-status-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid var(--ah-border);
+        border-radius: 11px;
+        padding: 15px;
+        background: #fbfcfe;
+    }
+
+    .ah-status-title {
+        font-size: 12px;
+        font-weight: 750;
+        color: var(--ah-navy);
+        margin-bottom: 4px;
+    }
+
+    .ah-status-description {
+        color: var(--ah-muted);
+        font-size: 11px;
+        margin: 0;
+    }
+
+    .ah-status-box .form-check {
+        margin: 0;
+        min-height: auto;
+    }
+
+    .ah-status-box .form-check-input {
+        width: 40px;
+        height: 21px;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .ah-status-box .form-check-input:checked {
+        background-color: #267c59;
+        border-color: #267c59;
+    }
+
+    .ah-form-alert {
+        border-radius: 9px;
+        font-size: 12px;
+        margin-bottom: 20px;
+    }
+
+    .ah-form-footer {
+        border-top: 1px solid var(--ah-border);
+        padding-top: 21px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ah-form-footer-note {
+        color: var(--ah-muted);
+        font-size: 11px;
+        margin: 0;
+    }
+
+    .ah-submit-btn {
+        border: 0;
+        border-radius: 9px;
+        padding: 12px 21px;
+        background: var(--ah-navy);
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        transition: background .2s, transform .2s;
+    }
+
+    .ah-submit-btn:hover {
+        background: var(--ah-primary);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .ah-submit-btn:disabled {
+        opacity: .65;
+        cursor: wait;
+        transform: none;
+    }
+
+    @media(max-width: 850px) {
+        .ah-create-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .ah-create-sidebar {
+            min-height: auto;
+        }
+
+        .ah-create-benefits {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media(max-width: 560px) {
+        .ah-create-page {
+            padding: 22px 10px 35px;
+        }
+
+        .ah-create-form,
+        .ah-create-main-header {
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        .ah-form-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .ah-role-grid {
+            gap: 6px;
+        }
+
+        .ah-role-card {
+            min-height: 92px;
+        }
+
+        .ah-role-card strong {
+            font-size: 10px;
+        }
+
+        .ah-create-sidebar {
+            padding: 22px;
+        }
+
+        .ah-create-benefits {
+            grid-template-columns: 1fr;
+        }
+
+        .ah-form-footer {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .ah-submit-btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
+<div class="ah-create-page">
+    <div class="ah-create-wrapper">
 
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
+        <div class="ah-create-heading">
+            <h1>Create Account</h1>
+            <p>Register a new user and configure their AssignHub access.</p>
+        </div>
 
-                <h2 class="mb-4">
-                    Create User Account
-                </h2>
+        <div class="ah-create-layout">
 
-                <form method="post">
+            <aside class="ah-create-sidebar">
+
+                <div class="ah-create-sidebar-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+
+                <h2>Manage your academic community.</h2>
+
+                <p>
+                    Create secure accounts for administrators,
+                    teachers and students through one centralized
+                    account management system.
+                </p>
+
+                <div class="ah-create-benefits">
+
+                    <div class="ah-create-benefit">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Secure password-protected accounts.</span>
+                    </div>
+
+                    <div class="ah-create-benefit">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Role-based access and permissions.</span>
+                    </div>
+
+                    <div class="ah-create-benefit">
+                        <i class="bi bi-toggle-on"></i>
+                        <span>Control account activation status.</span>
+                    </div>
+
+                    <div class="ah-create-benefit">
+                        <i class="bi bi-building-check"></i>
+                        <span>Centralized academic user management.</span>
+                    </div>
+
+                </div>
+
+            </aside>
+
+            <main class="ah-create-main">
+
+                <div class="ah-create-main-header">
+                    <h2>Account Information</h2>
+                    <p>Complete the information below to create a new account.</p>
+                </div>
+
+                <form method="post" class="ah-create-form" id="ahCreateForm">
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
+                        <div class="alert alert-danger ah-form-alert">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
                         </div>
                     {% endif %}
 
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Username
-                        </label>
+                    <!-- PERSONAL INFORMATION -->
 
-                        {{ form.username }}
+                    <section class="ah-form-section">
 
-                        {% for error in form.username.errors %}
-                            <div class="text-danger small">
-                                {{ error }}
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="row">
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">
-                                First Name
-                            </label>
-
-                            {{ form.first_name }}
+                        <div class="ah-form-section-title">
+                            <i class="bi bi-person-vcard"></i>
+                            Personal Information
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">
-                                Last Name
-                            </label>
+                        <div class="ah-form-grid">
 
-                            {{ form.last_name }}
+                            <div class="ah-form-group full">
+                                <label class="ah-form-label" for="{{ form.username.id_for_label }}">
+                                    Username <span class="ah-required">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="{{ form.username.html_name }}"
+                                    id="{{ form.username.id_for_label }}"
+                                    value="{{ form.username.value|default:'' }}"
+                                    class="ah-form-control {% if form.username.errors %}is-invalid{% endif %}"
+                                    placeholder="Enter a unique username"
+                                    autocomplete="username"
+                                    required
+                                >
+
+                                {% for error in form.username.errors %}
+                                    <div class="ah-field-error">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="ah-form-group">
+                                <label class="ah-form-label" for="{{ form.first_name.id_for_label }}">
+                                    First Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="{{ form.first_name.html_name }}"
+                                    id="{{ form.first_name.id_for_label }}"
+                                    value="{{ form.first_name.value|default:'' }}"
+                                    class="ah-form-control"
+                                    placeholder="Enter first name"
+                                    autocomplete="given-name"
+                                >
+
+                                {% for error in form.first_name.errors %}
+                                    <div class="ah-field-error">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="ah-form-group">
+                                <label class="ah-form-label" for="{{ form.last_name.id_for_label }}">
+                                    Last Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="{{ form.last_name.html_name }}"
+                                    id="{{ form.last_name.id_for_label }}"
+                                    value="{{ form.last_name.value|default:'' }}"
+                                    class="ah-form-control"
+                                    placeholder="Enter last name"
+                                    autocomplete="family-name"
+                                >
+
+                                {% for error in form.last_name.errors %}
+                                    <div class="ah-field-error">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="ah-form-group full">
+                                <label class="ah-form-label" for="{{ form.email.id_for_label }}">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="{{ form.email.html_name }}"
+                                    id="{{ form.email.id_for_label }}"
+                                    value="{{ form.email.value|default:'' }}"
+                                    class="ah-form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                    placeholder="name@example.com"
+                                    autocomplete="email"
+                                >
+
+                                {% for error in form.email.errors %}
+                                    <div class="ah-field-error">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
                         </div>
 
-                    </div>
+                    </section>
 
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Email
-                        </label>
+                    <!-- ACCOUNT SECURITY -->
 
-                        {{ form.email }}
-                    </div>
+                    <section class="ah-form-section">
 
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Password
-                        </label>
+                        <div class="ah-form-section-title">
+                            <i class="bi bi-shield-lock"></i>
+                            Account Security
+                        </div>
 
-                        {{ form.password }}
+                        <div class="ah-form-group">
 
-                        {% for error in form.password.errors %}
-                            <div class="text-danger small">
-                                {{ error }}
+                            <label class="ah-form-label" for="{{ form.password.id_for_label }}">
+                                Account Password <span class="ah-required">*</span>
+                            </label>
+
+                            <div class="ah-password-wrap">
+                                <input
+                                    type="password"
+                                    name="{{ form.password.html_name }}"
+                                    id="{{ form.password.id_for_label }}"
+                                    class="ah-form-control {% if form.password.errors %}is-invalid{% endif %}"
+                                    placeholder="Create a secure password"
+                                    autocomplete="new-password"
+                                    minlength="8"
+                                    required
+                                >
+
+                                <button
+                                    type="button"
+                                    class="ah-password-toggle"
+                                    id="ahPasswordToggle"
+                                    aria-label="Show password"
+                                >
+                                    <i class="bi bi-eye"></i>
+                                </button>
                             </div>
-                        {% endfor %}
-                    </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Role
+                            <div class="ah-field-help">
+                                Minimum 8 characters. Django password validation rules will apply.
+                            </div>
+
+                            {% for error in form.password.errors %}
+                                <div class="ah-field-error">{{ error }}</div>
+                            {% endfor %}
+
+                        </div>
+
+                    </section>
+
+                    <!-- ROLE SELECTION -->
+
+                    <section class="ah-form-section">
+
+                        <div class="ah-form-section-title">
+                            <i class="bi bi-diagram-3"></i>
+                            Account Role
+                        </div>
+
+                        <label class="ah-form-label">
+                            Select user role <span class="ah-required">*</span>
                         </label>
 
-                        {{ form.role }}
-                    </div>
+                        <div class="ah-role-grid">
 
-                    <div class="mb-3">
-                        <label class="form-label">
+                            <div class="ah-role-option">
+                                <input
+                                    type="radio"
+                                    name="{{ form.role.html_name }}"
+                                    id="ahRoleAdmin"
+                                    value="ADMIN"
+                                    {% if form.role.value == "ADMIN" %}checked{% endif %}
+                                    required
+                                >
+
+                                <label class="ah-role-card" for="ahRoleAdmin">
+                                    <i class="bi bi-shield-fill-check"></i>
+                                    <strong>Administrator</strong>
+                                    <small>System management</small>
+                                </label>
+                            </div>
+
+                            <div class="ah-role-option">
+                                <input
+                                    type="radio"
+                                    name="{{ form.role.html_name }}"
+                                    id="ahRoleTeacher"
+                                    value="TEACHER"
+                                    {% if form.role.value == "TEACHER" %}checked{% endif %}
+                                >
+
+                                <label class="ah-role-card" for="ahRoleTeacher">
+                                    <i class="bi bi-person-workspace"></i>
+                                    <strong>Teacher</strong>
+                                    <small>Academic access</small>
+                                </label>
+                            </div>
+
+                            <div class="ah-role-option">
+                                <input
+                                    type="radio"
+                                    name="{{ form.role.html_name }}"
+                                    id="ahRoleStudent"
+                                    value="STUDENT"
+                                    {% if form.role.value == "STUDENT" %}checked{% endif %}
+                                >
+
+                                <label class="ah-role-card" for="ahRoleStudent">
+                                    <i class="bi bi-mortarboard"></i>
+                                    <strong>Student</strong>
+                                    <small>Learning access</small>
+                                </label>
+                            </div>
+
+                        </div>
+
+                        {% for error in form.role.errors %}
+                            <div class="ah-field-error">{{ error }}</div>
+                        {% endfor %}
+
+                    </section>
+
+                    <!-- ACCOUNT STATUS -->
+
+                    <section class="ah-form-section">
+
+                        <div class="ah-form-section-title">
+                            <i class="bi bi-toggle-on"></i>
                             Account Status
-                        </label>
-
-                        <div class="form-check">
-                            {{ form.is_active }}
-
-                            <label class="form-check-label">
-                                Active account
-                            </label>
                         </div>
-                    </div>
 
-                    <button
-                        type="submit"
-                        class="btn btn-dark"
-                    >
-                        Create User
-                    </button>
+                        <div class="ah-status-box">
+
+                            <div>
+                                <div class="ah-status-title">
+                                    Active Account
+                                </div>
+
+                                <p class="ah-status-description">
+                                    Allow this user to log in to AssignHub.
+                                </p>
+                            </div>
+
+                            <div class="form-check form-switch">
+                                <input
+                                    type="checkbox"
+                                    name="{{ form.is_active.html_name }}"
+                                    id="{{ form.is_active.id_for_label }}"
+                                    class="form-check-input"
+                                    {% if form.is_active.value %}checked{% endif %}
+                                >
+                            </div>
+
+                        </div>
+
+                        {% for error in form.is_active.errors %}
+                            <div class="ah-field-error">{{ error }}</div>
+                        {% endfor %}
+
+                    </section>
+
+                    <!-- FORM FOOTER -->
+
+                    <div class="ah-form-footer">
+
+                        <p class="ah-form-footer-note">
+                            <i class="bi bi-lock-fill"></i>
+                            Account information is handled securely.
+                        </p>
+
+                        <button type="submit" class="ah-submit-btn" id="ahSubmitButton">
+                            <i class="bi bi-person-check"></i>
+                            Create Account
+                        </button>
+
+                    </div>
 
                 </form>
 
-            </div>
+            </main>
+
         </div>
 
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const passwordInput = document.getElementById(
+        "id_password"
+    );
+
+    const passwordToggle = document.getElementById(
+        "ahPasswordToggle"
+    );
+
+    if (passwordInput && passwordToggle) {
+
+        passwordToggle.addEventListener("click", function () {
+
+            const isPassword =
+                passwordInput.type === "password";
+
+            passwordInput.type = isPassword
+                ? "text"
+                : "password";
+
+            passwordToggle.innerHTML = isPassword
+                ? '<i class="bi bi-eye-slash"></i>'
+                : '<i class="bi bi-eye"></i>';
+
+            passwordToggle.setAttribute(
+                "aria-label",
+                isPassword ? "Hide password" : "Show password"
+            );
+
+        });
+    }
+
+    const form = document.getElementById("ahCreateForm");
+    const submitButton = document.getElementById(
+        "ahSubmitButton"
+    );
+
+    if (form && submitButton) {
+
+        form.addEventListener("submit", function () {
+
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            submitButton.disabled = true;
+
+            submitButton.innerHTML =
+                '<span class="spinner-border spinner-border-sm"></span> Creating Account...';
+
+        });
+    }
+
+});
+</script>
 
 {% endblock %}

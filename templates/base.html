@@ -774,6 +774,30 @@
 
                 </a>
 
+                <!-- MANAGE TEACHERS -->
+
+                <a
+                    href="{% url 'accounts:teacher_directory' %}"
+                    class="ah-sidebar-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name in 'teacher_directory teacher_create teacher_edit teacher_toggle_status' %}active{% endif %}"
+                    title="Manage Teachers"
+                    {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name in 'teacher_directory teacher_create teacher_edit teacher_toggle_status' %}
+                    aria-current="page"
+                    {% endif %}
+                >
+
+                    <span class="ah-sidebar-link-icon">
+                        <i
+                            class="bi bi-person-workspace"
+                            aria-hidden="true"
+                        ></i>
+                    </span>
+
+                    <span class="ah-sidebar-link-label">
+                        Manage Teachers
+                    </span>
+
+                </a>
+
                 <!-- MANAGE STUDENTS -->
 
                 <a

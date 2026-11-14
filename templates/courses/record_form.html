@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load static %}
 
@@ -16,13 +15,22 @@
                         {{ page_title }}
                     </h2>
 
-                    <form method="post"
-                          novalidate
-                          {% if dependent_type %}
-                          data-dependent-type="{{ dependent_type }}"
-                          data-semesters-url="{% url 'semesters:semester_options_api' %}"
-                          data-sections-url="{% url 'courses:sections_for_course_api' %}"
-                          {% endif %}>
+                    
+
+<form method="post"
+      novalidate
+      {% if dependent_type %}
+      data-dependent-type="{{ dependent_type }}"
+      data-semesters-url="{% url 'semesters:semester_options_api' %}"
+      data-sections-url="{% url 'courses:sections_for_course_api' %}"
+      {% endif %}
+      {% if dependent_type == "course" or dependent_type == "offering" %}
+      data-programs-url="{% url 'semesters:program_options_api' %}"
+      {% endif %}
+      {% if dependent_type == "offering" %}
+      data-courses-url="{% url 'courses:course_options_api' %}"
+      {% endif %}>
+
 
                         {% csrf_token %}
 
@@ -37,8 +45,7 @@
                         {% if field.name == "is_active" %}
                         <div class="form-check mb-3">
                             {{ field }}
-                            <label class="form-check-label"
-                                   for="{{ field.id_for_label }}">
+                            <label class="form-check-label" for="{{ field.id_for_label }}">
                                 {{ field.label }}
                             </label>
 
@@ -51,8 +58,7 @@
 
                         {% else %}
                         <div class="mb-3">
-                            <label class="form-label fw-semibold"
-                                   for="{{ field.id_for_label }}">
+                            <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
                                 {{ field.label }}
                             </label>
 
@@ -75,13 +81,11 @@
                         {% endfor %}
 
                         <div class="d-flex gap-2">
-                            <button type="submit"
-                                    class="btn btn-dark">
+                            <button type="submit" class="btn btn-dark">
                                 Save
                             </button>
 
-                            <a href="{% url cancel_route %}"
-                               class="btn btn-outline-secondary">
+                            <a href="{% url cancel_route %}" class="btn btn-outline-secondary">
                                 Cancel
                             </a>
                         </div>

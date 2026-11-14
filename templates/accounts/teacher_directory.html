@@ -1,0 +1,436 @@
+
+{% extends "base.html" %}
+
+{% block title %}Teacher Management - AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+.ah-teachers {
+    --navy: #14243a;
+    --blue: #315c91;
+    --muted: #758398;
+    --border: #e7ebf1;
+    --surface: #ffffff;
+    padding: 30px 0 50px;
+    background: #f5f7fb;
+    min-height: calc(100vh - 100px);
+}
+.ah-t-wrap { max-width: 1200px; margin: auto; padding: 0 18px; }
+.ah-t-heading {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 15px; margin-bottom: 25px;
+}
+.ah-t-heading h1 {
+    font-size: 27px; font-weight: 800; color: var(--navy);
+    letter-spacing: -.7px; margin: 0 0 6px;
+}
+.ah-t-heading p { color: var(--muted); font-size: 13px; margin: 0; }
+.ah-t-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 11px 16px; border-radius: 9px;
+    background: var(--navy); color: white; text-decoration: none;
+    font-size: 12px; font-weight: 700; border: 0;
+}
+.ah-t-btn:hover { background: var(--blue); color: white; }
+.ah-t-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 15px; margin-bottom: 22px;
+}
+.ah-t-stat {
+    background: white; border: 1px solid var(--border);
+    border-radius: 13px; padding: 19px;
+    display: flex; align-items: center; gap: 15px;
+}
+.ah-t-stat-icon {
+    width: 45px; height: 45px; border-radius: 12px;
+    display: grid; place-items: center; font-size: 20px;
+    background: #edf3fb; color: var(--blue);
+}
+.ah-t-stat:nth-child(2) .ah-t-stat-icon {
+    background: #eaf7ef; color: #258052;
+}
+.ah-t-stat:nth-child(3) .ah-t-stat-icon {
+    background: #fff3e8; color: #b66b2b;
+}
+.ah-t-stat small {
+    display: block; color: var(--muted);
+    font-size: 11px; margin-bottom: 4px;
+}
+.ah-t-stat strong {
+    display: block; color: var(--navy);
+    font-size: 23px; font-weight: 800;
+}
+.ah-t-panel {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+}
+.ah-t-panel-head {
+    padding: 21px 22px;
+    border-bottom: 1px solid var(--border);
+}
+.ah-t-panel-head h2 {
+    color: var(--navy); font-size: 16px;
+    font-weight: 750; margin: 0 0 5px;
+}
+.ah-t-panel-head p {
+    color: var(--muted); font-size: 11px; margin: 0;
+}
+.ah-t-filters {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    align-items: center; margin-top: 17px;
+}
+.ah-t-input, .ah-t-select {
+    height: 41px; border: 1px solid var(--border);
+    border-radius: 8px; padding: 0 12px;
+    font-size: 12px; color: var(--navy);
+    background: white; outline: none;
+}
+.ah-t-input { flex: 1; min-width: 180px; }
+.ah-t-select { min-width: 145px; }
+.ah-t-input:focus, .ah-t-select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(49,92,145,.08);
+}
+.ah-t-filter-btn {
+    height: 41px; padding: 0 16px;
+    border: 0; border-radius: 8px;
+    background: var(--blue); color: white;
+    font-size: 12px; font-weight: 700;
+}
+.ah-t-clear {
+    color: var(--muted); font-size: 12px;
+    text-decoration: none; padding: 8px;
+}
+.ah-t-clear:hover { color: var(--blue); }
+.ah-t-table-wrap { overflow-x: auto; }
+.ah-t-table {
+    width: 100%; border-collapse: collapse;
+    min-width: 700px;
+}
+.ah-t-table th {
+    background: #f9fafc; color: #68778b;
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: .5px; font-weight: 750;
+    padding: 14px 18px; white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+}
+.ah-t-table td {
+    padding: 15px 18px; border-bottom: 1px solid #edf0f4;
+    color: #344256; font-size: 12px; vertical-align: middle;
+}
+.ah-t-table tr:last-child td { border-bottom: 0; }
+.ah-t-table tbody tr:hover { background: #fbfcfe; }
+.ah-t-user { display: flex; align-items: center; gap: 11px; }
+.ah-t-avatar {
+    width: 37px; height: 37px; border-radius: 11px;
+    display: grid; place-items: center;
+    background: #edf3fb; color: var(--blue);
+    font-size: 13px; font-weight: 800; flex-shrink: 0;
+}
+.ah-t-name { color: var(--navy); font-weight: 750; font-size: 12px; }
+.ah-t-username { color: var(--muted); font-size: 10px; margin-top: 3px; }
+.ah-t-email { color: #5f6e81; }
+.ah-t-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 9px; border-radius: 20px;
+    font-size: 10px; font-weight: 750;
+}
+.ah-t-status.active { color: #23784e; background: #e9f6ee; }
+.ah-t-status.inactive { color: #a75b32; background: #fff0e7; }
+.ah-t-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ah-t-actions { display: flex; gap: 7px; align-items: center; }
+.ah-t-action {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border); background: white;
+    display: grid; place-items: center;
+    color: var(--blue); text-decoration: none;
+    font-size: 13px; cursor: pointer;
+}
+.ah-t-action:hover { background: #edf3fb; }
+.ah-t-action.deactivate { color: #bd633d; }
+.ah-t-action.activate { color: #258052; }
+.ah-t-action.deactivate:hover { background: #fff0e7; }
+.ah-t-action.activate:hover { background: #e9f6ee; }
+.ah-t-empty {
+    text-align: center; padding: 55px 15px;
+}
+.ah-t-empty i { font-size: 35px; color: #a8b5c5; }
+.ah-t-empty h3 { font-size: 15px; color: var(--navy); margin: 13px 0 6px; }
+.ah-t-empty p { font-size: 12px; color: var(--muted); margin: 0 0 16px; }
+.ah-t-pagination {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 17px 20px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+}
+.ah-t-pagination p { margin: 0; color: var(--muted); font-size: 11px; }
+.ah-t-pages { display: flex; gap: 5px; }
+.ah-t-page {
+    min-width: 32px; height: 32px; padding: 0 8px;
+    display: grid; place-items: center;
+    border: 1px solid var(--border); border-radius: 7px;
+    color: var(--blue); text-decoration: none; font-size: 11px;
+}
+.ah-t-page.current { background: var(--navy); color: white; border-color: var(--navy); }
+.ah-t-page.disabled { opacity: .4; pointer-events: none; }
+.ah-t-footer {
+    color: var(--muted); font-size: 10px;
+    text-align: center; padding: 15px;
+}
+@media(max-width:650px) {
+    .ah-t-heading { align-items: flex-start; flex-direction: column; }
+    .ah-t-stats { gap: 8px; }
+    .ah-t-stat { padding: 12px 9px; gap: 8px; }
+    .ah-t-stat-icon { width: 34px; height: 34px; font-size: 15px; }
+    .ah-t-stat strong { font-size: 18px; }
+    .ah-t-stat small { font-size: 9px; }
+    .ah-t-pagination { flex-direction: column; align-items: flex-start; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ah-teachers">
+<div class="ah-t-wrap">
+
+    <div class="ah-t-heading">
+        <div>
+            <h1>Teacher Management</h1>
+            <p>Manage teacher accounts, information and access status.</p>
+        </div>
+        <a href="{% url 'accounts:teacher_create' %}" class="ah-t-btn">
+            <i class="bi bi-person-plus"></i> Add New Teacher
+        </a>
+    </div>
+
+    <div class="ah-t-stats">
+
+        <div class="ah-t-stat">
+            <div class="ah-t-stat-icon"><i class="bi bi-people"></i></div>
+            <div>
+                <small>Total Teachers</small>
+                <strong>{{ total_teachers }}</strong>
+            </div>
+        </div>
+
+        <div class="ah-t-stat">
+            <div class="ah-t-stat-icon"><i class="bi bi-person-check"></i></div>
+            <div>
+                <small>Active Teachers</small>
+                <strong>{{ active_teachers }}</strong>
+            </div>
+        </div>
+
+        <div class="ah-t-stat">
+            <div class="ah-t-stat-icon"><i class="bi bi-person-x"></i></div>
+            <div>
+                <small>Inactive Teachers</small>
+                <strong>{{ inactive_teachers }}</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="ah-t-panel">
+
+        <div class="ah-t-panel-head">
+            <h2>Teacher Directory</h2>
+            <p>Search and manage all registered teacher accounts.</p>
+
+            <form method="get" class="ah-t-filters">
+
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    class="ah-t-input"
+                    placeholder="Search name, username or email..."
+                >
+
+                <select name="status" class="ah-t-select">
+                    <option value="">All Statuses</option>
+                    <option value="active" {% if selected_status == "active" %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if selected_status == "inactive" %}selected{% endif %}>Inactive</option>
+                </select>
+
+                <button type="submit" class="ah-t-filter-btn">
+                    <i class="bi bi-search"></i> Search
+                </button>
+
+                <a href="{% url 'accounts:teacher_directory' %}" class="ah-t-clear">
+                    Clear
+                </a>
+
+            </form>
+        </div>
+
+        {% if teachers.object_list %}
+
+        <div class="ah-t-table-wrap">
+            <table class="ah-t-table">
+                <thead>
+                    <tr>
+                        <th>Teacher</th>
+                        <th>Email Address</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for profile in teachers %}
+                    <tr>
+
+                        <td>
+                            <div class="ah-t-user">
+                                <div class="ah-t-avatar">
+                                    {{ profile.user.first_name|default:profile.user.username|first|upper }}
+                                </div>
+
+                                <div>
+                                    <div class="ah-t-name">
+                                        {{ profile.user.get_full_name|default:profile.user.username }}
+                                    </div>
+                                    <div class="ah-t-username">
+                                        @{{ profile.user.username }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="ah-t-email">
+                                {{ profile.user.email|default:"Not provided" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ profile.user.date_joined|date:"d M Y" }}
+                        </td>
+
+                        <td>
+                            {% if profile.user.is_active %}
+                                <span class="ah-t-status active">
+                                    <span class="ah-t-dot"></span> Active
+                                </span>
+                            {% else %}
+                                <span class="ah-t-status inactive">
+                                    <span class="ah-t-dot"></span> Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="ah-t-actions">
+
+                                <a
+                                    href="{% url 'accounts:teacher_edit' profile.user.id %}"
+                                    class="ah-t-action"
+                                    title="Edit teacher"
+                                    aria-label="Edit teacher"
+                                >
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                <form
+                                    method="post"
+                                    action="{% url 'accounts:teacher_toggle_status' profile.user.id %}"
+                                    onsubmit="return confirm('{% if profile.user.is_active %}Deactivate{% else %}Activate{% endif %} this teacher account?');"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="ah-t-action {% if profile.user.is_active %}deactivate{% else %}activate{% endif %}"
+                                        title="{% if profile.user.is_active %}Deactivate{% else %}Activate{% endif %} teacher"
+                                        aria-label="{% if profile.user.is_active %}Deactivate{% else %}Activate{% endif %} teacher"
+                                    >
+                                        <i class="bi {% if profile.user.is_active %}bi-person-dash{% else %}bi-person-check{% endif %}"></i>
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ah-t-pagination">
+
+            <p>
+                Showing {{ teachers.start_index }}–{{ teachers.end_index }}
+                of {{ teachers.paginator.count }} teachers
+            </p>
+
+            <div class="ah-t-pages">
+
+                {% if teachers.has_previous %}
+                    <a class="ah-t-page"
+                       href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&page={{ teachers.previous_page_number }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                {% else %}
+                    <span class="ah-t-page disabled"><i class="bi bi-chevron-left"></i></span>
+                {% endif %}
+
+                <span class="ah-t-page current">{{ teachers.number }}</span>
+
+                {% if teachers.has_next %}
+                    <a class="ah-t-page"
+                       href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&page={{ teachers.next_page_number }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                {% else %}
+                    <span class="ah-t-page disabled"><i class="bi bi-chevron-right"></i></span>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="ah-t-empty">
+            <i class="bi bi-people"></i>
+
+            <h3>
+                {% if search_query or selected_status %}
+                    No matching teachers found
+                {% else %}
+                    No teachers registered yet
+                {% endif %}
+            </h3>
+
+            <p>
+                {% if search_query or selected_status %}
+                    Try changing your search or status filter.
+                {% else %}
+                    Start by creating your first teacher account.
+                {% endif %}
+            </p>
+
+            {% if not search_query and not selected_status %}
+                <a href="{% url 'accounts:teacher_create' %}" class="ah-t-btn">
+                    <i class="bi bi-person-plus"></i> Add Teacher
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:teacher_directory' %}" class="ah-t-btn">
+                    Clear Filters
+                </a>
+            {% endif %}
+        </div>
+
+        {% endif %}
+
+        <div class="ah-t-footer">
+            AssignHub · Teacher Account Management
+        </div>
+
+    </div>
+</div>
+</div>
+{% endblock %}

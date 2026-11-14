@@ -20,7 +20,7 @@ from django.views.decorators.http import (
     require_POST,
 )
 
-from departments.models import Program
+from departments.models import Department, Program
 from semesters.models import Section, Semester
 
 from .forms import (
@@ -204,6 +204,10 @@ def course_list(request):
     q = search_text(request)
     status = valid_status(request)
 
+    department_id = safe_selected_id(
+        request.GET.get("department")
+    )
+
     program_id = safe_selected_id(
         request.GET.get("program")
     )
@@ -226,9 +230,12 @@ def course_list(request):
             | Q(description__icontains=q)
         )
 
-    raw_program = request.GET.get("program", "")
+    if request.GET.get("department"):
+        courses = courses.filter(
+            program__department_id=department_id or -1
+        )
 
-    if raw_program:
+    if request.GET.get("program"):
         courses = courses.filter(
             program_id=program_id or -1
         )
@@ -240,17 +247,35 @@ def course_list(request):
 
     courses = filter_by_status(courses, status)
 
+    departments = Department.objects.order_by("name", "pk")
+
+    programs = Program.objects.all()
+
+    if department_id:
+        programs = programs.filter(
+            department_id=department_id
+        )
+
+    programs = programs.order_by("code", "pk")
+
+    semesters = Semester.objects.none()
+
+    if program_id:
+        semesters = Semester.objects.filter(
+            program_id=program_id
+        ).order_by("number", "pk")
+
     context = {
         "page_obj": paginate(request, courses),
-        "programs": Program.objects.order_by(
-            "code", "pk"
+        "departments": departments,
+        "programs": programs,
+        "semesters": semesters,
+        "selected_department": request.GET.get(
+            "department", ""
         ),
-        "semesters": Semester.objects.filter(
-            program_id=program_id
-        ).order_by("number")
-        if program_id
-        else Semester.objects.none(),
-        "selected_program": raw_program,
+        "selected_program": request.GET.get(
+            "program", ""
+        ),
         "selected_semester": request.GET.get(
             "semester", ""
         ),
@@ -267,17 +292,19 @@ def course_list(request):
 
     return render(request, template, context)
 
-
 @academic_admin_required
 @require_http_methods(["GET", "POST"])
 def course_create(request):
     form = CourseForm(
         request.POST or None,
         initial={
-            "program": safe_selected_id(
-                request.GET.get("program")
-            ),
-        } if request.method == "GET" else None,
+    "department": safe_selected_id(
+        request.GET.get("department")
+    ),
+    "program": safe_selected_id(
+        request.GET.get("program")
+    ),
+} if request.method == "GET" else None,
     )
 
     if request.method == "POST" and form.is_valid():
@@ -400,15 +427,25 @@ def course_delete(request, pk):
 # COURSE OFFERINGS
 # ===================================================
 
+
 @teacher_or_admin_required
 @require_GET
 def offering_list(request):
     q = search_text(request)
     status = valid_status(request)
 
+    department_id = safe_selected_id(
+        request.GET.get("department")
+    )
+
+    program_id = safe_selected_id(
+        request.GET.get("program")
+    )
+
     offerings = CourseOffering.objects.select_related(
         "course",
         "course__program",
+        "course__program__department",
         "course__semester",
         "section",
         "teacher",
@@ -427,9 +464,10 @@ def offering_list(request):
             | Q(teacher__username__icontains=q)
         )
 
-    program_id = safe_selected_id(
-        request.GET.get("program")
-    )
+    if request.GET.get("department"):
+        offerings = offerings.filter(
+            course__program__department_id=department_id or -1
+        )
 
     if request.GET.get("program"):
         offerings = offerings.filter(
@@ -452,9 +490,24 @@ def offering_list(request):
 
     offerings = filter_by_status(offerings, status)
 
+    departments = Department.objects.order_by("name", "pk")
+
+    programs = Program.objects.all()
+
+    if department_id:
+        programs = programs.filter(
+            department_id=department_id
+        )
+
+    programs = programs.order_by("code", "pk")
+
     context = {
         "page_obj": paginate(request, offerings),
-        "programs": Program.objects.order_by("code"),
+        "departments": departments,
+        "programs": programs,
+        "selected_department": request.GET.get(
+            "department", ""
+        ),
         "selected_program": request.GET.get(
             "program", ""
         ),
@@ -786,6 +839,44 @@ def enrollment_delete(request, pk):
 
 @academic_admin_required
 @require_GET
+def courses_for_program_api(request):
+    program_id = safe_selected_id(
+        request.GET.get("program")
+    )
+
+    if not program_id:
+        return JsonResponse(
+            {"error": "Valid program ID required."},
+            status=400,
+        )
+
+    program = get_object_or_404(
+        Program.objects.filter(
+            is_active=True,
+            department__is_active=True,
+        ),
+        pk=program_id,
+    )
+
+    courses = Course.objects.filter(
+        program=program,
+        is_active=True,
+        semester__is_active=True,
+    ).order_by("code", "pk")
+
+    return JsonResponse({
+        "results": [
+            {
+                "id": course.pk,
+                "label": f"{course.code} - {course.title}",
+            }
+            for course in courses
+        ]
+    })
+
+
+@academic_admin_required
+@require_GET
 def sections_for_course_api(request):
     course_id = safe_selected_id(
         request.GET.get("course")
@@ -817,5 +908,36 @@ def sections_for_course_api(request):
                 "label": f"Section {section.code}",
             }
             for section in sections
+        ]
+    })
+
+@academic_admin_required
+@require_GET
+def courses_for_program_api(request):
+    program_id = safe_selected_id(
+        request.GET.get("program")
+    )
+
+    if not program_id:
+        return JsonResponse(
+            {"error": "Valid program ID required."},
+            status=400,
+        )
+
+    courses = Course.objects.filter(
+        program_id=program_id,
+        is_active=True,
+        program__is_active=True,
+        program__department__is_active=True,
+        semester__is_active=True,
+    ).order_by("code", "pk")
+
+    return JsonResponse({
+        "results": [
+            {
+                "id": course.pk,
+                "label": f"{course.code} - {course.title}",
+            }
+            for course in courses
         ]
     })

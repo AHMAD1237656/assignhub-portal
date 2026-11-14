@@ -11,29 +11,20 @@ document.addEventListener("DOMContentLoaded", () => {
 function initializeDependentForm(form) {
     const type = form.dataset.dependentType;
 
-    let parent;
-    let child;
-    let apiUrl;
-    let parameter;
-
     if (type === "course") {
-        parent = form.querySelector("#id_program");
-        child = form.querySelector("#id_semester");
-        apiUrl = form.dataset.semestersUrl;
-        parameter = "program";
-
-    } else if (type === "offering") {
-        parent = form.querySelector("#id_course");
-        child = form.querySelector("#id_section");
-        apiUrl = form.dataset.sectionsUrl;
-        parameter = "course";
-
-    } else {
+        initializeCourseForm(form);
         return;
     }
 
+    if (type === "offering") {
+        initializeOfferingForm(form);
+    }
+}
+
+
+function createDropdownLoader(parent, child, apiUrl, parameter) {
     if (!parent || !child || !apiUrl) {
-        return;
+        return null;
     }
 
     let controller = null;
@@ -43,8 +34,7 @@ function initializeDependentForm(form) {
         ? child.options[0].textContent
         : "Select an option";
 
-
-    parent.addEventListener("change", async () => {
+    async function loadOptions(parentValue, preserveValue = false) {
         version += 1;
         const requestVersion = version;
 
@@ -52,13 +42,17 @@ function initializeDependentForm(form) {
             controller.abort();
         }
 
+        const previousValue = preserveValue
+            ? child.value
+            : "";
+
         child.replaceChildren(
             new Option(initialPlaceholder, "")
         );
 
         child.disabled = true;
 
-        if (!parent.value) {
+        if (!parentValue) {
             return;
         }
 
@@ -69,10 +63,7 @@ function initializeDependentForm(form) {
             window.location.origin
         );
 
-        url.searchParams.set(
-            parameter,
-            parent.value
-        );
+        url.searchParams.set(parameter, parentValue);
 
         try {
             const response = await fetch(
@@ -87,9 +78,7 @@ function initializeDependentForm(form) {
             );
 
             if (!response.ok) {
-                throw new Error(
-                    `HTTP ${response.status}`
-                );
+                throw new Error(`HTTP ${response.status}`);
             }
 
             const data = await response.json();
@@ -98,7 +87,7 @@ function initializeDependentForm(form) {
                 return;
             }
 
-            data.results.forEach((item) => {
+            (data.results || []).forEach((item) => {
                 child.add(
                     new Option(
                         item.label,
@@ -108,6 +97,15 @@ function initializeDependentForm(form) {
             });
 
             child.disabled = false;
+
+            if (
+                previousValue &&
+                Array.from(child.options).some(
+                    option => option.value === previousValue
+                )
+            ) {
+                child.value = previousValue;
+            }
 
         } catch (error) {
             if (error.name === "AbortError") {
@@ -123,5 +121,149 @@ function initializeDependentForm(form) {
                 );
             }
         }
+    }
+
+    parent.addEventListener("change", () => {
+        loadOptions(parent.value);
     });
+
+    return {
+        loadOptions,
+    };
+}
+
+
+function initializeCourseForm(form) {
+    const department = form.querySelector("#id_department");
+    const program = form.querySelector("#id_program");
+    const semester = form.querySelector("#id_semester");
+
+    const programsUrl = form.dataset.programsUrl;
+    const semestersUrl = form.dataset.semestersUrl;
+
+    if (
+        !department ||
+        !program ||
+        !semester ||
+        !programsUrl ||
+        !semestersUrl
+    ) {
+        return;
+    }
+
+    const programLoader = createDropdownLoader(
+        department,
+        program,
+        programsUrl,
+        "department"
+    );
+
+    const semesterLoader = createDropdownLoader(
+        program,
+        semester,
+        semestersUrl,
+        "program"
+    );
+
+    if (!programLoader || !semesterLoader) {
+        return;
+    }
+
+    department.addEventListener("change", () => {
+        semester.replaceChildren(
+            new Option("Select Semester", "")
+        );
+
+        semester.disabled = true;
+    });
+
+    program.addEventListener("change", () => {
+        semester.replaceChildren(
+            new Option("Select Semester", "")
+        );
+
+        semester.disabled = true;
+    });
+
+    // Preserve existing edit/create selections.
+    program.disabled = false;
+    semester.disabled = false;
+}
+
+
+function initializeOfferingForm(form) {
+    const department = form.querySelector("#id_department");
+    const program = form.querySelector("#id_program");
+    const course = form.querySelector("#id_course");
+    const section = form.querySelector("#id_section");
+
+    const programsUrl = form.dataset.programsUrl;
+    const coursesUrl = form.dataset.coursesUrl;
+    const sectionsUrl = form.dataset.sectionsUrl;
+
+    if (
+        !department ||
+        !program ||
+        !course ||
+        !section ||
+        !programsUrl ||
+        !coursesUrl ||
+        !sectionsUrl
+    ) {
+        return;
+    }
+
+    // Department -> Program
+    createDropdownLoader(
+        department,
+        program,
+        programsUrl,
+        "department"
+    );
+
+    // Program -> Course
+    createDropdownLoader(
+        program,
+        course,
+        coursesUrl,
+        "program"
+    );
+
+    // Course -> Section
+    createDropdownLoader(
+        course,
+        section,
+        sectionsUrl,
+        "course"
+    );
+
+    // Changing Department invalidates Course and Section.
+    department.addEventListener("change", () => {
+        course.replaceChildren(
+            new Option("Select Course", "")
+        );
+
+        course.disabled = true;
+
+        section.replaceChildren(
+            new Option("Select Section", "")
+        );
+
+        section.disabled = true;
+    });
+
+    // Changing Program invalidates Section.
+    program.addEventListener("change", () => {
+        section.replaceChildren(
+            new Option("Select Section", "")
+        );
+
+        section.disabled = true;
+    });
+
+    // Existing edit/create selections are already rendered.
+    // Do not reload them on initial page load.
+    program.disabled = false;
+    course.disabled = false;
+    section.disabled = false;
 }

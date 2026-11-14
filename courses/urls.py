@@ -95,4 +95,16 @@ urlpatterns = [
         views.sections_for_course_api,
         name="sections_for_course_api",
     ),
+    path(
+    "api/courses/",
+    views.courses_for_program_api,
+    name="courses_for_program_api",
+),
+
+path(
+    "api/courses/",
+    views.courses_for_program_api,
+    name="course_options_api",
+),
+
 ]

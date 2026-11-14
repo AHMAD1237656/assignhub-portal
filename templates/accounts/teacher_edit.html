@@ -1,0 +1,172 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit Teacher - AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+.ah-edit-page {
+    background: #f5f7fb;
+    min-height: calc(100vh - 100px);
+    padding: 35px 15px 50px;
+}
+.ah-edit-wrap { max-width: 760px; margin: auto; }
+.ah-edit-back {
+    display: inline-flex; gap: 8px; align-items: center;
+    text-decoration: none; color: #63748a;
+    font-size: 12px; font-weight: 650; margin-bottom: 20px;
+}
+.ah-edit-back:hover { color: #315c91; }
+.ah-edit-card {
+    background: white; border: 1px solid #e7ebf1;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 30px rgba(20,36,58,.05);
+}
+.ah-edit-header {
+    padding: 25px 28px;
+    background: linear-gradient(120deg,#14243a,#23446a);
+    color: white;
+}
+.ah-edit-header h1 { font-size: 23px; font-weight: 800; margin: 0 0 6px; }
+.ah-edit-header p { color: #d1dce9; font-size: 12px; margin: 0; }
+.ah-edit-body { padding: 28px; }
+.ah-edit-identity {
+    display: flex; align-items: center; gap: 13px;
+    padding: 15px; background: #f5f7fb;
+    border-radius: 11px; margin-bottom: 25px;
+}
+.ah-edit-avatar {
+    width: 45px; height: 45px; border-radius: 12px;
+    display: grid; place-items: center;
+    background: #e4edf8; color: #315c91;
+    font-size: 17px; font-weight: 800;
+}
+.ah-edit-identity strong { display: block; font-size: 13px; color: #14243a; }
+.ah-edit-identity small { display: block; color: #758398; font-size: 11px; margin-top: 4px; }
+.ah-edit-grid {
+    display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 15px;
+}
+.ah-edit-field { margin-bottom: 15px; min-width: 0; }
+.ah-edit-field.full { grid-column: 1/-1; }
+.ah-edit-field label {
+    display: block; color: #344256;
+    font-size: 12px; font-weight: 700; margin-bottom: 7px;
+}
+.ah-edit-field input {
+    width: 100%; min-height: 44px; padding: 10px 12px;
+    border: 1px solid #dce3eb; border-radius: 8px;
+    font-size: 12px; outline: none;
+}
+.ah-edit-field input:focus {
+    border-color: #315c91;
+    box-shadow: 0 0 0 3px rgba(49,92,145,.09);
+}
+.ah-edit-error { color: #d74747; font-size: 11px; margin-top: 5px; }
+.ah-edit-note {
+    background: #eff5fc; color: #365b84;
+    padding: 13px 15px; border-radius: 9px;
+    font-size: 11px; line-height: 1.7; margin: 20px 0;
+}
+.ah-edit-footer {
+    display: flex; justify-content: flex-end;
+    gap: 10px; border-top: 1px solid #e7ebf1;
+    padding-top: 21px; margin-top: 20px;
+}
+.ah-edit-btn {
+    border: 0; border-radius: 8px; padding: 11px 17px;
+    font-size: 12px; font-weight: 700;
+    text-decoration: none; display: inline-flex;
+    align-items: center; gap: 8px;
+}
+.ah-edit-primary { background: #14243a; color: white; }
+.ah-edit-primary:hover { background: #315c91; color: white; }
+.ah-edit-secondary { background: #edf0f5; color: #344256; }
+.ah-edit-secondary:hover { background: #e1e7ef; color: #14243a; }
+@media(max-width:560px) {
+    .ah-edit-body { padding: 20px 17px; }
+    .ah-edit-header { padding: 22px 18px; }
+    .ah-edit-grid { grid-template-columns: 1fr; gap: 0; }
+    .ah-edit-footer { flex-direction: column-reverse; }
+    .ah-edit-btn { justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ah-edit-page">
+<div class="ah-edit-wrap">
+
+    <a href="{% url 'accounts:teacher_directory' %}" class="ah-edit-back">
+        <i class="bi bi-arrow-left"></i> Back to Teacher Management
+    </a>
+
+    <div class="ah-edit-card">
+
+        <div class="ah-edit-header">
+            <h1><i class="bi bi-pencil-square"></i> Edit Teacher</h1>
+            <p>Update the teacher's account information.</p>
+        </div>
+
+        <div class="ah-edit-body">
+
+            <div class="ah-edit-identity">
+                <div class="ah-edit-avatar">
+                    {{ teacher.first_name|default:teacher.username|first|upper }}
+                </div>
+                <div>
+                    <strong>{{ teacher.get_full_name|default:teacher.username }}</strong>
+                    <small>@{{ teacher.username }} · Teacher Account</small>
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="ah-edit-grid">
+
+                    {% for field in form %}
+                        <div class="ah-edit-field {% if field.name == 'username' or field.name == 'email' %}full{% endif %}">
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+
+                            {{ field }}
+
+                            {% for error in field.errors %}
+                                <div class="ah-edit-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+                <div class="ah-edit-note">
+                    <i class="bi bi-shield-check"></i>
+                    The account's Teacher role and existing course allocations
+                    are preserved. Password changes are managed separately.
+                </div>
+
+                <div class="ah-edit-footer">
+                    <a href="{% url 'accounts:teacher_directory' %}" class="ah-edit-btn ah-edit-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="ah-edit-btn ah-edit-primary">
+                        <i class="bi bi-check2-circle"></i> Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

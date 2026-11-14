@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from .models import UserProfile
 from .forms import UserCreateForm
 from django.views.decorators.http import require_POST
-
+from django.db import IntegrityError
 def user_login(request):
     if request.user.is_authenticated:
         return redirect("/")
@@ -286,3 +286,296 @@ def my_profile_password(request):
         "base.html",
         context,
     )
+
+# ==========================================
+# TEACHER MANAGEMENT
+# ==========================================
+
+from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Q
+from django.http import Http404
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods, require_POST
+
+from accounts.forms import (
+    TeacherCreateForm,
+    TeacherUpdateForm,
+)
+
+TeacherUser = get_user_model()
+
+
+def academic_admin_required(view_func):
+    """
+    Restrict teacher management to authorized administrators.
+    """
+
+    from functools import wraps
+
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+
+        is_admin = (
+            request.user.is_superuser
+            or (
+                request.user.is_staff
+                and UserProfile.objects.filter(
+                    user=request.user,
+                    role=UserProfile.Role.ADMIN,
+                ).exists()
+            )
+        )
+
+        if not is_admin:
+            raise PermissionDenied(
+                "Only administrators can manage teachers."
+            )
+
+        return view_func(
+            request,
+            *args,
+            **kwargs,
+        )
+
+    return wrapper
+
+
+def get_teacher_or_404(user_id):
+
+    teacher_profile = get_object_or_404(
+        UserProfile.objects.select_related("user"),
+        user_id=user_id,
+        role=UserProfile.Role.TEACHER,
+    )
+
+    return teacher_profile.user
+
+
+# ------------------------------------------
+# TEACHER DIRECTORY
+# ------------------------------------------
+
+@academic_admin_required
+@require_http_methods(["GET"])
+def teacher_directory(request):
+
+    teachers = (
+        UserProfile.objects
+        .filter(
+            role=UserProfile.Role.TEACHER
+        )
+        .select_related("user")
+        .order_by(
+            "user__first_name",
+            "user__last_name",
+            "user__username",
+        )
+    )
+
+    search = request.GET.get("q", "").strip()
+    status = request.GET.get("status", "").strip()
+
+    if search:
+        teachers = teachers.filter(
+            Q(user__username__icontains=search)
+            | Q(user__first_name__icontains=search)
+            | Q(user__last_name__icontains=search)
+            | Q(user__email__icontains=search)
+        )
+
+    if status == "active":
+        teachers = teachers.filter(
+            user__is_active=True
+        )
+
+    elif status == "inactive":
+        teachers = teachers.filter(
+            user__is_active=False
+        )
+
+    paginator = Paginator(
+        teachers,
+        15,
+    )
+
+    page_obj = paginator.get_page(
+        request.GET.get("page")
+    )
+
+    context = {
+        "teachers": page_obj,
+        "page_obj": page_obj,
+        "search_query": search,
+        "selected_status": status,
+
+        "total_teachers": UserProfile.objects.filter(
+            role=UserProfile.Role.TEACHER
+        ).count(),
+
+        "active_teachers": UserProfile.objects.filter(
+            role=UserProfile.Role.TEACHER,
+            user__is_active=True,
+        ).count(),
+
+        "inactive_teachers": UserProfile.objects.filter(
+            role=UserProfile.Role.TEACHER,
+            user__is_active=False,
+        ).count(),
+    }
+
+    return render(
+        request,
+        "accounts/teacher_directory.html",
+        context,
+    )
+
+
+# ------------------------------------------
+# CREATE TEACHER
+# ------------------------------------------
+
+@academic_admin_required
+@require_http_methods(["GET", "POST"])
+def teacher_create(request):
+
+    if request.method == "POST":
+
+        form = TeacherCreateForm(
+            request.POST
+        )
+
+        if form.is_valid():
+
+            try:
+                with transaction.atomic():
+
+                    teacher = form.save()
+
+                    UserProfile.objects.create(
+                        user=teacher,
+                        role=UserProfile.Role.TEACHER,
+                    )
+
+            except IntegrityError:
+                form.add_error(
+                    None,
+                    "Unable to create teacher account. "
+                    "Please check the submitted information."
+                )
+
+            else:
+                messages.success(
+                    request,
+                    "Teacher account created successfully.",
+                )
+
+                return redirect(
+                    "accounts:teacher_directory"
+                )
+
+    else:
+        form = TeacherCreateForm(
+            initial={
+                "is_active": True,
+            }
+        )
+
+    return render(
+        request,
+        "accounts/teacher_create.html",
+        {
+            "form": form,
+        },
+    )
+
+
+# ------------------------------------------
+# EDIT TEACHER
+# ------------------------------------------
+
+@academic_admin_required
+@require_http_methods(["GET", "POST"])
+def teacher_edit(request, user_id):
+
+    teacher = get_teacher_or_404(
+        user_id
+    )
+
+    if request.method == "POST":
+
+        form = TeacherUpdateForm(
+            request.POST,
+            instance=teacher,
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Teacher information updated successfully.",
+            )
+
+            return redirect(
+                "accounts:teacher_directory"
+            )
+
+    else:
+        form = TeacherUpdateForm(
+            instance=teacher,
+        )
+
+    return render(
+        request,
+        "accounts/teacher_edit.html",
+        {
+            "form": form,
+            "teacher": teacher,
+        },
+    )
+
+
+# ------------------------------------------
+# ACTIVATE / DEACTIVATE TEACHER
+# ------------------------------------------
+
+@academic_admin_required
+@require_POST
+def teacher_toggle_status(request, user_id):
+
+    with transaction.atomic():
+
+        teacher = get_object_or_404(
+            TeacherUser.objects.select_for_update(),
+            pk=user_id,
+            profile__role=UserProfile.Role.TEACHER,
+        )
+
+        teacher.is_active = not teacher.is_active
+
+        teacher.save(
+            update_fields=["is_active"]
+        )
+
+    if teacher.is_active:
+
+        messages.success(
+            request,
+            "Teacher account activated successfully.",
+        )
+
+    else:
+
+        messages.success(
+            request,
+            "Teacher account deactivated successfully.",
+        )
+
+    return redirect(
+        "accounts:teacher_directory"
+    )
+

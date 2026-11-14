@@ -54,20 +54,41 @@
                            class="form-control"
                            placeholder="Course, section, teacher">
                 </div>
+<div class="col-md-2">
+    <label class="form-label">Department</label>
 
+    <select name="department"
+            class="form-select"
+            id="offering-filter-department">
+
+        <option value="">All Departments</option>
+
+        {% for department in departments %}
+        <option value="{{ department.pk }}"
+          {% if selected_department == department.pk|stringformat:"s" %}selected{% endif %}>
+            {{ department.name }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
                 <div class="col-md-2">
-                    <label class="form-label">Program</label>
-                    <select name="program" class="form-select">
-                        <option value="">All</option>
-                        {% for program in programs %}
-                        <option value="{{ program.pk }}"
-                          {% if selected_program == program.pk|stringformat:"s" %}selected{% endif %}>
-                            {{ program.code }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+    <label class="form-label">Program</label>
 
+    <select name="program"
+            class="form-select"
+            id="offering-filter-program"
+            {% if not selected_department %}disabled{% endif %}>
+
+        <option value="">All Programs</option>
+
+        {% for program in programs %}
+        <option value="{{ program.pk }}"
+          {% if selected_program == program.pk|stringformat:"s" %}selected{% endif %}>
+            {{ program.code }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
                 <div class="col-md-2">
                     <label class="form-label">Academic Year</label>
                     <input name="year"

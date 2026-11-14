@@ -1,0 +1,196 @@
+
+{% extends "base.html" %}
+
+{% block title %}Add Teacher - AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+.ah-teacher-form-page {
+    background: #f5f7fb;
+    min-height: calc(100vh - 100px);
+    padding: 35px 15px 50px;
+}
+.ah-tf-wrap { max-width: 780px; margin: auto; }
+.ah-tf-back {
+    display: inline-flex; gap: 8px; align-items: center;
+    text-decoration: none; color: #63748a;
+    font-size: 12px; font-weight: 650; margin-bottom: 20px;
+}
+.ah-tf-back:hover { color: #315c91; }
+.ah-tf-card {
+    background: white; border: 1px solid #e7ebf1;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 30px rgba(20,36,58,.05);
+}
+.ah-tf-header {
+    padding: 25px 28px; background: linear-gradient(120deg,#14243a,#23446a);
+    color: white;
+}
+.ah-tf-header h1 { font-size: 23px; font-weight: 800; margin: 0 0 6px; }
+.ah-tf-header p { font-size: 12px; color: #d1dce9; margin: 0; }
+.ah-tf-body { padding: 28px; }
+.ah-tf-section { margin-bottom: 25px; }
+.ah-tf-section h2 {
+    font-size: 14px; color: #14243a;
+    font-weight: 750; margin: 0 0 17px;
+}
+.ah-tf-grid {
+    display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 15px;
+}
+.ah-tf-field { margin-bottom: 15px; min-width: 0; }
+.ah-tf-field.full { grid-column: 1/-1; }
+.ah-tf-field label {
+    display: block; color: #344256;
+    font-size: 12px; font-weight: 700; margin-bottom: 7px;
+}
+.ah-tf-field input {
+    width: 100%; min-height: 44px; padding: 10px 12px;
+    border: 1px solid #dce3eb; border-radius: 8px;
+    font-size: 12px; outline: none;
+}
+.ah-tf-field input:focus {
+    border-color: #315c91;
+    box-shadow: 0 0 0 3px rgba(49,92,145,.09);
+}
+.ah-tf-field input[type="checkbox"] {
+    width: 18px; min-height: 18px; accent-color: #315c91;
+}
+.ah-tf-error { color: #d74747; font-size: 11px; margin-top: 5px; }
+.ah-tf-note {
+    padding: 13px 15px; border-radius: 9px;
+    background: #eff5fc; color: #365b84;
+    font-size: 11px; line-height: 1.7; margin-bottom: 22px;
+}
+.ah-tf-status {
+    border: 1px solid #e7ebf1; border-radius: 9px;
+    padding: 13px 15px; display: flex;
+    align-items: center; gap: 12px;
+}
+.ah-tf-status label { margin: 0; font-size: 12px; font-weight: 700; color: #344256; }
+.ah-tf-footer {
+    display: flex; justify-content: flex-end;
+    gap: 10px; border-top: 1px solid #e7ebf1;
+    padding-top: 21px; margin-top: 25px;
+}
+.ah-tf-btn {
+    border: 0; border-radius: 8px; padding: 11px 17px;
+    font-size: 12px; font-weight: 700; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.ah-tf-primary { background: #14243a; color: white; }
+.ah-tf-primary:hover { background: #315c91; color: white; }
+.ah-tf-secondary { background: #edf0f5; color: #344256; }
+.ah-tf-secondary:hover { background: #e1e7ef; color: #14243a; }
+@media(max-width:560px) {
+    .ah-tf-body { padding: 20px 17px; }
+    .ah-tf-header { padding: 22px 18px; }
+    .ah-tf-grid { grid-template-columns: 1fr; gap: 0; }
+    .ah-tf-footer { flex-direction: column-reverse; }
+    .ah-tf-btn { justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ah-teacher-form-page">
+<div class="ah-tf-wrap">
+
+    <a href="{% url 'accounts:teacher_directory' %}" class="ah-tf-back">
+        <i class="bi bi-arrow-left"></i> Back to Teacher Management
+    </a>
+
+    <div class="ah-tf-card">
+
+        <div class="ah-tf-header">
+            <h1><i class="bi bi-person-plus"></i> Add New Teacher</h1>
+            <p>Create a teacher account and grant academic platform access.</p>
+        </div>
+
+        <div class="ah-tf-body">
+
+            <div class="ah-tf-note">
+                <i class="bi bi-info-circle"></i>
+                This form automatically assigns the Teacher role.
+                Teacher accounts do not receive administrator privileges.
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <section class="ah-tf-section">
+                    <h2><i class="bi bi-person-vcard"></i> Personal Information</h2>
+
+                    <div class="ah-tf-grid">
+
+                        {% for field in form %}
+                            {% if field.name != "password" and field.name != "is_active" %}
+                                <div class="ah-tf-field {% if field.name == 'username' or field.name == 'email' %}full{% endif %}">
+                                    <label for="{{ field.id_for_label }}">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+
+                                    {{ field }}
+
+                                    {% for error in field.errors %}
+                                        <div class="ah-tf-error">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+                </section>
+
+                <section class="ah-tf-section">
+                    <h2><i class="bi bi-shield-lock"></i> Account Password</h2>
+
+                    <div class="ah-tf-field">
+                        <label for="{{ form.password.id_for_label }}">Initial Password *</label>
+                        {{ form.password }}
+
+                        {% for error in form.password.errors %}
+                            <div class="ah-tf-error">{{ error }}</div>
+                        {% endfor %}
+
+                        <small class="text-muted">Password must satisfy the configured Django password validators.</small>
+                    </div>
+                </section>
+
+                <section class="ah-tf-section">
+                    <h2><i class="bi bi-toggle-on"></i> Account Status</h2>
+
+                    <div class="ah-tf-status">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}">
+                            Activate teacher account immediately
+                        </label>
+                    </div>
+                    {% for error in form.is_active.errors %}
+                        <div class="ah-tf-error">{{ error }}</div>
+                    {% endfor %}
+                </section>
+
+                <div class="ah-tf-footer">
+                    <a href="{% url 'accounts:teacher_directory' %}" class="ah-tf-btn ah-tf-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="ah-tf-btn ah-tf-primary">
+                        <i class="bi bi-person-check"></i> Create Teacher
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

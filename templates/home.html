@@ -788,19 +788,33 @@
     <div>
         <span class="ah-dash-kicker">ADMINISTRATION / OVERVIEW</span>
         <h1 class="ah-dash-title">Admin Dashboard</h1>
+        
         <p class="ah-dash-subtitle">
             University operations, academic activity and student onboarding.
         </p>
+
     </div>
 
-    <div class="ah-dash-actions">
-        <a href="{% url 'student_onboarding:student_directory' %}" class="ah-dash-btn">
-            <i class="bi bi-people"></i> Manage Students
-        </a>
-        <a href="{% url 'student_onboarding:upload' %}" class="ah-dash-btn ah-dash-btn-primary">
-            <i class="bi bi-person-plus"></i> Import Students
-        </a>
-    </div>
+
+<div class="ah-dash-actions">
+
+    <a href="{% url 'accounts:teacher_directory' %}" class="ah-dash-btn">
+        <i class="bi bi-person-workspace"></i>
+        Manage Teachers
+    </a>
+
+    <a href="{% url 'student_onboarding:student_directory' %}" class="ah-dash-btn">
+        <i class="bi bi-people"></i>
+        Manage Students
+    </a>
+
+    <a href="{% url 'student_onboarding:upload' %}" class="ah-dash-btn ah-dash-btn-primary">
+        <i class="bi bi-person-plus"></i>
+        Import Students
+    </a>
+
+</div>
+
 </div>
 
 <div class="ah-dash-hero">
@@ -1466,7 +1480,14 @@
                 </a>
                 <a class="ah-dash-quick" href="{% url 'courses:offering_list' %}">
                     <i class="bi bi-book-half"></i>My Courses
+
                 </a>
+
+<a class="ah-dash-quick" href="{% url 'accounts:teacher_directory' %}">
+    <i class="bi bi-person-workspace"></i>
+    Manage Teachers
+</a>
+
                 <a class="ah-dash-quick" href="{% url 'class_allocations:my_classes' %}">
                     <i class="bi bi-people"></i>My Classes
                 </a>

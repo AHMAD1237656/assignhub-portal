@@ -176,3 +176,199 @@ class SelfProfileUpdateForm(forms.ModelForm):
             )
 
         return email
+
+# ==========================================
+# TEACHER MANAGEMENT - PHASE 1
+# ==========================================
+
+from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+
+TeacherUser = get_user_model()
+
+
+class TeacherCreateForm(forms.ModelForm):
+
+    password = forms.CharField(
+        label="Password",
+        min_length=8,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Create a secure password",
+                "autocomplete": "new-password",
+            }
+        ),
+    )
+
+    class Meta:
+        model = TeacherUser
+
+        fields = [
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "is_active",
+        ]
+
+        widgets = {
+            "username": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Teacher username",
+                }
+            ),
+            "first_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "First name",
+                }
+            ),
+            "last_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Last name",
+                }
+            ),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "teacher@example.com",
+                }
+            ),
+            "is_active": forms.CheckboxInput(
+                attrs={
+                    "class": "form-check-input",
+                }
+            ),
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+
+        if TeacherUser.objects.filter(
+            username__iexact=username
+        ).exists():
+            raise forms.ValidationError(
+                "This username is already in use."
+            )
+
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip().lower()
+
+        if email and TeacherUser.objects.filter(
+            email__iexact=email
+        ).exists():
+            raise forms.ValidationError(
+                "This email address is already in use."
+            )
+
+        return email
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+
+        user = TeacherUser(
+            username=self.cleaned_data.get("username", ""),
+            first_name=self.cleaned_data.get("first_name", ""),
+            last_name=self.cleaned_data.get("last_name", ""),
+            email=self.cleaned_data.get("email", ""),
+        )
+
+        validate_password(password, user=user)
+
+        return password
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        user.set_password(
+            self.cleaned_data["password"]
+        )
+
+        # Teachers must never receive staff privileges.
+        user.is_staff = False
+        user.is_superuser = False
+
+        if commit:
+            user.save()
+
+        return user
+
+
+class TeacherUpdateForm(forms.ModelForm):
+
+    class Meta:
+        model = TeacherUser
+
+        fields = [
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+        ]
+
+        widgets = {
+            "username": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Teacher username",
+                }
+            ),
+            "first_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "First name",
+                }
+            ),
+            "last_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Last name",
+                }
+            ),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Email address",
+                }
+            ),
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+
+        duplicate = (
+            TeacherUser.objects
+            .filter(username__iexact=username)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        )
+
+        if duplicate:
+            raise forms.ValidationError(
+                "This username is already in use."
+            )
+
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip().lower()
+
+        duplicate = (
+            TeacherUser.objects
+            .filter(email__iexact=email)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        )
+
+        if email and duplicate:
+            raise forms.ValidationError(
+                "This email address is already in use."
+            )
+
+        return email

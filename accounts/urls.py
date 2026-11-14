@@ -69,5 +69,33 @@ path(
     name="profile_password",
 ),
 
+    # ==========================================
+    # TEACHER MANAGEMENT
+    # ==========================================
+
+    path(
+        "teachers/",
+        views.teacher_directory,
+        name="teacher_directory",
+    ),
+
+    path(
+        "teachers/create/",
+        views.teacher_create,
+        name="teacher_create",
+    ),
+
+    path(
+        "teachers/<int:user_id>/edit/",
+        views.teacher_edit,
+        name="teacher_edit",
+    ),
+
+    path(
+        "teachers/<int:user_id>/toggle-status/",
+        views.teacher_toggle_status,
+        name="teacher_toggle_status",
+    ),
+
     
 ]
