@@ -1,17 +1,21 @@
 
 import logging
 import secrets
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+from accounts.models import UserProfile
+from .models import StudentImportBatch
+from .import_utils import inspect_existing_accounts
 
 from .models import (
     StudentIdentity,
     StudentOnboardingEvent,
+    StudentImportBatch,
 )
 from .services import (
     activation_max_age,
@@ -422,3 +426,91 @@ def resend_individual_activation(identity_id, *, actor):
     )
 
     return True
+
+User = get_user_model()
+
+
+@transaction.atomic
+def create_manual_student(
+    *,
+    roll_number,
+    first_name,
+    last_name,
+    email,
+    section,
+    academic_year,
+    term,
+    actor,
+):
+    """
+    Create one student through the existing onboarding
+    architecture using a confirmed manual-entry batch.
+    """
+
+    roll_number = roll_number.strip().upper()
+    first_name = first_name.strip()
+    last_name = last_name.strip()
+    email = email.strip().lower()
+
+    # Recheck existing accounts inside the transaction.
+    rows = [{
+        "roll_number": roll_number,
+        "email": email,
+        "errors": [],
+    }]
+
+    rows = inspect_existing_accounts(rows)
+
+    if rows[0]["errors"]:
+        raise ValidationError(
+            " ".join(rows[0]["errors"])
+        )
+
+    batch = StudentImportBatch.objects.create(
+        created_by=actor,
+        filename="Manual student entry",
+        section=section,
+        academic_year=academic_year,
+        term=term,
+        status=StudentImportBatch.Status.CONFIRMED,
+        rows=[],
+        row_count=1,
+        created_count=1,
+        confirmed_at=timezone.now(),
+    )
+
+    # Reuse existing section capacity validation.
+    validate_section_capacity(
+        batch,
+        new_count=1,
+    )
+
+    user = User(
+        username=roll_number,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        is_active=False,
+        is_staff=False,
+        is_superuser=False,
+    )
+
+    user.set_unusable_password()
+    user.save()
+
+    UserProfile.objects.create(
+        user=user,
+        role=UserProfile.Role.STUDENT,
+    )
+
+    identity = StudentIdentity.objects.create(
+        user=user,
+        import_batch=batch,
+        roll_number=roll_number,
+        institutional_email=email,
+        section=section,
+        academic_year=academic_year,
+        term=term,
+    )
+
+    return identity

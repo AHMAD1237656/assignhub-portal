@@ -104,4 +104,10 @@ urlpatterns = [
         name="student_resend",
     ),
 
+path(
+    "students/create/",
+    admin_views.student_create,
+    name="student_create",
+),
+
 ]

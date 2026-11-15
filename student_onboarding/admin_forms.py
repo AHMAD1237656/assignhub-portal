@@ -3,7 +3,10 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
-
+from courses.models import (
+    CourseOffering,
+    validate_academic_year,
+)
 from semesters.models import Section
 
 from .models import StudentIdentity
@@ -204,3 +207,197 @@ class CancelPendingStudentForm(forms.Form):
         required=True,
         label="I confirm this cancellation.",
     )
+
+class ManualStudentCreateForm(forms.Form):
+
+    roll_number = forms.CharField(
+        max_length=40,
+        min_length=3,
+        label="Roll Number",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "e.g. FA21-BSE-001",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    first_name = forms.CharField(
+        max_length=150,
+        min_length=1,
+        label="First Name",
+        widget=forms.TextInput(
+            attrs={"class": "form-control"}
+        ),
+    )
+
+    last_name = forms.CharField(
+        max_length=150,
+        min_length=1,
+        label="Last Name",
+        widget=forms.TextInput(
+            attrs={"class": "form-control"}
+        ),
+    )
+
+    email = forms.EmailField(
+        max_length=254,
+        label="Institutional Email",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    section = forms.ModelChoiceField(
+        queryset=Section.objects.none(),
+        label="Academic Section",
+        widget=forms.Select(
+            attrs={"class": "form-select"}
+        ),
+    )
+
+    academic_year = forms.CharField(
+        max_length=9,
+        validators=[validate_academic_year],
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "2026-2027",
+            }
+        ),
+    )
+
+    term = forms.ChoiceField(
+        choices=CourseOffering.Term.choices,
+        widget=forms.Select(
+            attrs={"class": "form-select"}
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["section"].queryset = (
+            Section.objects.filter(
+                is_active=True,
+                semester__is_active=True,
+                semester__program__is_active=True,
+                semester__program__department__is_active=True,
+            )
+            .select_related(
+                "semester",
+                "semester__program",
+                "semester__program__department",
+            )
+            .order_by(
+                "semester__program__code",
+                "semester__number",
+                "code",
+            )
+        )
+
+    def clean_roll_number(self):
+        roll_number = (
+            self.cleaned_data["roll_number"]
+            .strip()
+            .upper()
+        )
+
+        import re
+
+        if not re.fullmatch(
+            r"[A-Z0-9][A-Z0-9_-]{2,39}",
+            roll_number,
+        ):
+            raise forms.ValidationError(
+                "Invalid roll number format."
+            )
+
+        return roll_number
+
+    def clean_first_name(self):
+        return self._clean_name(
+            self.cleaned_data["first_name"]
+        )
+
+    def clean_last_name(self):
+        return self._clean_name(
+            self.cleaned_data["last_name"]
+        )
+
+    @staticmethod
+    def _clean_name(value):
+        value = value.strip()
+
+        if not value:
+            raise forms.ValidationError(
+                "This field is required."
+            )
+
+        if value.startswith(("=", "+", "-", "@")):
+            raise forms.ValidationError(
+                "Invalid name format."
+            )
+
+        if any(ord(char) < 32 for char in value):
+            raise forms.ValidationError(
+                "Control characters are not allowed."
+            )
+
+        return value
+
+    def clean_email(self):
+        email = (
+            self.cleaned_data["email"]
+            .strip()
+            .lower()
+        )
+
+        required_domain = getattr(
+            settings,
+            "STUDENT_EMAIL_DOMAIN",
+            "",
+        ).strip().lower()
+
+        if (
+            required_domain
+            and email.rsplit("@", 1)[-1] != required_domain
+        ):
+            raise forms.ValidationError(
+                "Use the configured university email domain."
+            )
+
+        if User.objects.filter(
+            email__iexact=email
+        ).exists():
+            raise forms.ValidationError(
+                "This email is already used by another account."
+            )
+
+        if StudentIdentity.objects.filter(
+            institutional_email__iexact=email
+        ).exists():
+            raise forms.ValidationError(
+                "This student email already exists."
+            )
+
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        roll_number = cleaned_data.get("roll_number")
+
+        if roll_number and User.objects.filter(
+            username__iexact=roll_number
+        ).exists():
+            self.add_error(
+                "roll_number",
+                "An account with this roll number already exists.",
+            )
+
+        return cleaned_data

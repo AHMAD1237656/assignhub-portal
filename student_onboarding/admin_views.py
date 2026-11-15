@@ -21,13 +21,17 @@ from .admin_forms import (
     CancelPendingStudentForm,
     PendingStudentEditForm,
     StudentDirectoryFilterForm,
+    ManualStudentCreateForm,
 )
+
 from .admin_services import (
     cancel_pending_student,
     correct_pending_student,
     resend_individual_activation,
     restore_cancelled_student,
+    create_manual_student,
 )
+
 from .models import StudentIdentity
 from .services import get_identity_from_token, make_activation_token
 from .views import require_admin
@@ -80,6 +84,76 @@ def filtered_student_queryset(filter_form):
         )
 
     return queryset
+
+@login_required
+def student_create(request):
+    require_admin(request.user)
+
+    if request.method == "POST":
+        form = ManualStudentCreateForm(request.POST)
+
+        if form.is_valid():
+            try:
+                identity = create_manual_student(
+                    roll_number=form.cleaned_data["roll_number"],
+                    first_name=form.cleaned_data["first_name"],
+                    last_name=form.cleaned_data["last_name"],
+                    email=form.cleaned_data["email"],
+                    section=form.cleaned_data["section"],
+                    academic_year=form.cleaned_data["academic_year"],
+                    term=form.cleaned_data["term"],
+                    actor=request.user,
+                )
+
+            except ValidationError as exc:
+                for error in exc.messages:
+                    messages.error(request, error)
+
+            except IntegrityError:
+                messages.error(
+                    request,
+                    "A conflicting student account already exists. "
+                    "Please verify the roll number and email.",
+                )
+
+            else:
+                try:
+                    email_sent = resend_individual_activation(
+                        identity.pk,
+                        actor=request.user,
+                    )
+                except ValidationError as exc:
+                    email_sent = False
+                    for error in exc.messages:
+                        messages.warning(request, error)
+
+                if email_sent:
+                    messages.success(
+                        request,
+                        "Student account created successfully. "
+                        "Activation email sent.",
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        "Student account created successfully, "
+                        "but activation email could not be sent. "
+                        "You can retry from the student details page.",
+                    )
+
+                return redirect(
+                    "student_onboarding:student_detail",
+                    identity_id=identity.pk,
+                )
+
+    else:
+        form = ManualStudentCreateForm()
+
+    return render(
+        request,
+        "student_onboarding/student_create.html",
+        {"form": form},
+    )
 
 
 @login_required

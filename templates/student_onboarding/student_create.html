@@ -1,0 +1,212 @@
+
+{% extends "base.html" %}
+
+{% block title %}Add Student | AssignHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sc-page {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding-bottom: 35px;
+    }
+
+    .sc-header {
+        margin-bottom: 24px;
+    }
+
+    .sc-eyebrow {
+        color: #5670c8;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        margin-bottom: 8px;
+    }
+
+    .sc-title {
+        color: #101c32;
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 7px;
+    }
+
+    .sc-subtitle {
+        color: #75849a;
+        font-size: 13px;
+    }
+
+    .sc-card {
+        background: #fff;
+        border: 1px solid #e7ebf2;
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(16, 28, 50, .04);
+        padding: 26px;
+    }
+
+    .sc-section-title {
+        color: #22334e;
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .sc-note {
+        color: #8996a8;
+        font-size: 12px;
+        margin-bottom: 24px;
+    }
+
+    .sc-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .sc-field label {
+        display: block;
+        color: #40516b;
+        font-size: 12px;
+        font-weight: 750;
+        margin-bottom: 8px;
+    }
+
+    .sc-field .form-control,
+    .sc-field .form-select {
+        min-height: 44px;
+        border-color: #dce3ed;
+        border-radius: 10px;
+        font-size: 13px;
+        box-shadow: none;
+    }
+
+    .sc-field .form-control:focus,
+    .sc-field .form-select:focus {
+        border-color: #6884ef;
+        box-shadow: 0 0 0 3px rgba(70,105,237,.11);
+    }
+
+    .sc-error {
+        color: #bc4242;
+        font-size: 11px;
+        margin-top: 6px;
+    }
+
+    .sc-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+        border-top: 1px solid #e7ebf2;
+        margin-top: 28px;
+        padding-top: 22px;
+    }
+
+    @media (max-width: 575px) {
+        .sc-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sc-card {
+            padding: 18px;
+        }
+
+        .sc-footer .btn {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="sc-page">
+
+    <div class="sc-header">
+        <div class="sc-eyebrow">
+            STUDENT MANAGEMENT / CREATE
+        </div>
+
+        <h1 class="sc-title">
+            Add Student
+        </h1>
+
+        <p class="sc-subtitle">
+            Create an individual student account and send an activation invitation.
+        </p>
+    </div>
+
+    <div class="sc-card">
+
+        <h2 class="sc-section-title">
+            Student Information
+        </h2>
+
+        <p class="sc-note">
+            The student will receive an activation email.
+            They must set their own password before signing in.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="sc-grid">
+
+                {% for field in form %}
+                    <div class="sc-field">
+
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <div class="text-muted small mt-1">
+                                {{ field.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <div class="sc-error">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                {% endfor %}
+
+            </div>
+
+            <div class="sc-footer">
+
+                <a
+                    href="{% url 'student_onboarding:student_directory' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    <i class="bi bi-x-lg me-1"></i>
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    <i class="bi bi-person-plus-fill me-1"></i>
+                    Create Student
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
