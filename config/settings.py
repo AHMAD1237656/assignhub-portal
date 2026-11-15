@@ -128,10 +128,20 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'assignhub_db',
+        'USER': 'postgres',
+        'PASSWORD': 'Ahmad1237656',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -243,3 +253,13 @@ PLAGIARISM_FLAG_LEXICAL_PERCENT = float(
 PLAGIARISM_FLAG_SEMANTIC_PERCENT = float(
     os.environ.get("PLAGIARISM_FLAG_SEMANTIC_PERCENT", "85")
 )
+
+
+# Email Configuration (Gmail SMTP & App Password)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ahmadjutt123075@gmail.com'          # Yahan apni actual Gmail ID likhein
+EMAIL_HOST_PASSWORD = 'zdqwplzmrvhvhibt'   # Yahan Google wala App Password likhein (spaces ke baghair)
+DEFAULT_FROM_EMAIL = 'AssignHub <ahmadjutt123075@gmail.com>'
