@@ -1,13 +1,12 @@
 
 import csv
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
 from django.shortcuts import (
     get_object_or_404,
@@ -15,7 +14,7 @@ from django.shortcuts import (
     render,
 )
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 
 from .admin_forms import (
     CancelPendingStudentForm,
@@ -23,7 +22,7 @@ from .admin_forms import (
     StudentDirectoryFilterForm,
     ManualStudentCreateForm,
 )
-
+from semesters.models import Section
 from .admin_services import (
     cancel_pending_student,
     correct_pending_student,
@@ -31,7 +30,7 @@ from .admin_services import (
     restore_cancelled_student,
     create_manual_student,
 )
-
+from departments.models import Department, Program
 from .models import StudentIdentity
 from .services import get_identity_from_token, make_activation_token
 from .views import require_admin
@@ -84,6 +83,77 @@ def filtered_student_queryset(filter_form):
         )
 
     return queryset
+
+@login_required
+@require_GET
+def program_options_api(request):
+    require_admin(request.user)
+
+    department_id = request.GET.get("department")
+
+    if not department_id or not department_id.isdigit():
+        return JsonResponse(
+            {"results": []},
+            status=400,
+        )
+
+    programs = Program.objects.filter(
+        department_id=department_id,
+        department__is_active=True,
+        is_active=True,
+    ).order_by("code")
+
+    return JsonResponse({
+        "results": [
+            {
+                "id": program.pk,
+                "text": f"{program.code} - {program.name}",
+            }
+            for program in programs
+        ]
+    })
+
+
+@login_required
+@require_GET
+def section_options_api(request):
+    require_admin(request.user)
+
+    program_id = request.GET.get("program")
+
+    if not program_id or not program_id.isdigit():
+        return JsonResponse(
+            {"results": []},
+            status=400,
+        )
+
+    sections = (
+        Section.objects.filter(
+            semester__program_id=program_id,
+            is_active=True,
+            semester__is_active=True,
+            semester__program__is_active=True,
+            semester__program__department__is_active=True,
+        )
+        .select_related(
+            "semester",
+            "semester__program",
+        )
+        .order_by(
+            "semester__number",
+            "code",
+        )
+    )
+
+    return JsonResponse({
+        "results": [
+            {
+                "id": section.pk,
+                "text": str(section),
+            }
+            for section in sections
+        ]
+    })
 
 @login_required
 def student_create(request):

@@ -3,12 +3,14 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
+
+from semesters.models import Section
+from departments.models import Department, Program
+
 from courses.models import (
     CourseOffering,
     validate_academic_year,
 )
-from semesters.models import Section
-
 from .models import StudentIdentity
 
 
@@ -208,7 +210,56 @@ class CancelPendingStudentForm(forms.Form):
         label="I confirm this cancellation.",
     )
 
+
 class ManualStudentCreateForm(forms.Form):
+
+    # -----------------------------
+    # Academic Placement
+    # -----------------------------
+
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.none(),
+        label="Department",
+        empty_label="Select Department",
+        widget=forms.Select(
+            attrs={"class": "form-select"}
+        ),
+    )
+
+    program = forms.ModelChoiceField(
+        queryset=Program.objects.none(),
+        label="Program",
+        empty_label="Select Program",
+        widget=forms.Select(
+            attrs={"class": "form-select"}
+        ),
+    )
+
+    academic_year = forms.CharField(
+        max_length=9,
+        validators=[validate_academic_year],
+        label="Academic Year",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "2026-2027",
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    section = forms.ModelChoiceField(
+        queryset=Section.objects.none(),
+        label="Academic Section",
+        empty_label="Select Section",
+        widget=forms.Select(
+            attrs={"class": "form-select"}
+        ),
+    )
+
+    # -----------------------------
+    # Student Information
+    # -----------------------------
 
     roll_number = forms.CharField(
         max_length=40,
@@ -252,27 +303,9 @@ class ManualStudentCreateForm(forms.Form):
         ),
     )
 
-    section = forms.ModelChoiceField(
-        queryset=Section.objects.none(),
-        label="Academic Section",
-        widget=forms.Select(
-            attrs={"class": "form-select"}
-        ),
-    )
-
-    academic_year = forms.CharField(
-        max_length=9,
-        validators=[validate_academic_year],
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "2026-2027",
-            }
-        ),
-    )
-
     term = forms.ChoiceField(
         choices=CourseOffering.Term.choices,
+        label="Term",
         widget=forms.Select(
             attrs={"class": "form-select"}
         ),
@@ -281,24 +314,50 @@ class ManualStudentCreateForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["section"].queryset = (
-            Section.objects.filter(
-                is_active=True,
-                semester__is_active=True,
-                semester__program__is_active=True,
-                semester__program__department__is_active=True,
-            )
-            .select_related(
-                "semester",
-                "semester__program",
-                "semester__program__department",
-            )
-            .order_by(
-                "semester__program__code",
-                "semester__number",
-                "code",
-            )
+        self.fields["department"].queryset = (
+            Department.objects.filter(
+                is_active=True
+            ).order_by("name")
         )
+
+        department_id = self.data.get(
+            self.add_prefix("department")
+        )
+
+        program_id = self.data.get(
+            self.add_prefix("program")
+        )
+
+        if department_id and str(department_id).isdigit():
+            self.fields["program"].queryset = (
+                Program.objects.filter(
+                    department_id=department_id,
+                    department__is_active=True,
+                    is_active=True,
+                )
+                .select_related("department")
+                .order_by("code")
+            )
+
+        if program_id and str(program_id).isdigit():
+            self.fields["section"].queryset = (
+                Section.objects.filter(
+                    semester__program_id=program_id,
+                    is_active=True,
+                    semester__is_active=True,
+                    semester__program__is_active=True,
+                    semester__program__department__is_active=True,
+                )
+                .select_related(
+                    "semester",
+                    "semester__program",
+                    "semester__program__department",
+                )
+                .order_by(
+                    "semester__number",
+                    "code",
+                )
+            )
 
     def clean_roll_number(self):
         roll_number = (
@@ -390,7 +449,25 @@ class ManualStudentCreateForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
 
+        department = cleaned_data.get("department")
+        program = cleaned_data.get("program")
+        section = cleaned_data.get("section")
         roll_number = cleaned_data.get("roll_number")
+
+        # Verify complete academic hierarchy.
+        if department and program:
+            if program.department_id != department.pk:
+                self.add_error(
+                    "program",
+                    "Selected program does not belong to this department.",
+                )
+
+        if program and section:
+            if section.semester.program_id != program.pk:
+                self.add_error(
+                    "section",
+                    "Selected section does not belong to this program.",
+                )
 
         if roll_number and User.objects.filter(
             username__iexact=roll_number

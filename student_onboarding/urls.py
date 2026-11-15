@@ -109,5 +109,15 @@ path(
     admin_views.student_create,
     name="student_create",
 ),
+path(
+    "students/create/programs/",
+    admin_views.program_options_api,
+    name="program_options_api",
+),
 
+path(
+    "students/create/sections/",
+    admin_views.section_options_api,
+    name="section_options_api",
+),
 ]

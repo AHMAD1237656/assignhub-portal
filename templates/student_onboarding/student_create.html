@@ -146,9 +146,12 @@
             They must set their own password before signing in.
         </p>
 
-        <form method="post">
-            {% csrf_token %}
-
+<form
+    method="post"
+    data-programs-url="{% url 'student_onboarding:program_options_api' %}"
+    data-sections-url="{% url 'student_onboarding:section_options_api' %}"
+>
+    {% csrf_token %}
             {% if form.non_field_errors %}
                 <div class="alert alert-danger">
                     {{ form.non_field_errors }}
@@ -208,5 +211,158 @@
     </div>
 
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    const form = document.querySelector(
+        "form[data-programs-url]"
+    );
+
+    if (!form) return;
+
+    const department = document.getElementById(
+        "id_department"
+    );
+
+    const program = document.getElementById(
+        "id_program"
+    );
+
+    const section = document.getElementById(
+        "id_section"
+    );
+
+    const programsUrl = form.dataset.programsUrl;
+    const sectionsUrl = form.dataset.sectionsUrl;
+
+    function resetSelect(select, placeholder) {
+        select.innerHTML = "";
+
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = placeholder;
+
+        select.appendChild(option);
+        select.disabled = true;
+    }
+
+    function populateSelect(select, results, placeholder) {
+        resetSelect(select, placeholder);
+
+        results.forEach(function (item) {
+            const option = document.createElement("option");
+
+            option.value = item.id;
+            option.textContent = item.text;
+
+            select.appendChild(option);
+        });
+
+        select.disabled = false;
+    }
+
+    async function loadPrograms(departmentId) {
+
+        resetSelect(program, "Loading programs...");
+        resetSelect(section, "Select program first");
+
+        if (!departmentId) {
+            resetSelect(program, "Select department first");
+            return;
+        }
+
+        try {
+            const url = new URL(
+                programsUrl,
+                window.location.origin
+            );
+
+            url.searchParams.set(
+                "department",
+                departmentId
+            );
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Unable to load programs.");
+            }
+
+            const data = await response.json();
+
+            populateSelect(
+                program,
+                data.results,
+                data.results.length
+                    ? "Select Program"
+                    : "No active programs available"
+            );
+
+        } catch (error) {
+            console.error(error);
+            resetSelect(program, "Unable to load programs");
+        }
+    }
+
+    async function loadSections(programId) {
+
+        resetSelect(section, "Loading sections...");
+
+        if (!programId) {
+            resetSelect(section, "Select program first");
+            return;
+        }
+
+        try {
+            const url = new URL(
+                sectionsUrl,
+                window.location.origin
+            );
+
+            url.searchParams.set(
+                "program",
+                programId
+            );
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Unable to load sections.");
+            }
+
+            const data = await response.json();
+
+            populateSelect(
+                section,
+                data.results,
+                data.results.length
+                    ? "Select Academic Section"
+                    : "No active sections available"
+            );
+
+        } catch (error) {
+            console.error(error);
+            resetSelect(section, "Unable to load sections");
+        }
+    }
+
+    department.addEventListener("change", function () {
+        loadPrograms(this.value);
+    });
+
+    program.addEventListener("change", function () {
+        loadSections(this.value);
+    });
+
+    // Initial state for a fresh form.
+    if (program.options.length <= 1) {
+        resetSelect(program, "Select department first");
+    }
+
+    if (section.options.length <= 1) {
+        resetSelect(section, "Select program first");
+    }
+
+});
+</script>
 {% endblock %}
